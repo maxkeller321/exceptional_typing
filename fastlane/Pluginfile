@@ -1,0 +1,6 @@
+# Fastlane Plugins
+# https://docs.fastlane.tools/plugins/available-plugins/
+
+# No additional plugins required for this project yet
+# Add plugins here as needed:
+# gem 'fastlane-plugin-versioning'

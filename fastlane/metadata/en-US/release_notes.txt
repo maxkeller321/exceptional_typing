@@ -1,0 +1,5 @@
+What's New:
+
+• Bug fixes and performance improvements
+• Enhanced typing statistics
+• Improved user interface

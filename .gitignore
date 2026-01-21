@@ -1,0 +1,113 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+out/
+.output/
+
+# Tauri build outputs
+src-tauri/target/
+src-tauri/WixTools/
+src-tauri/gen/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.turbo/
+.svelte-kit/
+
+# TypeScript
+*.tsbuildinfo
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Rust/Cargo
+*.rs.bk
+Cargo.lock
+
+# Bundle analyzer
+stats.html
+stats.json
+
+# Local development
+.local/
+
+# Package manager locks (keep one, ignore others if switching)
+# Uncomment the ones you don't use:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Debug files
+*.debug
+*.dSYM/
+
+# macOS app bundles (built artifacts)
+*.app
+*.dmg
+
+# Windows installers
+*.exe
+*.msi
+
+# Linux packages
+*.deb
+*.rpm
+*.AppImage
+
+# Fastlane
+fastlane/.env
+fastlane/.env.*
+!fastlane/.env.example
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+fastlane/README.md.bak
+fastlane/*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+fastlane/vendor/

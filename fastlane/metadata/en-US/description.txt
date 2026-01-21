@@ -1,0 +1,31 @@
+Exceptional Typing is a modern typing tutor application designed to help you master touch typing through structured lessons and custom practice exercises.
+
+FEATURES:
+
+• Structured Learning Path
+Progress through carefully designed courses that take you from beginner to expert. Start with the home row keys and gradually expand to the full keyboard.
+
+• 10 Fingers Touch Typing Course
+14 comprehensive stages covering everything from basic home row to advanced typing techniques.
+
+• Command Line Mastery Course
+15 stages designed specifically for developers, covering essential CLI commands, Git operations, and Docker basics.
+
+• Real-Time Statistics
+Track your progress with detailed analytics including WPM (words per minute), accuracy percentages, and keystroke heatmaps.
+
+• Custom Practice
+Create your own practice snippets to focus on specific text or code patterns you want to improve.
+
+• Multiple Themes
+Choose from several carefully designed themes including dark and light modes to reduce eye strain during practice sessions.
+
+• Keyboard Layout Support
+Support for multiple keyboard layouts to match your physical keyboard.
+
+• Privacy First
+All your data stays on your device. No accounts required, no data collection.
+
+Whether you're a student learning to type, a professional looking to boost productivity, or a developer wanting to code faster, Exceptional Typing provides the tools you need to achieve your typing goals.
+
+Start your journey to faster, more accurate typing today!

@@ -1,0 +1,414 @@
+# Fastfile for Exceptional Typing - Tauri Application
+# https://docs.fastlane.tools
+
+default_platform(:mac)
+
+# Configuration
+APP_NAME = "Exceptional Typing"
+BUNDLE_ID = "com.exceptionaltyping.app"
+TAURI_DIR = "../src-tauri"
+SKU = "exceptional-typing"
+
+# Helper to get App Store Connect API key
+def api_key
+  app_store_connect_api_key(
+    key_id: ENV["APP_STORE_CONNECT_API_KEY_KEY_ID"],
+    issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+    key_filepath: ENV["APP_STORE_CONNECT_API_KEY_KEY_FILEPATH"],
+    in_house: false
+  )
+end
+
+platform :mac do
+  # ============================================
+  # SETUP & CERTIFICATES
+  # ============================================
+
+  desc "Verify API key configuration"
+  lane :verify_api_key do
+    UI.header("Verifying App Store Connect API Key")
+
+    key = api_key
+    UI.success("✅ API Key configured successfully!")
+    UI.message("Key ID: #{ENV['APP_STORE_CONNECT_API_KEY_KEY_ID']}")
+  end
+
+  desc "Full initial setup - verifies configuration"
+  lane :setup do
+    UI.header("Setting up Exceptional Typing for App Store")
+
+    # Step 1: Verify API key
+    UI.message("Step 1: Verifying API key configuration...")
+    begin
+      verify_api_key
+    rescue => e
+      UI.error("API key error: #{e.message}")
+      UI.important("Please check your .env file configuration")
+    end
+
+    # Step 2: Sync certificates (if Match is configured)
+    if ENV["MATCH_GIT_URL"] && !ENV["MATCH_GIT_URL"].empty?
+      UI.message("Step 2: Syncing certificates...")
+      sync_certificates(type: "appstore")
+    else
+      UI.important("Step 2: Skipped - MATCH_GIT_URL not configured")
+      UI.message("To set up certificate management, configure MATCH_GIT_URL in .env")
+    end
+
+    UI.success("✅ Setup complete!")
+    UI.message("\nIMPORTANT: You must create the app manually in App Store Connect:")
+    UI.message("1. Go to https://appstoreconnect.apple.com")
+    UI.message("2. Click '+' → 'New App'")
+    UI.message("3. Platform: macOS")
+    UI.message("4. Name: #{APP_NAME}")
+    UI.message("5. Bundle ID: #{BUNDLE_ID}")
+    UI.message("6. SKU: #{SKU}")
+    UI.message("\nThen run: bundle exec fastlane mac beta")
+  end
+
+  desc "Sync certificates and provisioning profiles using match"
+  lane :sync_certificates do |options|
+    type = options[:type] || "appstore"
+
+    match(
+      type: type,
+      app_identifier: BUNDLE_ID,
+      readonly: is_ci,
+      api_key: api_key
+    )
+  end
+
+  # ============================================
+  # BUILD LANES
+  # ============================================
+
+  desc "Build the Tauri application for macOS"
+  lane :build do |options|
+    # Ensure we're on the right branch for releases
+    ensure_git_status_clean unless options[:skip_git_check]
+
+    # Install dependencies
+    sh("cd .. && npm ci")
+
+    # Build the Tauri app
+    build_type = options[:release] ? "release" : "debug"
+
+    if options[:release]
+      sh("cd .. && npm run tauri build")
+    else
+      sh("cd .. && npm run tauri build -- --debug")
+    end
+
+    UI.success("✅ Build complete!")
+  end
+
+  desc "Build release version"
+  lane :build_release do
+    build(release: true, skip_git_check: true)
+  end
+
+  # ============================================
+  # TESTING
+  # ============================================
+
+  desc "Run all tests"
+  lane :test do
+    # Run frontend tests
+    sh("cd .. && npm test")
+
+    # Run Rust tests if any
+    sh("cd #{TAURI_DIR} && cargo test")
+
+    UI.success("✅ All tests passed!")
+  end
+
+  desc "Run linting and type checking"
+  lane :lint do
+    sh("cd .. && npm run lint")
+    sh("cd .. && npm run check")
+    sh("cd #{TAURI_DIR} && cargo clippy -- -D warnings")
+
+    UI.success("✅ Linting complete!")
+  end
+
+  # ============================================
+  # SIGNING & NOTARIZATION
+  # ============================================
+
+  desc "Sign the macOS app for distribution"
+  lane :sign_app do |options|
+    app_path = options[:app_path] || "../src-tauri/target/release/bundle/macos/#{APP_NAME}.app"
+
+    # Sign with Developer ID for direct distribution
+    sh("codesign --force --deep --sign \"Developer ID Application: #{ENV['APPLE_TEAM_NAME']} (#{ENV['APPLE_TEAM_ID']})\" \"#{app_path}\"")
+
+    UI.success("✅ App signed!")
+  end
+
+  desc "Notarize the macOS app for Gatekeeper"
+  lane :notarize_app do |options|
+    app_path = options[:app_path] || "../src-tauri/target/release/bundle/macos/#{APP_NAME}.app"
+
+    notarize(
+      package: app_path,
+      bundle_id: BUNDLE_ID,
+      api_key: api_key
+    )
+
+    UI.success("✅ App notarized!")
+  end
+
+  # ============================================
+  # APP STORE DISTRIBUTION
+  # ============================================
+
+  desc "Submit to TestFlight for beta testing"
+  lane :beta do |options|
+    # Sync certificates
+    sync_certificates(type: "appstore") unless options[:skip_certificates]
+
+    # Run tests first
+    test unless options[:skip_tests]
+
+    # Build release
+    build_release
+
+    # Create pkg from app bundle for App Store submission
+    # Use absolute paths to avoid resolution issues
+    project_root = File.expand_path("..", Dir.pwd)
+    app_path = "#{project_root}/src-tauri/target/release/bundle/macos/#{APP_NAME}.app"
+    pkg_path = "#{project_root}/src-tauri/target/release/bundle/macos/#{APP_NAME}.pkg"
+
+    # Build and sign the pkg installer with the 3rd Party Mac Developer Installer certificate
+    sh("productbuild --component \"#{app_path}\" /Applications --sign \"3rd Party Mac Developer Installer: Max Reinharo Knobloch (RMDB25Z5H9)\" \"#{pkg_path}\"")
+
+    UI.message("Created pkg at: #{pkg_path}")
+
+    # Upload to TestFlight
+    upload_to_testflight(
+      app_identifier: BUNDLE_ID,
+      api_key: api_key,
+      pkg: pkg_path,
+      skip_waiting_for_build_processing: true,
+      distribute_external: false,
+      notify_external_testers: false
+    )
+
+    # Notify team
+    if ENV["SLACK_URL"]
+      slack(
+        message: "🚀 New beta build uploaded to TestFlight!",
+        success: true
+      )
+    end
+
+    UI.success("✅ Beta uploaded to TestFlight!")
+  end
+
+  desc "Submit to App Store for review"
+  lane :release do |options|
+    # Ensure we're on main branch
+    ensure_git_branch(branch: "main") unless options[:skip_branch_check]
+    ensure_git_status_clean unless options[:skip_git_check]
+
+    # Sync certificates
+    sync_certificates(type: "appstore") unless options[:skip_certificates]
+
+    # Run tests
+    test unless options[:skip_tests]
+
+    # Lint check
+    lint unless options[:skip_lint]
+
+    # Build release
+    build_release
+
+    # Create pkg from app bundle for App Store submission
+    # Use absolute paths to avoid resolution issues
+    project_root = File.expand_path("..", Dir.pwd)
+    app_path = "#{project_root}/src-tauri/target/release/bundle/macos/#{APP_NAME}.app"
+    pkg_path = "#{project_root}/src-tauri/target/release/bundle/macos/#{APP_NAME}.pkg"
+
+    # Build and sign the pkg installer with the 3rd Party Mac Developer Installer certificate
+    sh("productbuild --component \"#{app_path}\" /Applications --sign \"3rd Party Mac Developer Installer: Max Reinharo Knobloch (RMDB25Z5H9)\" \"#{pkg_path}\"")
+
+    UI.message("Created pkg at: #{pkg_path}")
+
+    # Upload to App Store
+    upload_to_app_store(
+      app_identifier: BUNDLE_ID,
+      api_key: api_key,
+      pkg: pkg_path,
+      skip_metadata: options[:skip_metadata] || false,
+      skip_screenshots: options[:skip_screenshots] || true,
+      submit_for_review: options[:submit] || false,
+      automatic_release: false,
+      phased_release: true,  # Gradual rollout over 7 days
+      precheck_include_in_app_purchases: false
+    )
+
+    # Tag release if submitting
+    if options[:submit]
+      version = get_version_number
+      add_git_tag(tag: "v#{version}")
+      push_git_tags
+    end
+
+    UI.success("✅ Release uploaded to App Store!")
+  end
+
+  # ============================================
+  # DIRECT DISTRIBUTION (DMG)
+  # ============================================
+
+  desc "Build and notarize DMG for direct distribution"
+  lane :distribute_dmg do |options|
+    # Build release
+    build_release
+
+    # Sign the app
+    sign_app
+
+    # Notarize
+    notarize_app unless options[:skip_notarize]
+
+    dmg_path = "../src-tauri/target/release/bundle/dmg/#{APP_NAME}_*.dmg"
+
+    UI.success("✅ DMG ready for distribution: #{dmg_path}")
+
+    dmg_path
+  end
+
+  # ============================================
+  # VERSION MANAGEMENT
+  # ============================================
+
+  desc "Bump version number"
+  lane :bump_version do |options|
+    bump_type = options[:type] || "patch" # major, minor, patch
+
+    # Read current version from tauri.conf.json
+    tauri_conf = JSON.parse(File.read("#{TAURI_DIR}/tauri.conf.json"))
+    current_version = tauri_conf["version"]
+
+    parts = current_version.split(".").map(&:to_i)
+
+    case bump_type
+    when "major"
+      parts[0] += 1
+      parts[1] = 0
+      parts[2] = 0
+    when "minor"
+      parts[1] += 1
+      parts[2] = 0
+    when "patch"
+      parts[2] += 1
+    end
+
+    new_version = parts.join(".")
+
+    # Update tauri.conf.json
+    tauri_conf["version"] = new_version
+    File.write("#{TAURI_DIR}/tauri.conf.json", JSON.pretty_generate(tauri_conf))
+
+    # Update package.json
+    sh("cd .. && npm version #{new_version} --no-git-tag-version")
+
+    # Update Cargo.toml
+    cargo_toml = File.read("#{TAURI_DIR}/Cargo.toml")
+    cargo_toml = cargo_toml.gsub(/^version = ".*"/, "version = \"#{new_version}\"")
+    File.write("#{TAURI_DIR}/Cargo.toml", cargo_toml)
+
+    # Commit version bump (use paths relative to repo root)
+    sh("cd .. && git add src-tauri/tauri.conf.json package.json package-lock.json src-tauri/Cargo.toml && git commit -m 'chore: bump version to #{new_version}'")
+
+    UI.success("✅ Version bumped to #{new_version}")
+
+    new_version
+  end
+
+  # ============================================
+  # UTILITY LANES
+  # ============================================
+
+  desc "Clean build artifacts"
+  lane :clean do
+    sh("cd #{TAURI_DIR} && cargo clean")
+    sh("cd .. && rm -rf dist node_modules/.vite")
+
+    UI.success("✅ Build artifacts cleaned!")
+  end
+
+  desc "Prepare metadata for App Store submission"
+  lane :prepare_metadata do
+    # Ensure metadata directory exists
+    sh("mkdir -p metadata/en-US")
+
+    # Create template files if they don't exist
+    metadata_files = {
+      "name.txt" => APP_NAME,
+      "subtitle.txt" => "Master Touch Typing",
+      "description.txt" => "Learn touch typing with structured lessons and practice exercises.",
+      "keywords.txt" => "typing,touch typing,keyboard,lessons,practice,education",
+      "privacy_url.txt" => "https://exceptionaltyping.com/privacy",
+      "support_url.txt" => "https://exceptionaltyping.com/support",
+      "marketing_url.txt" => "https://exceptionaltyping.com"
+    }
+
+    metadata_files.each do |file, content|
+      path = "metadata/en-US/#{file}"
+      unless File.exist?(path)
+        File.write(path, content)
+        UI.message("Created #{path}")
+      end
+    end
+
+    UI.success("✅ Metadata templates ready!")
+  end
+
+  # ============================================
+  # CI/CD LANES
+  # ============================================
+
+  desc "CI lane - runs tests and lint"
+  lane :ci do
+    lint
+    test
+  end
+
+  desc "Nightly build lane"
+  lane :nightly do
+    build_release
+
+    if ENV["SLACK_URL"]
+      slack(
+        message: "🌙 Nightly build completed successfully!",
+        success: true
+      )
+    end
+  end
+
+  # ============================================
+  # ERROR HANDLING
+  # ============================================
+
+  error do |lane, exception|
+    if ENV["SLACK_URL"]
+      slack(
+        message: "❌ Lane #{lane} failed: #{exception.message}",
+        success: false
+      )
+    end
+  end
+end
+
+# Helper to check if running in CI
+def is_ci
+  ENV["CI"] == "true" || ENV["GITHUB_ACTIONS"] == "true"
+end
+
+# Helper to get version from tauri.conf.json
+def get_version_number
+  tauri_conf = JSON.parse(File.read("#{TAURI_DIR}/tauri.conf.json"))
+  tauri_conf["version"]
+end

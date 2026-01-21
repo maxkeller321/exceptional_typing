@@ -1,0 +1,8 @@
+# Gemfile for Fastlane
+source "https://rubygems.org"
+
+gem "fastlane", "~> 2.226"
+
+# Plugins
+plugins_path = File.join(File.dirname(__FILE__), 'Pluginfile')
+eval_gemfile(plugins_path) if File.exist?(plugins_path)

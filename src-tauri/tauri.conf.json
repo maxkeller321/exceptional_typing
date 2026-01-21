@@ -1,0 +1,76 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Exceptional Typing",
+  "version": "0.1.1",
+  "identifier": "com.exceptionaltyping.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Exceptional Typing",
+        "width": 1200,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": true,
+        "transparent": false
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/256x256.png",
+      "icons/256x256@2x.png",
+      "icons/512x512.png",
+      "icons/512x512@2x.png",
+      "icons/icon.icns"
+    ],
+    "category": "Education",
+    "shortDescription": "Learn touch typing with structured lessons",
+    "longDescription": "Exceptional Typing is a modern typing tutor application that helps you master touch typing through structured lessons, real-time feedback, and detailed statistics tracking.",
+    "copyright": "Copyright © 2024",
+    "macOS": {
+      "entitlements": "Entitlements.plist",
+      "exceptionDomain": null,
+      "frameworks": [],
+      "providerShortName": null,
+      "signingIdentity": "Apple Distribution: Max Reinharo Knobloch (RMDB25Z5H9)",
+      "minimumSystemVersion": "12.0"
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": null,
+      "wix": null,
+      "nsis": {
+        "displayLanguageSelector": true
+      }
+    },
+    "linux": {
+      "appimage": {
+        "bundleMediaFramework": false
+      },
+      "deb": {
+        "depends": []
+      }
+    }
+  },
+  "plugins": {}
+}

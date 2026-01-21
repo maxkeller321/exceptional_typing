@@ -1,0 +1,64 @@
+# Matchfile for Exceptional Typing
+# https://docs.fastlane.tools/actions/match/
+#
+# Match manages your code signing certificates and provisioning profiles
+# in a private Git repository, ensuring consistency across team members.
+
+# Git repository for storing certificates (create a PRIVATE repo)
+git_url(ENV["MATCH_GIT_URL"] || "git@github.com:your-org/certificates.git")
+
+# Storage mode - git is recommended for teams
+storage_mode("git")
+
+# App identifier
+app_identifier(["com.exceptionaltyping.app"])
+
+# Apple Developer Portal username
+username(ENV["APPLE_ID"] || "your-apple-id@example.com")
+
+# Team ID
+team_id(ENV["APPLE_TEAM_ID"] || "YOUR_TEAM_ID")
+
+# Certificate types to manage:
+# - development: For development/debugging
+# - appstore: For App Store distribution
+# - developer_id: For direct distribution outside App Store
+
+# Platform
+platform("macos")
+
+# Read-only mode (recommended for CI)
+# Set via MATCH_READONLY=true in CI environment
+readonly(is_ci)
+
+# Force overwrite existing certificates (use with caution)
+force(false)
+
+# Clone depth for faster clones
+shallow_clone(true)
+
+# ============================================
+# SETUP INSTRUCTIONS
+# ============================================
+#
+# 1. Create a PRIVATE Git repository for certificates
+#    e.g., github.com/your-org/certificates
+#
+# 2. Set environment variables:
+#    export MATCH_GIT_URL="git@github.com:your-org/certificates.git"
+#    export MATCH_PASSWORD="your-encryption-password"
+#    export APPLE_ID="your-apple-id@example.com"
+#    export APPLE_TEAM_ID="YOUR_TEAM_ID"
+#
+# 3. Initialize match (run once per certificate type):
+#    bundle exec fastlane match development
+#    bundle exec fastlane match appstore
+#    bundle exec fastlane match developer_id
+#
+# 4. For CI, store MATCH_PASSWORD in secrets
+#
+# ============================================
+
+def is_ci
+  ENV["CI"] == "true" || ENV["GITHUB_ACTIONS"] == "true"
+end

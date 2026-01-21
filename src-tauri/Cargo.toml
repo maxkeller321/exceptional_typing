@@ -1,0 +1,43 @@
+[package]
+name = "exceptional-typing"
+version = "0.1.1"
+description = "A typing tutor application for learning touch typing"
+authors = ["you"]
+edition = "2021"
+license = "MIT"
+
+[lib]
+name = "exceptional_typing_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[[bin]]
+name = "exceptional-typing"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.1", features = ["macos-private-api"] }
+tauri-plugin-shell = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rusqlite = { version = "0.32", features = ["bundled"] }
+chrono = { version = "0.4", features = ["serde"] }
+rand = "0.8"
+thiserror = "1.0"
+dirs = "5.0"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-global-shortcut = "2.0"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

@@ -1,0 +1,23 @@
+# Appfile for Exceptional Typing
+# https://docs.fastlane.tools/advanced/Appfile/
+
+# App Identifier (Bundle ID)
+app_identifier("com.exceptionaltyping.exceptionaltyping")
+
+# Apple ID email address
+apple_id(ENV["APPLE_ID"] || "your-apple-id@example.com")
+
+# Team ID from Apple Developer Portal
+team_id(ENV["APPLE_TEAM_ID"] || "YOUR_TEAM_ID")
+
+# iTunes Connect Team ID (usually same as team_id)
+itc_team_id(ENV["APPLE_TEAM_ID"] || "YOUR_TEAM_ID")
+
+# For App Store Connect API (recommended over password auth)
+# Generate at: https://appstoreconnect.apple.com/access/api
+#
+# Set these environment variables:
+#   APP_STORE_CONNECT_API_KEY_KEY_ID - The key ID
+#   APP_STORE_CONNECT_API_KEY_ISSUER_ID - The issuer ID
+#   APP_STORE_CONNECT_API_KEY_KEY - The private key content (base64)
+#   APP_STORE_CONNECT_API_KEY_KEY_FILEPATH - Or path to .p8 file

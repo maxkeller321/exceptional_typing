@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Default: Dark Gold theme (Monkeytype inspired) */
+  --bg-primary: #232528;
+  --bg-secondary: #2c2e31;
+  --bg-tertiary: #363739;
+  --text-primary: #d1d0c5;
+  --text-secondary: #646669;
+  --text-muted: #4a4b4e;
+  --accent: #e2b714;
+  --accent-hover: #f0c53d;
+  --success: #7ec699;
+  --error: #ca4754;
+  --error-bg: rgba(202, 71, 84, 0.15);
+
+  font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark Blue theme */
+[data-theme="dark-blue"] {
+  --bg-primary: #1a1d23;
+  --bg-secondary: #242830;
+  --bg-tertiary: #2e333d;
+  --text-primary: #e4e8ef;
+  --text-secondary: #8892a2;
+  --text-muted: #5a6270;
+  --accent: #5c9cf5;
+  --accent-hover: #7db3ff;
+  --success: #7ec699;
+  --error: #f56565;
+  --error-bg: rgba(245, 101, 101, 0.15);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8e8e8;
+  --text-primary: #2d2d2d;
+  --text-secondary: #6b6b6b;
+  --text-muted: #a0a0a0;
+  --accent: #2563eb;
+  --accent-hover: #3b82f6;
+  --success: #22c55e;
+  --error: #dc2626;
+  --error-bg: rgba(220, 38, 38, 0.1);
+}
+
+/* Midnight theme (pure black) */
+[data-theme="midnight"] {
+  --bg-primary: #000000;
+  --bg-secondary: #0d0d0d;
+  --bg-tertiary: #1a1a1a;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --text-muted: #606060;
+  --accent: #00d4ff;
+  --accent-hover: #33ddff;
+  --success: #00ff88;
+  --error: #ff4444;
+  --error-bg: rgba(255, 68, 68, 0.15);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#app {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Custom scrollbar - minimal */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Selection color - theme-aware */
+::selection {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--text-primary);
+}

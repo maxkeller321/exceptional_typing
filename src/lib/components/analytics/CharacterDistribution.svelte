@@ -10,13 +10,13 @@
 
   let sortBy = $state<'speed' | 'accuracy'>('speed');
 
-  // Colors for each type (bluish/purplish palette)
+  // Colors for each type (distinct, easily distinguishable palette)
   const typeColors: Record<string, string> = {
-    lowercase: '#3b82f6',    // blue
-    uppercase: '#8b5cf6',    // purple
-    numbers: '#06b6d4',      // cyan
-    punctuation: '#6366f1',  // indigo
-    whitespace: '#a855f7',   // violet
+    lowercase: '#3b82f6',    // blue - primary, most common
+    uppercase: '#f59e0b',    // amber/orange - stands out for capitals
+    numbers: '#10b981',      // emerald/green - distinct for numbers
+    punctuation: '#ec4899',  // pink - stands out for punctuation
+    whitespace: '#64748b',   // slate/gray - neutral for spaces
   };
 
   let sortedTypes = $derived.by(() => {

@@ -1,5 +1,5 @@
 import { writable, derived, get } from 'svelte/store';
-import type { UserSettings, TypingMode, KeyboardLayoutId, Locale, AppTheme } from '../types';
+import type { UserSettings, TypingMode, KeyboardLayoutId, Locale, AppTheme, LessonCategory, Difficulty } from '../types';
 import { currentUser } from './user';
 
 // Default settings
@@ -10,13 +10,15 @@ export const DEFAULT_SETTINGS: UserSettings = {
   showProgressPercentage: true,
   fontSize: 24,
   typingMode: 'normal',
-  appTheme: 'dark-gold',
+  appTheme: 'dark-blue',
   codeTheme: 'vscode-dark',
   autoFormatCode: true,
   soundEffectsEnabled: false,
   keyboardLayout: 'qwerty-us',
   locale: 'en',
   hasCompletedOnboarding: false,
+  lessonPickerCategory: 'home_row',
+  lessonPickerDifficulty: 'all',
 };
 
 // Internal store
@@ -134,6 +136,10 @@ function createSettingsStore() {
     completeOnboarding: () => updateSetting('hasCompletedOnboarding', true),
     resetOnboarding: () => updateSetting('hasCompletedOnboarding', false),
 
+    // Lesson Picker Filters
+    setLessonPickerCategory: (v: LessonCategory | 'all') => updateSetting('lessonPickerCategory', v),
+    setLessonPickerDifficulty: (v: Difficulty | 'all') => updateSetting('lessonPickerDifficulty', v),
+
     // Reset to defaults
     reset: () => {
       set(DEFAULT_SETTINGS);
@@ -159,3 +165,5 @@ export const keyboardLayout = derived(settingsInternal, ($s) => $s.keyboardLayou
 export const locale = derived(settingsInternal, ($s) => $s.locale);
 export const appTheme = derived(settingsInternal, ($s) => $s.appTheme);
 export const hasCompletedOnboarding = derived(settingsInternal, ($s) => $s.hasCompletedOnboarding);
+export const lessonPickerCategory = derived(settingsInternal, ($s) => $s.lessonPickerCategory);
+export const lessonPickerDifficulty = derived(settingsInternal, ($s) => $s.lessonPickerDifficulty);

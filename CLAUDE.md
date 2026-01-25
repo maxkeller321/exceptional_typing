@@ -47,6 +47,7 @@ src/
 ├── lib/
 │   ├── components/     # Svelte components
 │   │   ├── analytics/  # Stats & heatmap components
+│   │   ├── onboarding/ # Tutorial overlay with spotlight effect
 │   │   ├── practice/   # Custom practice components
 │   │   ├── ui/         # Reusable UI components (Toggle, Slider, etc.)
 │   │   └── user/       # User profile components
@@ -86,7 +87,32 @@ The app uses CSS custom properties with `data-theme` attribute on `<html>`:
 1. All stores have corresponding `.test.ts` files
 2. Tests use Vitest with `@testing-library/svelte` where needed
 3. Run `npm test` before committing changes
-4. Current test count: ~220 tests
+4. Current test count: ~317 tests
+
+### IMPORTANT: Always Add Tests for New Features
+
+When implementing new features or fixing bugs, **always add corresponding tests**. This is critical for maintaining code quality:
+
+- **Bug fixes**: Add regression tests that would have caught the bug
+- **New features**: Add tests covering the expected behavior
+- **UI changes**: Test that user interactions work as expected
+- **Store changes**: Test state transitions and edge cases
+
+Examples of test coverage requirements:
+- **Navigation protection**: When fixing double-click issues, add tests verifying buttons are disabled during navigation
+- **Per-user features**: When implementing user-specific features (like onboarding), test that the feature respects user boundaries
+- **Persistence**: When adding persisted settings, test that values survive logout/login cycles
+
+### Onboarding Behavior
+
+The onboarding tutorial has specific requirements that must be tested:
+- Shows only ONCE per user (when profile is created)
+- Does NOT show on subsequent logins (returning users)
+- Can be manually rerun from Settings
+- Status persists per-user in localStorage
+- Check triggers only once per user session (not on every settings update)
+
+See [src/lib/components/onboarding/onboarding.test.ts](src/lib/components/onboarding/onboarding.test.ts) for examples.
 
 ## Svelte 5 Patterns
 

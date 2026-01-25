@@ -584,14 +584,22 @@ export const courseLessons: Lesson[] = [
   ...stage14Lessons,
 ];
 
-// Get lesson by ID
+// Get lesson by ID (searches all courses)
 export function getCourseLesson(lessonId: string): Lesson | undefined {
-  return courseLessons.find(l => l.id === lessonId);
+  // First check ten-finger course
+  const tenFingerLesson = courseLessons.find(l => l.id === lessonId);
+  if (tenFingerLesson) return tenFingerLesson;
+  // Then check CLI course
+  return cliCourseLessons.find(l => l.id === lessonId);
 }
 
-// Get stage by ID
+// Get stage by ID (searches all courses)
 export function getCourseStage(stageId: string): CourseStage | undefined {
-  return tenFingerCourse.stages.find(s => s.id === stageId);
+  // First check ten-finger course
+  const tenFingerStage = tenFingerCourse.stages.find(s => s.id === stageId);
+  if (tenFingerStage) return tenFingerStage;
+  // Then check CLI course
+  return cliCourse.stages.find(s => s.id === stageId);
 }
 
 // ============================================

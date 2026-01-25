@@ -48,6 +48,19 @@ npm install
 cargo install tauri-cli
 ```
 
+### Environment Variables
+
+Copy the example environment file and configure your credentials:
+
+```bash
+cp .env.example .env
+```
+
+See [.env.example](.env.example) for all available variables:
+- **GitHub MCP Server**: Personal access token for Claude Code GitHub integration
+- **Apple Developer**: Credentials for Fastlane and CI/CD releases
+- **App Store Connect**: API keys for automated uploads
+
 ### Development
 
 ```bash

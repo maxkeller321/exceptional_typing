@@ -170,7 +170,8 @@
 
 <style>
   .stats-display {
-    @apply w-full max-w-3xl mx-auto;
+    @apply w-full mx-auto;
+    max-width: 1400px;
   }
 
   .stats-title {
@@ -179,7 +180,23 @@
   }
 
   .stats-grid {
-    @apply grid grid-cols-2 md:grid-cols-3 gap-3 mb-6;
+    @apply grid gap-3 mb-6;
+    /* Use auto-fill to wrap cards and ensure all are visible */
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  /* On medium screens, show 4-5 cards per row */
+  @media (min-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+  }
+
+  /* On larger screens, show all 9 cards in a row */
+  @media (min-width: 1400px) {
+    .stats-grid {
+      grid-template-columns: repeat(9, 1fr);
+    }
   }
 
   .stat-card {

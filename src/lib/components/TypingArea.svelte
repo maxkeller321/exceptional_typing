@@ -4,6 +4,7 @@
   import VirtualKeyboard from './VirtualKeyboard.svelte';
   import type { Task, TypingState, TaskResult } from '../types';
   import { highlightCode, getTokenColor, type HighlightToken, type CodeTheme } from '../utils/highlight';
+  import { splitIntoWordUnits, type WordUnit } from '../utils/wordWrapper';
 
   interface Props {
     task: Task;
@@ -38,6 +39,10 @@
 
   // Local state that subscribes to stores
   let targetText = $state('');
+
+  // Word units for proper word wrapping (words don't break mid-word)
+  let wordUnits = $derived(splitIntoWordUnits(targetText));
+
   let typingState = $state<TypingState>({
     currentIndex: 0,
     typed: '',
@@ -217,8 +222,8 @@
     <div class="progress-fill" style="width: {progress}%"></div>
   </div>
 
-  <!-- Text display -->
-  <div class="text-display" class:code-mode={task?.language}>{#each targetText.split('') as char, index}{@const status = getCharStatus(index)}{@const syntaxColor = getSyntaxColor(index)}<span class="char {status}" class:space={char === ' '} style={status === 'pending' && syntaxColor ? `color: ${syntaxColor}` : ''}>{char === ' ' ? '\u00A0' : char}{#if status === 'current'}<span class="cursor"></span>{/if}</span>{/each}</div>
+  <!-- Text display - uses word units to prevent mid-word line breaks -->
+  <div class="text-display" class:code-mode={task?.language}>{#each wordUnits as unit}{#if unit.isNewline}<br />{:else}<span class="word-unit" class:space-unit={unit.isSpace}>{#each unit.text.split('') as char, charIndex}{@const globalIndex = unit.startIndex + charIndex}{@const status = getCharStatus(globalIndex)}{@const syntaxColor = getSyntaxColor(globalIndex)}<span class="char {status}" class:space={char === ' '} style={status === 'pending' && syntaxColor ? `color: ${syntaxColor}` : ''}>{char === ' ' ? '\u00A0' : char}{#if status === 'current'}<span class="cursor"></span>{/if}</span>{/each}</span>{/if}{/each}</div>
 
   <!-- Status messages -->
   {#if typingState.isPaused}
@@ -240,7 +245,8 @@
 
   {#if !isActive && !typingState.isComplete}
     <div class="focus-hint">
-      <p>Click here to start typing</p>
+      <p class="focus-hint-title">Paused</p>
+      <p class="focus-hint-subtitle">Click here to start typing</p>
     </div>
   {/if}
 </div>
@@ -290,7 +296,7 @@
   }
 
   .text-display {
-    @apply text-xl leading-loose font-mono flex flex-wrap;
+    @apply text-xl leading-loose font-mono;
     letter-spacing: 0.02em;
   }
 
@@ -298,7 +304,17 @@
     @apply leading-relaxed;
     font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
     font-size: 1rem;
-    display: block;
+  }
+
+  /* Word units prevent mid-word line breaks */
+  .word-unit {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  /* Space units can break after them (natural wrap points) */
+  .word-unit.space-unit {
+    white-space: pre;
   }
 
   .char {
@@ -306,7 +322,7 @@
   }
 
   .text-display:not(.code-mode) .char {
-    display: inline-block;
+    display: inline;
   }
 
   .text-display.code-mode .char {
@@ -370,9 +386,18 @@
   }
 
   .focus-hint {
-    @apply absolute inset-0 flex items-center justify-center;
+    @apply absolute inset-0 flex flex-col items-center justify-center gap-2;
     @apply rounded-lg cursor-pointer;
-    background-color: rgba(35, 37, 40, 0.7);
+    background-color: rgba(35, 37, 40, 0.85);
+  }
+
+  .focus-hint-title {
+    @apply text-xl font-medium;
+    color: var(--text-primary);
+  }
+
+  .focus-hint-subtitle {
+    @apply text-sm;
     color: var(--text-muted);
   }
 </style>

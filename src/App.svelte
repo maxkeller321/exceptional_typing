@@ -15,9 +15,10 @@
   import AppIcon from './lib/components/AppIcon.svelte';
   import KeyboardLayoutSelector from './lib/components/KeyboardLayoutSelector.svelte';
   import OnboardingTutorial from './lib/components/onboarding/OnboardingTutorial.svelte';
-  import { currentView, navigateTo } from './lib/stores/app';
-  import { isUserSelected, loadUsers } from './lib/stores/user';
-  import { settingsStore } from './lib/stores/settings';
+  import { currentView, navigateTo, selectedLesson } from './lib/stores/app';
+  import { isUserSelected, loadUsers, currentUser } from './lib/stores/user';
+  import { settingsStore, hasCompletedOnboarding } from './lib/stores/settings';
+  import { get } from 'svelte/store';
   import { completedToday } from './lib/stores/daily';
   import { APP_NAME } from './lib/constants';
   import type { AppView, UserSettings } from './lib/types';
@@ -27,6 +28,14 @@
   let settings = $state<UserSettings | null>(null);
   let dailyCompleted = $state(false);
   let showOnboarding = $state(false);
+
+  // Lesson session key - incremented each time a lesson is selected
+  // This forces LessonView to re-mount with fresh state
+  let lessonSessionKey = $state(0);
+
+  // Track if we've already checked onboarding for the current user session
+  // This prevents showing onboarding multiple times on settings updates
+  let onboardingCheckedForUser = $state<number | null>(null);
 
   // Subscribe to stores
   onMount(() => {
@@ -38,19 +47,19 @@
 
     const unsubUser = isUserSelected.subscribe((selected) => {
       hasUser = selected;
+      // Reset onboarding check when user logs out
+      if (!selected) {
+        onboardingCheckedForUser = null;
+      }
     });
 
     const unsubSettings = settingsStore.subscribe((s) => {
       settings = s;
-      // Apply theme to document
-      if (s?.appTheme && s.appTheme !== 'dark-gold') {
+      // Apply theme to document (dark-blue is the default, so it doesn't need data-theme attribute)
+      if (s?.appTheme && s.appTheme !== 'dark-blue') {
         document.documentElement.setAttribute('data-theme', s.appTheme);
       } else {
         document.documentElement.removeAttribute('data-theme');
-      }
-      // Show onboarding for new users
-      if (s && !s.hasCompletedOnboarding) {
-        showOnboarding = true;
       }
     });
 
@@ -58,11 +67,37 @@
       dailyCompleted = c;
     });
 
+    // Increment lesson session key when a new lesson is selected
+    // This forces LessonView to re-mount with fresh state
+    const unsubLesson = selectedLesson.subscribe((lesson) => {
+      if (lesson) {
+        lessonSessionKey++;
+      }
+    });
+
+    // Subscribe to currentUser to check onboarding status once per user login
+    const unsubCurrentUser = currentUser.subscribe((user) => {
+      if (user && user.id !== onboardingCheckedForUser) {
+        // Mark that we've checked onboarding for this user
+        onboardingCheckedForUser = user.id;
+
+        // Use a small delay to ensure settings are loaded for this user
+        setTimeout(() => {
+          const completed = get(hasCompletedOnboarding);
+          if (!completed) {
+            showOnboarding = true;
+          }
+        }, 50);
+      }
+    });
+
     return () => {
       unsubView();
       unsubUser();
       unsubSettings();
       unsubDaily();
+      unsubLesson();
+      unsubCurrentUser();
     };
   });
 
@@ -90,9 +125,12 @@
 
 {#if !hasUser}
   <UserPicker />
-{:else if showOnboarding}
-  <OnboardingTutorial onComplete={() => (showOnboarding = false)} />
 {:else}
+  <!-- Onboarding overlay (rendered on top of app) -->
+  {#if showOnboarding}
+    <OnboardingTutorial onComplete={() => (showOnboarding = false)} />
+  {/if}
+
   <div class="app">
     <!-- Navigation sidebar -->
     <nav class="sidebar">
@@ -183,7 +221,9 @@
         </div>
       {:else if view === 'lesson'}
         <div class="page lesson-page">
-          <LessonView />
+          {#key lessonSessionKey}
+            <LessonView />
+          {/key}
         </div>
       {:else if view === 'practice'}
         <div class="page practice-page">
@@ -359,6 +399,22 @@
               </div>
             </section>
 
+            <!-- Tutorial -->
+            <section class="settings-section">
+              <h2 class="section-title">Tutorial</h2>
+              <div class="settings-list">
+                <div class="setting-item">
+                  <div class="setting-info">
+                    <span class="setting-label">App Tour</span>
+                    <span class="setting-description">Replay the interactive tutorial to learn about app features</span>
+                  </div>
+                  <button class="tutorial-btn" onclick={() => { settingsStore.resetOnboarding(); showOnboarding = true; }}>
+                    Rerun Tutorial
+                  </button>
+                </div>
+              </div>
+            </section>
+
             <!-- Reset -->
             <section class="settings-section">
               <h2 class="section-title">Reset</h2>
@@ -449,8 +505,18 @@
 
   .page {
     @apply p-8 min-h-full;
-    max-width: 1200px;
+    max-width: 1800px;
     margin: 0 auto;
+  }
+
+  /* Stats page should use more width on large screens */
+  .page.stats-page {
+    max-width: none;
+  }
+
+  /* Lesson page should use available width for better experience */
+  .page.lesson-page {
+    max-width: none;
   }
 
   .page-header {
@@ -515,5 +581,17 @@
 
   .reset-btn:hover {
     background-color: rgba(202, 71, 84, 0.25);
+  }
+
+  .tutorial-btn {
+    @apply px-4 py-2 rounded;
+    @apply transition-colors font-medium text-sm whitespace-nowrap;
+    background-color: rgba(99, 102, 241, 0.15);
+    color: #6366f1;
+    border: none;
+  }
+
+  .tutorial-btn:hover {
+    background-color: rgba(99, 102, 241, 0.25);
   }
 </style>

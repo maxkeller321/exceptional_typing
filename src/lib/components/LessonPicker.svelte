@@ -3,7 +3,12 @@
   import { get } from 'svelte/store';
   import { allLessons } from '../data/lessons';
   import { selectLesson, lessonProgress } from '../stores/app';
-  import { typingMode } from '../stores/settings';
+  import {
+    typingMode,
+    lessonPickerCategory,
+    lessonPickerDifficulty,
+    settingsStore,
+  } from '../stores/settings';
   import type { Lesson, LessonCategory, Difficulty, LessonProgress } from '../types';
 
   interface Props {
@@ -24,11 +29,31 @@
     const unsubMode = typingMode.subscribe(m => {
       currentMode = m;
     });
+    // Load persisted filter state
+    const unsubCategory = lessonPickerCategory.subscribe(c => {
+      selectedCategory = c;
+    });
+    const unsubDifficulty = lessonPickerDifficulty.subscribe(d => {
+      selectedDifficulty = d;
+    });
     return () => {
       unsubProgress();
       unsubMode();
+      unsubCategory();
+      unsubDifficulty();
     };
   });
+
+  // Save filter state when changed
+  function setCategory(cat: LessonCategory | 'all'): void {
+    selectedCategory = cat;
+    settingsStore.setLessonPickerCategory(cat);
+  }
+
+  function setDifficulty(diff: Difficulty | 'all'): void {
+    selectedDifficulty = diff;
+    settingsStore.setLessonPickerDifficulty(diff);
+  }
 
   // Categories available based on typing mode
   // Coder mode shows code, commands, and shortcuts categories
@@ -126,7 +151,7 @@
           <button
             class="filter-btn"
             class:active={selectedCategory === cat.value}
-            onclick={() => (selectedCategory = cat.value)}
+            onclick={() => setCategory(cat.value)}
           >
             {cat.label}
           </button>
@@ -141,7 +166,7 @@
           <button
             class="filter-btn"
             class:active={selectedDifficulty === diff.value}
-            onclick={() => (selectedDifficulty = diff.value)}
+            onclick={() => setDifficulty(diff.value)}
           >
             <span class="difficulty-dot {diff.color}"></span>
             {diff.label}
@@ -190,8 +215,8 @@
       <button
         class="reset-btn"
         onclick={() => {
-          selectedCategory = 'all';
-          selectedDifficulty = 'all';
+          setCategory('all');
+          setDifficulty('all');
         }}
       >
         Reset filters

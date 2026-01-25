@@ -3,18 +3,18 @@
 @tailwind utilities;
 
 :root {
-  /* Default: Dark Gold theme (Monkeytype inspired) */
-  --bg-primary: #232528;
-  --bg-secondary: #2c2e31;
-  --bg-tertiary: #363739;
-  --text-primary: #d1d0c5;
-  --text-secondary: #646669;
-  --text-muted: #4a4b4e;
-  --accent: #e2b714;
-  --accent-hover: #f0c53d;
+  /* Default: Dark Blue theme */
+  --bg-primary: #1a1d23;
+  --bg-secondary: #242830;
+  --bg-tertiary: #2e333d;
+  --text-primary: #e4e8ef;
+  --text-secondary: #8892a2;
+  --text-muted: #5a6270;
+  --accent: #5c9cf5;
+  --accent-hover: #7db3ff;
   --success: #7ec699;
-  --error: #ca4754;
-  --error-bg: rgba(202, 71, 84, 0.15);
+  --error: #f56565;
+  --error-bg: rgba(245, 101, 101, 0.15);
 
   font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
   font-size: 16px;
@@ -29,19 +29,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dark Blue theme */
-[data-theme="dark-blue"] {
-  --bg-primary: #1a1d23;
-  --bg-secondary: #242830;
-  --bg-tertiary: #2e333d;
-  --text-primary: #e4e8ef;
-  --text-secondary: #8892a2;
-  --text-muted: #5a6270;
-  --accent: #5c9cf5;
-  --accent-hover: #7db3ff;
+/* Dark Gold theme (Monkeytype inspired) */
+[data-theme="dark-gold"] {
+  --bg-primary: #232528;
+  --bg-secondary: #2c2e31;
+  --bg-tertiary: #363739;
+  --text-primary: #d1d0c5;
+  --text-secondary: #646669;
+  --text-muted: #4a4b4e;
+  --accent: #e2b714;
+  --accent-hover: #f0c53d;
   --success: #7ec699;
-  --error: #f56565;
-  --error-bg: rgba(245, 101, 101, 0.15);
+  --error: #ca4754;
+  --error-bg: rgba(202, 71, 84, 0.15);
 }
 
 /* Light theme */

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { settingsStore } from '../../stores/settings';
   import { APP_NAME } from '../../constants';
+  import SpotlightOverlay from './SpotlightOverlay.svelte';
 
   interface Props {
     onComplete: () => void;
@@ -8,7 +9,7 @@
 
   let { onComplete }: Props = $props();
 
-  // Onboarding steps
+  // Onboarding steps with target selectors for highlighting
   const steps = [
     {
       id: 'welcome',
@@ -20,10 +21,25 @@
         'Practice with code snippets',
         'Track your progress over time',
       ],
+      targetSelector: null, // No highlight for welcome
+      tooltipPosition: 'center' as const,
+    },
+    {
+      id: 'sidebar',
+      title: 'Navigation Sidebar',
+      description: 'Use the sidebar to navigate between different sections of the app.',
+      icon: '📍',
+      features: [
+        'Quick access to all features',
+        'Visual indicators for active section',
+        'Daily test completion badge',
+      ],
+      targetSelector: '.sidebar',
+      tooltipPosition: 'right' as const,
     },
     {
       id: 'lessons',
-      title: 'Structured Lessons',
+      title: 'Lessons',
       description: 'Start with the basics and progress through increasingly challenging exercises.',
       icon: '🏠',
       features: [
@@ -31,17 +47,8 @@
         'Numbers, symbols, and special characters',
         'Real code examples for programmers',
       ],
-    },
-    {
-      id: 'course',
-      title: '10 Fingers Course',
-      description: 'Follow a structured curriculum to learn proper touch typing from scratch.',
-      icon: '🎓',
-      features: [
-        '14 stages from beginner to expert',
-        'Unlock stages as you improve',
-        'Command line course for developers',
-      ],
+      targetSelector: '.nav-item:nth-child(1)',
+      tooltipPosition: 'right' as const,
     },
     {
       id: 'practice',
@@ -53,6 +60,8 @@
         'Save snippets for later',
         'Syntax highlighting for 15+ languages',
       ],
+      targetSelector: '.nav-item:nth-child(2)',
+      tooltipPosition: 'right' as const,
     },
     {
       id: 'daily',
@@ -64,21 +73,38 @@
         'Build a daily practice habit',
         'See your improvement trends',
       ],
+      targetSelector: '.nav-item:nth-child(3)',
+      tooltipPosition: 'right' as const,
+    },
+    {
+      id: 'course',
+      title: '10 Fingers Course',
+      description: 'Follow a structured curriculum to learn proper touch typing from scratch.',
+      icon: '🎓',
+      features: [
+        '14 stages from beginner to expert',
+        'Unlock stages as you improve',
+        'Command line course for developers',
+      ],
+      targetSelector: '.nav-item:nth-child(4)',
+      tooltipPosition: 'right' as const,
     },
     {
       id: 'stats',
-      title: 'Detailed Statistics',
+      title: 'Statistics',
       description: 'Track every aspect of your typing with detailed analytics.',
       icon: '📊',
       features: [
         'WPM and accuracy tracking',
         'Problem key identification',
-        'Finger and hand analysis',
+        'Activity heatmap over time',
       ],
+      targetSelector: '.nav-item:nth-child(5)',
+      tooltipPosition: 'right' as const,
     },
     {
       id: 'settings',
-      title: 'Customize Your Experience',
+      title: 'Settings',
       description: 'Adjust settings to match your preferences and keyboard layout.',
       icon: '⚙️',
       features: [
@@ -86,6 +112,21 @@
         'Keyboard layouts (QWERTY, Dvorak, Colemak, etc.)',
         'Virtual keyboard with finger guides',
       ],
+      targetSelector: '.nav-item:nth-child(6)',
+      tooltipPosition: 'right' as const,
+    },
+    {
+      id: 'mode-toggle',
+      title: 'Typing Mode',
+      description: 'Switch between Normal and Coder mode for different practice experiences.',
+      icon: '🔄',
+      features: [
+        'Normal mode: Standard typing practice',
+        'Coder mode: Programming-focused exercises',
+        'Toggle anytime from the sidebar',
+      ],
+      targetSelector: '.mode-section',
+      tooltipPosition: 'right' as const,
     },
     {
       id: 'ready',
@@ -97,6 +138,8 @@
         'Or jump into any lesson that interests you',
         'Practice regularly for best results',
       ],
+      targetSelector: null,
+      tooltipPosition: 'center' as const,
     },
   ];
 
@@ -142,12 +185,51 @@
       handleSkip();
     }
   }
+
+  // Calculate tooltip position based on target element
+  let tooltipStyle = $derived.by(() => {
+    if (!currentStepData.targetSelector || currentStepData.tooltipPosition === 'center') {
+      return 'top: 50%; left: 50%; transform: translate(-50%, -50%);';
+    }
+
+    const element = document.querySelector(currentStepData.targetSelector);
+    if (!element) {
+      return 'top: 50%; left: 50%; transform: translate(-50%, -50%);';
+    }
+
+    const rect = element.getBoundingClientRect();
+    const padding = 20;
+
+    switch (currentStepData.tooltipPosition) {
+      case 'right':
+        return `top: ${Math.max(100, rect.top)}px; left: ${rect.right + padding}px;`;
+      case 'left':
+        return `top: ${Math.max(100, rect.top)}px; right: ${window.innerWidth - rect.left + padding}px;`;
+      case 'bottom':
+        return `top: ${rect.bottom + padding}px; left: ${rect.left}px;`;
+      case 'top':
+        return `bottom: ${window.innerHeight - rect.top + padding}px; left: ${rect.left}px;`;
+      default:
+        return 'top: 50%; left: 50%; transform: translate(-50%, -50%);';
+    }
+  });
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<div class="onboarding-backdrop" role="dialog" aria-modal="true">
-  <div class="onboarding-modal">
+<div class="onboarding-container" role="dialog" aria-modal="true">
+  <!-- Spotlight overlay with cutout -->
+  <SpotlightOverlay targetSelector={currentStepData.targetSelector} />
+
+  <!-- Click blocker (allows clicking through cutout) -->
+  <div class="click-blocker"></div>
+
+  <!-- Tooltip/Modal -->
+  <div
+    class="onboarding-tooltip"
+    class:centered={!currentStepData.targetSelector}
+    style={tooltipStyle}
+  >
     <!-- Progress bar -->
     <div class="progress-container">
       <div class="progress-bar" style="width: {progress}%"></div>
@@ -218,18 +300,28 @@
 </div>
 
 <style>
-  .onboarding-backdrop {
+  .onboarding-container {
     @apply fixed inset-0;
-    @apply flex items-center justify-center p-4;
-    @apply z-50;
-    background-color: rgba(20, 21, 23, 0.95);
+    z-index: 9999;
   }
 
-  .onboarding-modal {
-    @apply rounded-xl shadow-2xl;
-    @apply w-full max-w-lg p-8;
-    @apply relative;
+  .click-blocker {
+    @apply fixed inset-0;
+    z-index: 9997;
+  }
+
+  .onboarding-tooltip {
+    @apply fixed rounded-xl shadow-2xl;
+    @apply w-full max-w-md p-6;
     background-color: var(--bg-secondary);
+    z-index: 10000;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .onboarding-tooltip.centered {
+    @apply top-1/2 left-1/2;
+    transform: translate(-50%, -50%);
   }
 
   .progress-container {
@@ -243,7 +335,7 @@
   }
 
   .skip-btn {
-    @apply absolute top-4 right-4;
+    @apply absolute top-3 right-3;
     @apply text-xs px-2 py-1 rounded;
     @apply transition-colors;
     color: var(--text-muted);
@@ -259,39 +351,39 @@
   }
 
   .step-icon {
-    @apply text-5xl mb-4;
+    @apply text-4xl mb-3;
   }
 
   .step-title {
-    @apply text-2xl font-semibold mb-3;
+    @apply text-xl font-semibold mb-2;
     color: var(--text-primary);
   }
 
   .step-description {
-    @apply text-sm mb-6;
+    @apply text-sm mb-4;
     color: var(--text-secondary);
     line-height: 1.6;
   }
 
   .feature-list {
-    @apply text-left space-y-3 mb-8;
+    @apply text-left space-y-2 mb-6;
     @apply max-w-sm mx-auto;
   }
 
   .feature-item {
-    @apply flex items-start gap-3 text-sm;
+    @apply flex items-start gap-2 text-sm;
     color: var(--text-primary);
   }
 
   .feature-check {
-    @apply flex-shrink-0 w-5 h-5 rounded-full;
+    @apply flex-shrink-0 w-4 h-4 rounded-full;
     @apply flex items-center justify-center text-xs font-bold;
     background-color: rgba(126, 198, 153, 0.2);
     color: var(--success);
   }
 
   .step-indicators {
-    @apply flex justify-center gap-2 mb-6;
+    @apply flex justify-center gap-1.5 mb-4;
   }
 
   .step-dot {
@@ -305,7 +397,7 @@
   }
 
   .step-dot.active {
-    @apply w-6;
+    @apply w-5;
     background-color: var(--accent);
   }
 
@@ -319,7 +411,7 @@
   }
 
   .btn-secondary {
-    @apply flex-1 px-4 py-2.5 rounded-lg;
+    @apply flex-1 px-4 py-2 rounded-lg;
     @apply transition-colors text-sm font-medium;
     background-color: var(--bg-tertiary);
     color: var(--text-secondary);
@@ -335,7 +427,7 @@
   }
 
   .btn-primary {
-    @apply flex-1 px-4 py-2.5 rounded-lg;
+    @apply flex-1 px-4 py-2 rounded-lg;
     @apply transition-colors text-sm font-medium;
     background-color: var(--accent);
     color: var(--bg-primary);
@@ -346,7 +438,7 @@
   }
 
   .keyboard-hint {
-    @apply text-center text-xs mt-4;
+    @apply text-center text-xs mt-3;
     color: var(--text-muted);
   }
 

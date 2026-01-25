@@ -1,20 +1,28 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import LessonView from './LessonView.svelte';
-  import { courseStore, isEnrolled, courseProgressPercent, currentStageId } from '../stores/course';
-  import { selectLesson, currentView, navigateTo } from '../stores/app';
-  import { tenFingerCourse, getCourseLesson, getCourseStage } from '../data/courses';
-  import type { CourseStage, CourseProgress, Lesson } from '../types';
+  import { courseStore, isEnrolled, courseProgressPercent, currentStageId, currentSkippableStageId } from '../stores/course';
+  import { selectLesson, currentView, navigateTo, lessonProgress } from '../stores/app';
+  import { allCourses, getCourseLesson, getCourseStage } from '../data/courses';
+  import type { Course, CourseStage, CourseProgress, Lesson, LessonProgress } from '../types';
 
   // State
+  let selectedCourse = $state<Course>(allCourses[0]);
   let enrolled = $state(false);
   let progress = $state(0);
   let currentStage = $state<string | null>(null);
   let selectedStageId = $state<string | null>(null);
   let selectedLessonId = $state<string | null>(null);
   let isInLesson = $state(false);
+  let progressMap = $state<Map<string, LessonProgress>>(new Map());
 
   onMount(() => {
+    // Subscribe to the selected course from the store
+    const unsubSelectedCourse = courseStore.selectedCourse.subscribe((c) => {
+      selectedCourse = c;
+      // Reset selected stage when course changes
+      selectedStageId = null;
+    });
     const unsubEnrolled = isEnrolled.subscribe((e) => {
       enrolled = e;
     });
@@ -27,17 +35,31 @@
         selectedStageId = s;
       }
     });
+    const unsubLessonProgress = lessonProgress.subscribe((p) => {
+      progressMap = p;
+    });
+    const unsubSkippable = currentSkippableStageId.subscribe((id) => {
+      skippableStageId = id;
+    });
 
     return () => {
+      unsubSelectedCourse();
       unsubEnrolled();
       unsubProgress();
       unsubStage();
+      unsubLessonProgress();
+      unsubSkippable();
     };
   });
 
+  function handleSelectCourse(courseId: string) {
+    courseStore.selectCourse(courseId);
+    selectedStageId = null;
+  }
+
   function handleEnroll() {
     courseStore.enroll();
-    selectedStageId = tenFingerCourse.stages[0].id;
+    selectedStageId = selectedCourse.stages[0].id;
   }
 
   function handleSelectStage(stageId: string) {
@@ -52,10 +74,21 @@
     selectedStageId = stageId;
   }
 
+  function handleSkipCurrentStage(stageId: string, event: MouseEvent) {
+    event.stopPropagation();
+    // Skip the current stage and move to the next one
+    courseStore.skipCurrentStage();
+    // Update selected stage to the new current stage
+    const progress = courseStore.getProgress();
+    if (progress?.currentStageId) {
+      selectedStageId = progress.currentStageId;
+    }
+  }
+
   function handleStartLesson(lessonId: string) {
     const lesson = getCourseLesson(lessonId);
     if (lesson) {
-      selectLesson(lesson);
+      selectLesson(lesson, 'course');
     }
   }
 
@@ -80,30 +113,67 @@
       .map((id) => getCourseLesson(id))
       .filter((l): l is Lesson => l !== undefined);
   });
+
+  // Check if a lesson is completed (all tasks passed)
+  function isLessonCompleted(lessonId: string, totalTasks: number): boolean {
+    const progress = progressMap.get(lessonId);
+    if (!progress) return false;
+    return progress.completedTasks >= totalTasks;
+  }
+
+  // Get lesson progress for display
+  function getLessonProgress(lessonId: string): { completed: number; total: number } | null {
+    const progress = progressMap.get(lessonId);
+    if (!progress) return null;
+    return { completed: progress.completedTasks, total: progress.totalTasks };
+  }
+
+  // Find the current skippable stage (the one the user is working on, to skip it)
+  // Use the reactive derived store instead of calling the method directly
+  let skippableStageId = $state<string | null>(null);
 </script>
 
 <div class="course-view">
+  <!-- Course Selector Tabs -->
+  <div class="course-tabs">
+    {#each allCourses as course}
+      {@const isSelected = selectedCourse.id === course.id}
+      {@const courseEnrolled = courseStore.isEnrolled(course.id)}
+      <button
+        class="course-tab"
+        class:selected={isSelected}
+        onclick={() => handleSelectCourse(course.id)}
+      >
+        <span class="tab-icon">{course.id === 'ten-finger' ? '⌨️' : '🖥️'}</span>
+        <span class="tab-name">{course.name}</span>
+        {#if courseEnrolled}
+          <span class="tab-badge enrolled">Started</span>
+        {/if}
+      </button>
+    {/each}
+  </div>
+
   {#if !enrolled}
     <!-- Enrollment Screen -->
     <div class="enroll-panel">
       <div class="enroll-content">
-        <div class="enroll-icon">🎓</div>
-        <h2>10 Fingers (touch typing)</h2>
+        <div class="enroll-icon">{selectedCourse.id === 'ten-finger' ? '⌨️' : '💻'}</div>
+        <h2>{selectedCourse.name}</h2>
         <p class="enroll-description">
-          Master touch typing from the ground up. This comprehensive course will teach you proper finger placement and build your speed step by step.
+          {selectedCourse.description}
         </p>
 
         <div class="course-highlights">
           <div class="highlight">
-            <span class="highlight-number">14</span>
+            <span class="highlight-number">{selectedCourse.stages.length}</span>
             <span class="highlight-label">Stages</span>
           </div>
           <div class="highlight">
-            <span class="highlight-number">50+</span>
+            <span class="highlight-number">{selectedCourse.stages.reduce((sum, s) => sum + s.lessons.length, 0)}</span>
             <span class="highlight-label">Lessons</span>
           </div>
           <div class="highlight">
-            <span class="highlight-number">200+</span>
+            <span class="highlight-number">{selectedCourse.stages.reduce((sum, s) => sum + s.lessons.length * 4, 0)}+</span>
             <span class="highlight-label">Exercises</span>
           </div>
         </div>
@@ -134,7 +204,7 @@
         <div class="stages-panel">
           <h3>Stages</h3>
           <div class="stages-list">
-            {#each tenFingerCourse.stages as stage, index}
+            {#each selectedCourse.stages as stage, index}
               {@const status = getStageStatus(stage.id)}
               <div class="stage-row">
                 <button
@@ -167,11 +237,11 @@
                     </span>
                   </div>
                 </button>
-                {#if status === 'locked'}
+                {#if stage.id === skippableStageId}
                   <button
                     class="skip-btn"
-                    onclick={(e) => handleSkipToStage(stage.id, e)}
-                    title="Skip to this stage"
+                    onclick={(e) => handleSkipCurrentStage(stage.id, e)}
+                    title="Skip this stage"
                   >
                     Skip
                   </button>
@@ -191,18 +261,32 @@
 
             <div class="lessons-list">
               {#each stageLessons as lesson, index}
-                <div class="lesson-card">
-                  <div class="lesson-number">{index + 1}</div>
+                {@const completed = isLessonCompleted(lesson.id, lesson.tasks.length)}
+                {@const lessonProg = getLessonProgress(lesson.id)}
+                <div class="lesson-card" class:completed>
+                  <div class="lesson-number" class:completed>
+                    {#if completed}
+                      ✓
+                    {:else}
+                      {index + 1}
+                    {/if}
+                  </div>
                   <div class="lesson-info">
                     <span class="lesson-name">{lesson.name}</span>
                     <span class="lesson-description">{lesson.description}</span>
-                    <span class="lesson-tasks">{lesson.tasks.length} tasks</span>
+                    <span class="lesson-tasks">
+                      {lesson.tasks.length} tasks
+                      {#if lessonProg && lessonProg.completed > 0}
+                        <span class="lesson-progress">({lessonProg.completed}/{lessonProg.total})</span>
+                      {/if}
+                    </span>
                   </div>
                   <button
                     class="lesson-btn"
+                    class:completed
                     onclick={() => handleStartLesson(lesson.id)}
                   >
-                    Start
+                    {completed ? 'Review' : 'Start'}
                   </button>
                 </div>
               {/each}
@@ -221,6 +305,48 @@
 <style>
   .course-view {
     @apply h-full;
+  }
+
+  /* Course Tabs */
+  .course-tabs {
+    @apply flex gap-2 mb-5 overflow-x-auto pb-2;
+  }
+
+  .course-tab {
+    @apply flex items-center gap-2 px-4 py-2.5 rounded-lg;
+    @apply text-sm font-medium whitespace-nowrap;
+    @apply transition-all duration-200;
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 2px solid transparent;
+  }
+
+  .course-tab:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+
+  .course-tab.selected {
+    background-color: rgba(226, 183, 20, 0.1);
+    border-color: var(--accent);
+    color: var(--text-primary);
+  }
+
+  .tab-icon {
+    @apply text-lg;
+  }
+
+  .tab-name {
+    @apply hidden sm:inline;
+  }
+
+  .tab-badge {
+    @apply px-1.5 py-0.5 rounded text-[10px] uppercase font-medium;
+  }
+
+  .tab-badge.enrolled {
+    background-color: var(--success);
+    color: var(--bg-primary);
   }
 
   /* Enrollment Screen */
@@ -330,11 +456,13 @@
 
   .stage-row {
     @apply flex items-center gap-2;
+    min-height: 52px; /* Ensure consistent row height */
   }
 
   .stage-item {
     @apply flex items-center gap-3 flex-1 px-3 py-2 rounded;
     @apply text-left transition-colors;
+    min-height: 44px; /* Match minimum height for consistency */
   }
 
   .stage-item:hover:not(.locked) {
@@ -371,7 +499,7 @@
   }
 
   .skip-btn {
-    @apply px-2 py-1 text-xs rounded;
+    @apply px-2 py-1 text-xs rounded flex-shrink-0;
     @apply transition-colors;
     background-color: var(--bg-tertiary);
     color: var(--text-secondary);
@@ -457,6 +585,30 @@
   .lesson-tasks {
     @apply text-xs;
     color: var(--text-muted);
+  }
+
+  .lesson-progress {
+    @apply ml-1;
+    color: var(--accent);
+  }
+
+  .lesson-card.completed {
+    border-left: 2px solid var(--success);
+  }
+
+  .lesson-number.completed {
+    background-color: var(--success);
+    color: var(--bg-primary);
+  }
+
+  .lesson-btn.completed {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+  }
+
+  .lesson-btn.completed:hover {
+    background-color: var(--accent);
+    color: var(--bg-primary);
   }
 
   .lesson-btn {

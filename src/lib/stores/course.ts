@@ -88,6 +88,24 @@ function getStageFromCourse(course: Course, stageId: string): CourseStage | unde
   return course.stages.find((s) => s.id === stageId);
 }
 
+// Check if all lessons in a stage are completed
+function areAllStageLessonsCompleted(stage: CourseStage): boolean {
+  const lessonProgressMap = get(lessonProgress);
+
+  for (const lessonId of stage.lessons) {
+    const progress = lessonProgressMap.get(lessonId);
+    if (!progress) return false;
+
+    // We need to know the total tasks for this lesson
+    // The progress object stores totalTasks
+    if (progress.completedTasks < progress.totalTasks) {
+      return false;
+    }
+  }
+
+  return stage.lessons.length > 0;
+}
+
 // Create the course store
 function createCourseStore() {
   return {
@@ -177,14 +195,19 @@ function createCourseStore() {
       // Check if this stage was skipped to (explicitly unlocked)
       if (progress.skippedStages?.includes(stageId)) return true;
 
-      // Check if previous stage is complete or skipped
+      // Check if previous stage is complete, skipped, or is the current stage
       const stageIndex = course.stages.findIndex((s) => s.id === stageId);
       if (stageIndex === 0) return true;
 
       const prevStage = course.stages[stageIndex - 1];
+      // A stage is unlocked if the previous stage is:
+      // 1. Completed (in completedStages)
+      // 2. Skipped (in skippedStages)
+      // 3. The current working stage (currentStageId) - this unlocks the next stage
       if (
         !progress.completedStages.includes(prevStage.id) &&
-        !progress.skippedStages?.includes(prevStage.id)
+        !progress.skippedStages?.includes(prevStage.id) &&
+        progress.currentStageId !== prevStage.id
       ) {
         return false;
       }
@@ -250,6 +273,51 @@ function createCourseStore() {
       });
     },
 
+    // Skip the current working stage and move to the next one
+    // The "current working stage" is the first unlocked, non-completed, non-skipped stage
+    // (the one showing a number in the UI, where the Skip button appears)
+    // This marks that stage as skipped and moves currentStageId to the next stage
+    // WITHOUT marking the next stage as skipped
+    skipCurrentStage(courseId?: string): void {
+      const targetCourseId = courseId || get(selectedCourseInternal).id;
+      const course = getCourseById(targetCourseId);
+      if (!course) return;
+
+      // Find the current working stage (the one that would show the Skip button)
+      const skippableStageId = this.getCurrentSkippableStageId(targetCourseId);
+      if (!skippableStageId) return;
+
+      const skippableStageIndex = course.stages.findIndex((s) => s.id === skippableStageId);
+      if (skippableStageIndex === -1 || skippableStageIndex >= course.stages.length - 1) {
+        return;
+      }
+
+      allProgressInternal.update((map) => {
+        const progress = map.get(targetCourseId);
+        if (!progress) return map;
+
+        // Initialize skippedStages if it doesn't exist
+        if (!progress.skippedStages) {
+          progress.skippedStages = [];
+        }
+
+        // Mark the skippable stage as skipped (if not already completed or skipped)
+        if (
+          !progress.completedStages.includes(skippableStageId) &&
+          !progress.skippedStages.includes(skippableStageId)
+        ) {
+          progress.skippedStages.push(skippableStageId);
+        }
+
+        // Move currentStageId to the next stage (without marking it as skipped)
+        progress.currentStageId = course.stages[skippableStageIndex + 1].id;
+
+        map.set(targetCourseId, progress);
+        saveAllProgress(map);
+        return map;
+      });
+    },
+
     // Mark a stage as completed
     completeStage(stageId: string, courseId?: string): void {
       const targetCourseId = courseId || get(selectedCourseInternal).id;
@@ -262,6 +330,11 @@ function createCourseStore() {
 
         if (!progress.completedStages.includes(stageId)) {
           progress.completedStages.push(stageId);
+
+          // Remove from skippedStages if it was there (stage is now properly completed)
+          if (progress.skippedStages?.includes(stageId)) {
+            progress.skippedStages = progress.skippedStages.filter(id => id !== stageId);
+          }
 
           // Move to next stage
           const stageIndex = course.stages.findIndex((s) => s.id === stageId);
@@ -327,10 +400,86 @@ function createCourseStore() {
       localStorage.removeItem(`exceptional-typing-all-courses-${currentUserId}`);
       allProgressInternal.set(new Map());
     },
+
+    // Get the first locked stage ID
+    getFirstLockedStageId(courseId?: string): string | null {
+      const targetCourseId = courseId || get(selectedCourseInternal).id;
+      const course = getCourseById(targetCourseId);
+      if (!course) return null;
+
+      for (const stage of course.stages) {
+        if (!this.isStageUnlocked(stage.id, targetCourseId)) {
+          return stage.id;
+        }
+      }
+      return null;
+    },
+
+    // Get the current skippable stage ID (for showing skip button)
+    // This is the first stage that is unlocked, not completed, and not skipped
+    // (i.e., the stage the user is actually working on - showing a number, not skip icon)
+    getCurrentSkippableStageId(courseId?: string): string | null {
+      const targetCourseId = courseId || get(selectedCourseInternal).id;
+      const course = getCourseById(targetCourseId);
+      if (!course) return null;
+
+      const progress = get(allProgressInternal).get(targetCourseId);
+      if (!progress) return null;
+
+      // Find the first stage that is unlocked, not completed, and not skipped
+      // This is the stage showing a number (not ✓, not ⏭, not 🔒)
+      for (const stage of course.stages) {
+        const isUnlocked = this.isStageUnlocked(stage.id, targetCourseId);
+        const isCompleted = this.isStageCompleted(stage.id, targetCourseId);
+        const isSkipped = this.isStageSkipped(stage.id, targetCourseId);
+
+        if (isUnlocked && !isCompleted && !isSkipped) {
+          // Don't show skip button if this is the last stage
+          const stageIndex = course.stages.findIndex((s) => s.id === stage.id);
+          if (stageIndex >= course.stages.length - 1) return null;
+
+          return stage.id;
+        }
+      }
+      return null;
+    },
+
+    // Check all stages and auto-complete any that have all lessons done
+    checkAndCompleteStages(courseId?: string): void {
+      const targetCourseId = courseId || get(selectedCourseInternal).id;
+      const course = getCourseById(targetCourseId);
+      if (!course) return;
+
+      const progress = get(allProgressInternal).get(targetCourseId);
+      if (!progress) return;
+
+      let hasChanges = false;
+
+      for (const stage of course.stages) {
+        // Skip if already completed
+        if (progress.completedStages.includes(stage.id)) continue;
+
+        // Check if all lessons in this stage are completed
+        if (areAllStageLessonsCompleted(stage)) {
+          // Mark stage as completed
+          this.completeStage(stage.id, targetCourseId);
+          hasChanges = true;
+        }
+      }
+    },
   };
 }
 
 export const courseStore = createCourseStore();
+
+// Subscribe to lesson progress changes and auto-complete stages
+lessonProgress.subscribe(() => {
+  // Check all enrolled courses for stage completion
+  const progressMap = get(allProgressInternal);
+  for (const [courseId] of progressMap) {
+    courseStore.checkAndCompleteStages(courseId);
+  }
+});
 
 // Derived stores
 export const isEnrolled = derived(
@@ -360,6 +509,55 @@ export const courseProgressPercent = derived(
     const progress = $allProgress.get($course.id);
     if (!progress) return 0;
     return Math.round((progress.completedStages.length / $course.stages.length) * 100);
+  }
+);
+
+// Derived store for the current skippable stage ID (reactive version)
+// This is needed because the component needs to react to progress changes
+export const currentSkippableStageId = derived(
+  [allProgressInternal, selectedCourseInternal],
+  ([$allProgress, $course]) => {
+    const progress = $allProgress.get($course.id);
+    if (!progress) return null;
+
+    // Find the first stage that is unlocked, not completed, and not skipped
+    for (const stage of $course.stages) {
+      // Check unlock status inline (can't call courseStore methods in derived)
+      let isUnlocked = false;
+      const stageObj = $course.stages.find((s) => s.id === stage.id);
+      if (stageObj) {
+        if (!stageObj.unlockCriteria.previousStageComplete) {
+          isUnlocked = true;
+        } else if (progress.skippedStages?.includes(stage.id)) {
+          isUnlocked = true;
+        } else {
+          const stageIndex = $course.stages.findIndex((s) => s.id === stage.id);
+          if (stageIndex === 0) {
+            isUnlocked = true;
+          } else {
+            const prevStage = $course.stages[stageIndex - 1];
+            if (
+              progress.completedStages.includes(prevStage.id) ||
+              progress.skippedStages?.includes(prevStage.id) ||
+              progress.currentStageId === prevStage.id
+            ) {
+              isUnlocked = true;
+            }
+          }
+        }
+      }
+
+      const isCompleted = progress.completedStages.includes(stage.id);
+      const isSkipped = progress.skippedStages?.includes(stage.id) || false;
+
+      if (isUnlocked && !isCompleted && !isSkipped) {
+        // Don't show skip button on the last stage
+        const stageIndex = $course.stages.findIndex((s) => s.id === stage.id);
+        if (stageIndex >= $course.stages.length - 1) return null;
+        return stage.id;
+      }
+    }
+    return null;
   }
 );
 

@@ -12,6 +12,8 @@
     previousTask,
     recordTaskResult,
     navigateTo,
+    getLessonSourceView,
+    lessonProgress,
   } from '../stores/app';
   import { typingStore } from '../stores/typing';
   import type { TaskResult, Lesson, Task, KeystrokeEvent } from '../types';
@@ -29,8 +31,19 @@
   let task = $state<Task | null>(null);
   let taskIndex = $state(0);
 
-  // Track previous lesson ID to detect lesson changes
+  // Track previous lesson ID and task index to detect changes
   let previousLessonId = $state<string | null>(null);
+  let previousTaskIndex = $state<number | null>(null);
+
+  // Track completed task IDs for the current lesson
+  let completedTaskIds = $state<Set<string>>(new Set());
+
+  // Track navigation state to prevent double-clicks
+  let isNavigating = $state(false);
+
+  // Track which task index the current results are for
+  // This prevents advancing twice from the same results screen
+  let resultsForTaskIndex = $state<number | null>(null);
 
   // Compute formatted task when auto-format is enabled
   let formattedTask = $derived.by(() => {
@@ -49,24 +62,62 @@
     lastResult = null;
     lastKeystrokes = [];
     lastTargetText = '';
+    resultsForTaskIndex = null;
+  }
+
+  // Check if a specific task (by index) is actually completed (has a passed result)
+  function isTaskCompleted(index: number): boolean {
+    if (!lesson || index < 0 || index >= lesson.tasks.length) return false;
+    const taskId = lesson.tasks[index].id;
+    return completedTaskIds.has(taskId);
   }
 
   onMount(() => {
+    // Always start fresh when LessonView mounts - critical for proper state
+    resetResultsState();
+
     const unsubLesson = selectedLesson.subscribe(l => {
       // Reset results when lesson changes
       if (l && l.id !== previousLessonId) {
         resetResultsState();
         previousLessonId = l.id;
+        previousTaskIndex = null; // Reset task tracking for new lesson
       }
       lesson = l;
     });
+
     const unsubTask = currentTask.subscribe(t => { task = t; });
-    const unsubIndex = currentTaskIndex.subscribe(i => { taskIndex = i; });
+
+    const unsubIndex = currentTaskIndex.subscribe(i => {
+      // Reset results when task index changes (but not on initial load)
+      if (previousTaskIndex !== null && i !== previousTaskIndex) {
+        resetResultsState();
+      }
+      previousTaskIndex = i;
+      taskIndex = i;
+    });
+
+    // Subscribe to lesson progress to track which tasks are actually completed
+    const unsubProgress = lessonProgress.subscribe(progress => {
+      if (lesson) {
+        const lessonProg = progress.get(lesson.id);
+        if (lessonProg) {
+          // Get the set of task IDs that have passed results
+          completedTaskIds = new Set(
+            lessonProg.taskResults.filter(r => r.passed).map(r => r.taskId)
+          );
+        } else {
+          completedTaskIds = new Set();
+        }
+      }
+    });
 
     return () => {
+      // Clean up state when component unmounts
       unsubLesson();
       unsubTask();
       unsubIndex();
+      unsubProgress();
     };
   });
 
@@ -74,27 +125,92 @@
     lastResult = result;
     lastKeystrokes = typingStore.getKeystrokes();
     lastTargetText = typingStore.getTargetText();
+    // Track which task index these results are for
+    resultsForTaskIndex = taskIndex;
     showResults = true;
     recordTaskResult(result);
   }
 
   function handleNextTask(): void {
-    resetResultsState();
-    if (!nextTask()) {
-      // Lesson complete
+    // Prevent double-clicks
+    if (isNavigating) return;
+
+    // If we're on the results screen, verify we're advancing from the correct task
+    // This prevents double-advancing if the button is clicked twice rapidly
+    if (showResults && resultsForTaskIndex !== null) {
+      // Only advance if results are for the current task
+      if (resultsForTaskIndex !== taskIndex) {
+        // Results are stale (already advanced), don't advance again
+        return;
+      }
     }
+
+    isNavigating = true;
+
+    // Clear the results state BEFORE advancing to prevent race conditions
+    const wasShowingResults = showResults;
+    resetResultsState();
+
+    // Only advance if we successfully cleared results state
+    if (wasShowingResults || !showResults) {
+      nextTask();
+    }
+
+    // Reset navigation lock after a short delay
+    setTimeout(() => {
+      isNavigating = false;
+    }, 100);
+  }
+
+  function handlePrevTask(): void {
+    // Prevent double-clicks
+    if (isNavigating) return;
+    isNavigating = true;
+
+    resetResultsState();
+    previousTask();
+
+    // Reset navigation lock after a short delay
+    setTimeout(() => {
+      isNavigating = false;
+    }, 100);
   }
 
   function handleRetry(): void {
+    // Prevent double-clicks
+    if (isNavigating) return;
+    isNavigating = true;
+
     resetResultsState();
     // Reset the typing store with the current task to restart
     if (formattedTask) {
       typingStore.reset(formattedTask);
     }
+
+    // Reset navigation lock after a short delay
+    setTimeout(() => {
+      isNavigating = false;
+    }, 100);
   }
 
   function handleBack(): void {
-    navigateTo('home');
+    // Navigate back to where we came from (course or home)
+    const sourceView = getLessonSourceView();
+    navigateTo(sourceView);
+  }
+
+  // Navigate to specific task by index
+  function handleGoToTask(index: number): void {
+    if (isNavigating) return;
+    if (index === taskIndex) return;
+
+    isNavigating = true;
+    resetResultsState();
+    currentTaskIndex.set(index);
+
+    setTimeout(() => {
+      isNavigating = false;
+    }, 100);
   }
 </script>
 
@@ -114,15 +230,15 @@
       <div class="task-nav">
         <button
           class="nav-btn"
-          disabled={taskIndex === 0}
-          onclick={() => previousTask()}
+          disabled={taskIndex === 0 || isNavigating}
+          onclick={handlePrevTask}
         >
           ← Prev
         </button>
         <button
           class="nav-btn"
-          disabled={taskIndex === lesson.tasks.length - 1}
-          onclick={() => nextTask()}
+          disabled={taskIndex === lesson.tasks.length - 1 || isNavigating}
+          onclick={handleNextTask}
         >
           Next →
         </button>
@@ -135,8 +251,9 @@
         <button
           class="dot"
           class:current={i === taskIndex}
-          class:completed={i < taskIndex}
-          onclick={() => currentTaskIndex.set(i)}
+          class:completed={isTaskCompleted(i)}
+          disabled={isNavigating}
+          onclick={() => handleGoToTask(i)}
           aria-label="Go to task {i + 1}"
         ></button>
       {/each}
@@ -192,11 +309,11 @@
         {/if}
 
         <div class="result-actions">
-          <button class="action-btn secondary" onclick={handleRetry}>
+          <button class="action-btn secondary" onclick={handleRetry} disabled={isNavigating}>
             Try Again
           </button>
           {#if lastResult.passed && taskIndex < lesson.tasks.length - 1}
-            <button class="action-btn primary" onclick={handleNextTask}>
+            <button class="action-btn primary" onclick={handleNextTask} disabled={isNavigating}>
               Next Task →
             </button>
           {:else if taskIndex === lesson.tasks.length - 1 && lastResult.passed}
@@ -215,11 +332,13 @@
       <TypingArea task={formattedTask} {codeTheme} onComplete={handleComplete} />
     {/if}
 
-    <!-- Keyboard hints (optional feature) -->
-    <div class="hints">
-      <span class="hint"><kbd>Esc</kbd> Pause</span>
-      <span class="hint"><kbd>Backspace</kbd> Fix errors</span>
-    </div>
+    <!-- Keyboard hints (only show during typing, not on results) -->
+    {#if !showResults}
+      <div class="hints">
+        <span class="hint"><kbd>Esc</kbd> Pause</span>
+        <span class="hint"><kbd>Backspace</kbd> Fix errors</span>
+      </div>
+    {/if}
   </div>
 {:else}
   <div class="no-lesson">
@@ -230,7 +349,15 @@
 
 <style>
   .lesson-view {
-    @apply flex flex-col h-full max-w-3xl mx-auto px-4;
+    @apply flex flex-col h-full mx-auto px-4;
+    max-width: 1000px;
+  }
+
+  /* On very large screens, allow more width */
+  @media (min-width: 1400px) {
+    .lesson-view {
+      max-width: 1100px;
+    }
   }
 
   .lesson-header {
@@ -379,9 +506,13 @@
     color: var(--text-secondary);
   }
 
-  .action-btn.secondary:hover {
+  .action-btn.secondary:hover:not(:disabled) {
     background-color: #404245;
     color: var(--text-primary);
+  }
+
+  .action-btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
   }
 
   .hints {

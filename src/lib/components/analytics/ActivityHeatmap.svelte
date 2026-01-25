@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import Heatmap from 'svelte5-heatmap';
 
   interface DayData {
     date: string;
@@ -15,103 +15,61 @@
 
   let { data = [], days = 365 }: Props = $props();
 
-  // Generate dates for the heatmap
-  let dates = $state<{ date: Date; data: DayData | null }[]>([]);
+  // Convert data array to object format expected by svelte5-heatmap
+  // The library expects { 'YYYY-MM-DD': value, ... }
+  // We convert practice time to intensity levels (0-4) for better visualization
+  let heatmapData = $derived.by(() => {
+    const result: Record<string, number> = {};
 
-  $effect(() => {
-    const endDate = new Date();
-    const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - days + 1);
+    for (const day of data) {
+      if (day.practiceTime > 0) {
+        const minutes = day.practiceTime / 60000;
+        // Convert to intensity level 1-4 based on practice time
+        let intensity: number;
+        if (minutes < 5) intensity = 1;
+        else if (minutes < 15) intensity = 2;
+        else if (minutes < 30) intensity = 3;
+        else intensity = 4;
 
-    // Adjust to start on Sunday
-    const dayOfWeek = startDate.getDay();
-    startDate.setDate(startDate.getDate() - dayOfWeek);
-
-    const result: { date: Date; data: DayData | null }[] = [];
-    const currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-      const dateStr = currentDate.toISOString().split('T')[0];
-      const dayData = data.find((d) => d.date === dateStr) || null;
-      result.push({ date: new Date(currentDate), data: dayData });
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    dates = result;
-  });
-
-  // Group dates by week
-  let weeks = $derived.by(() => {
-    const result: { date: Date; data: DayData | null }[][] = [];
-    let currentWeek: { date: Date; data: DayData | null }[] = [];
-
-    for (const day of dates) {
-      if (day.date.getDay() === 0 && currentWeek.length > 0) {
-        result.push(currentWeek);
-        currentWeek = [];
+        result[day.date] = intensity;
       }
-      currentWeek.push(day);
-    }
-
-    if (currentWeek.length > 0) {
-      result.push(currentWeek);
     }
 
     return result;
   });
 
-  // Get intensity level (0-4) based on practice time
-  function getIntensity(dayData: DayData | null): number {
-    if (!dayData || dayData.practiceTime === 0) return 0;
+  // Get the year to display - use current year by default
+  const currentYear = new Date().getFullYear();
 
-    const minutes = dayData.practiceTime / 60000;
-    if (minutes < 5) return 1;
-    if (minutes < 15) return 2;
-    if (minutes < 30) return 3;
-    return 4;
-  }
+  // Custom colors matching the app's theme (indigo/purple tones)
+  const colors = [
+    'var(--bg-secondary)',      // level 0 - no activity
+    'rgba(99, 102, 241, 0.25)', // level 1 - light
+    'rgba(99, 102, 241, 0.45)', // level 2 - medium
+    'rgba(99, 102, 241, 0.7)',  // level 3 - high
+    '#6366f1',                  // level 4 - max
+  ];
 
-  // Format tooltip
-  function formatTooltip(day: { date: Date; data: DayData | null }): string {
-    const dateStr = day.date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    });
+  // Handle cell click to show details
+  function handleClick(e: MouseEvent): void {
+    const target = e.target as HTMLElement;
+    const date = target.dataset.date;
+    const value = target.dataset.value;
 
-    if (!day.data || day.data.practiceTime === 0) {
-      return `${dateStr}: No practice`;
-    }
-
-    const minutes = Math.round(day.data.practiceTime / 60000);
-    return `${dateStr}: ${minutes}min, ${day.data.characters} chars`;
-  }
-
-  // Month labels
-  let monthLabels = $derived.by(() => {
-    const labels: { text: string; week: number }[] = [];
-    let lastMonth = -1;
-
-    weeks.forEach((week, weekIndex) => {
-      const firstDay = week[0];
-      if (firstDay) {
-        const month = firstDay.date.getMonth();
-        if (month !== lastMonth) {
-          labels.push({
-            text: firstDay.date.toLocaleDateString('en-US', { month: 'short' }),
-            week: weekIndex,
-          });
-          lastMonth = month;
-        }
+    if (date) {
+      const dayData = data.find(d => d.date === date);
+      if (dayData && dayData.practiceTime > 0) {
+        const minutes = Math.round(dayData.practiceTime / 60000);
+        const formattedDate = new Date(date).toLocaleDateString('en-US', {
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric',
+        });
+        // Could show a tooltip or modal here in the future
+        console.log(`${formattedDate}: ${minutes}min, ${dayData.characters} chars`);
       }
-    });
-
-    return labels;
-  });
-
-  const dayLabels = ['Sun', '', 'Tue', '', 'Thu', '', 'Sat'];
-  const cellSize = 12;
-  const cellGap = 3;
+    }
+  }
 </script>
 
 <div class="heatmap-container">
@@ -120,56 +78,14 @@
   </div>
 
   <div class="heatmap-wrapper">
-    <!-- Day labels -->
-    <div class="day-labels">
-      {#each dayLabels as label}
-        <span class="day-label" style="height: {cellSize + cellGap}px">{label}</span>
-      {/each}
-    </div>
-
-    <!-- Main grid -->
-    <div class="heatmap-grid">
-      <!-- Month labels -->
-      <div class="month-labels" style="height: 20px">
-        {#each monthLabels as label}
-          <span
-            class="month-label"
-            style="left: {label.week * (cellSize + cellGap)}px"
-          >
-            {label.text}
-          </span>
-        {/each}
-      </div>
-
-      <!-- Cells -->
-      <svg
-        class="heatmap-svg"
-        width={weeks.length * (cellSize + cellGap)}
-        height={7 * (cellSize + cellGap)}
-      >
-        {#each weeks as week, weekIndex}
-          {#each week as day, dayIndex}
-            {@const intensity = getIntensity(day.data)}
-            {@const today = new Date()}
-            {@const isToday =
-              day.date.toDateString() === today.toDateString()}
-            {@const isFuture = day.date > today}
-            <rect
-              x={weekIndex * (cellSize + cellGap)}
-              y={day.date.getDay() * (cellSize + cellGap)}
-              width={cellSize}
-              height={cellSize}
-              rx="2"
-              class="cell level-{intensity}"
-              class:today={isToday}
-              class:future={isFuture}
-            >
-              <title>{formatTooltip(day)}</title>
-            </rect>
-          {/each}
-        {/each}
-      </svg>
-    </div>
+    <Heatmap
+      data={heatmapData}
+      year={currentYear}
+      {colors}
+      lday={true}
+      lmonth={true}
+      onclick={handleClick}
+    />
   </div>
 
   <!-- Legend -->
@@ -200,73 +116,26 @@
   }
 
   .heatmap-wrapper {
-    @apply flex gap-2 overflow-x-auto pb-2;
+    @apply overflow-x-auto pb-2;
+    font-size: 11px; /* Controls cell size since library uses em units */
   }
 
-  .day-labels {
-    @apply flex flex-col text-xs;
-    @apply pt-5;
+  /* Style the library's heatmap table */
+  .heatmap-wrapper :global(.Heatmap) {
     color: var(--text-muted);
+    border-collapse: separate;
+    border-spacing: 3px;
   }
 
-  .day-label {
-    @apply flex items-center;
+  .heatmap-wrapper :global(.Heatmap td[data-date]) {
+    border-radius: 2px;
+    /* Add visible grid lines for better structure */
+    outline: 1px solid rgba(255, 255, 255, 0.08);
+    transition: outline-color 0.15s;
   }
 
-  .heatmap-grid {
-    @apply relative;
-  }
-
-  .month-labels {
-    @apply relative text-xs;
-    color: var(--text-muted);
-  }
-
-  .month-label {
-    @apply absolute top-0;
-  }
-
-  .heatmap-svg {
-    @apply mt-5;
-  }
-
-  .cell {
-    @apply transition-colors;
-  }
-
-  .cell.level-0 {
-    fill: var(--bg-secondary);
-  }
-
-  .cell.level-1 {
-    fill: rgba(99, 102, 241, 0.25);
-  }
-
-  .cell.level-2 {
-    fill: rgba(99, 102, 241, 0.45);
-  }
-
-  .cell.level-3 {
-    fill: rgba(99, 102, 241, 0.7);
-  }
-
-  .cell.level-4 {
-    fill: #6366f1;
-  }
-
-  .cell.today {
-    stroke: #6366f1;
-    stroke-width: 2;
-  }
-
-  .cell.future {
-    fill: var(--bg-primary);
-    opacity: 0.5;
-  }
-
-  .cell:hover {
-    stroke: var(--text-secondary);
-    stroke-width: 1;
+  .heatmap-wrapper :global(.Heatmap td[data-date]:hover) {
+    outline: 2px solid var(--text-secondary);
   }
 
   .heatmap-legend {

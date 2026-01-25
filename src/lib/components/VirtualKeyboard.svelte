@@ -219,9 +219,21 @@
   function getFingerStyle(fingerNum: number): string {
     const currentFinger = getFingerForCurrentKey();
     if (currentFinger === fingerNum) {
-      return 'fill: #3b82f6; stroke: #1d4ed8; filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.5));';
+      const color = fingerColors[fingerNum];
+      // Derive darker stroke color by reducing brightness
+      const strokeColor = darkenColor(color);
+      return `fill: ${color}; stroke: ${strokeColor}; filter: drop-shadow(0 0 6px ${color}80);`;
     }
     return '';
+  }
+
+  // Helper to darken a hex color for stroke
+  function darkenColor(hex: string): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    const factor = 0.7;
+    return `#${Math.round(r * factor).toString(16).padStart(2, '0')}${Math.round(g * factor).toString(16).padStart(2, '0')}${Math.round(b * factor).toString(16).padStart(2, '0')}`;
   }
 </script>
 

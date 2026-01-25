@@ -90,6 +90,7 @@ export interface LessonProgress {
   taskResults: TaskResult[];
   bestWpm: number;
   averageAccuracy: number;
+  lastTaskIndex?: number; // Remember where user left off in the lesson
 }
 
 export interface UserStats {
@@ -192,6 +193,10 @@ export interface UserSettings {
 
   // Onboarding
   hasCompletedOnboarding: boolean;
+
+  // Lesson Picker Filters
+  lessonPickerCategory: LessonCategory | 'all';
+  lessonPickerDifficulty: Difficulty | 'all';
 }
 
 // ============================================

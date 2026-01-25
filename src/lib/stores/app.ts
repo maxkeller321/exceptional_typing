@@ -8,6 +8,9 @@ export const currentView = writable<AppView>('home');
 export const selectedLesson = writable<Lesson | null>(null);
 export const currentTaskIndex = writable<number>(0);
 
+// Track where the lesson was started from (for navigation back)
+export const lessonSourceView = writable<AppView | null>(null);
+
 // User statistics
 const defaultStats: UserStats = {
   totalPracticeTime: 0,
@@ -112,34 +115,95 @@ export function navigateTo(view: AppView): void {
   currentView.set(view);
 }
 
-export function selectLesson(lesson: Lesson): void {
+export function selectLesson(lesson: Lesson, fromView?: AppView): void {
+  // Track where we came from so we can navigate back correctly
+  const sourceView = fromView ?? get(currentView);
+  lessonSourceView.set(sourceView);
+
   selectedLesson.set(lesson);
-  currentTaskIndex.set(0);
+
+  // Restore last task index from progress, or start at 0
+  const progress = get(lessonProgress).get(lesson.id);
+  const lastIndex = progress?.lastTaskIndex ?? 0;
+  // Make sure the index is valid (in case tasks were removed)
+  const validIndex = Math.min(lastIndex, lesson.tasks.length - 1);
+  currentTaskIndex.set(Math.max(0, validIndex));
+
   currentView.set('lesson');
 }
 
+// Get the view to navigate back to after finishing a lesson
+export function getLessonSourceView(): AppView {
+  return get(lessonSourceView) || 'home';
+}
+
+// Save the current task index to lesson progress
+function saveCurrentTaskIndex(lessonId: string, taskIndex: number): void {
+  lessonProgress.update(progress => {
+    const current = progress.get(lessonId);
+    if (current) {
+      current.lastTaskIndex = taskIndex;
+      progress.set(lessonId, current);
+      saveLessonProgress(progress);
+    }
+    return progress;
+  });
+}
+
+// Navigation lock to prevent concurrent navigation calls
+let isNavigatingTask = false;
+
 export function nextTask(): boolean {
+  // Prevent concurrent calls - return false if already navigating
+  if (isNavigatingTask) return false;
+
   const lesson = get(selectedLesson);
   if (!lesson) return false;
 
   const currentIndex = get(currentTaskIndex);
   if (currentIndex < lesson.tasks.length - 1) {
-    currentTaskIndex.set(currentIndex + 1);
+    // Lock navigation
+    isNavigatingTask = true;
+
+    const newIndex = currentIndex + 1;
+    currentTaskIndex.set(newIndex);
+    saveCurrentTaskIndex(lesson.id, newIndex);
+
+    // Unlock after state update (synchronous, so immediate unlock is safe)
+    isNavigatingTask = false;
     return true;
   }
   return false;
 }
 
 export function previousTask(): boolean {
+  // Prevent concurrent calls
+  if (isNavigatingTask) return false;
+
+  const lesson = get(selectedLesson);
+  if (!lesson) return false;
+
   let hasPrev = false;
+  let newIndex = 0;
+
+  // Lock navigation
+  isNavigatingTask = true;
 
   currentTaskIndex.update(index => {
     if (index > 0) {
       hasPrev = true;
-      return index - 1;
+      newIndex = index - 1;
+      return newIndex;
     }
     return index;
   });
+
+  if (hasPrev) {
+    saveCurrentTaskIndex(lesson.id, newIndex);
+  }
+
+  // Unlock
+  isNavigatingTask = false;
 
   return hasPrev;
 }
@@ -167,6 +231,9 @@ export function recordTaskResult(result: TaskResult): void {
       current.averageAccuracy =
         current.taskResults.reduce((sum, r) => sum + r.accuracy, 0) /
         current.taskResults.length;
+
+      // Save current task index
+      current.lastTaskIndex = get(currentTaskIndex);
 
       progress.set(lesson.id, current);
 

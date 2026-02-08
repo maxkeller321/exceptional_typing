@@ -627,10 +627,10 @@ const cliStage1Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('cli-b1-1', 'Learn pwd (Print Working Directory)', 'pwd'),
-      task('cli-b1-2', 'Learn ls (List files)', 'ls'),
-      task('cli-b1-3', 'Learn clear (Clear screen)', 'clear'),
-      task('cli-b1-4', 'Practice basic commands', 'pwd\nls\nclear'),
+      task('cli-b1-1', 'Learn pwd (Print Working Directory)', 'pwd - print working directory'),
+      task('cli-b1-2', 'Learn ls (List files)', 'ls - list directory contents'),
+      task('cli-b1-3', 'Learn clear (Clear screen)', 'clear - clear the terminal screen'),
+      task('cli-b1-4', 'Practice basic commands', 'pwd - print working directory\nls - list directory contents\nclear - clear the terminal screen'),
     ]
   ),
   lesson(
@@ -640,10 +640,10 @@ const cliStage1Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('cli-b2-1', 'Use --help flag', 'ls --help'),
-      task('cli-b2-2', 'Read a manual page', 'man ls'),
-      task('cli-b2-3', 'Find command location', 'which python'),
-      task('cli-b2-4', 'Check command type', 'type ls'),
+      task('cli-b2-1', 'Use --help flag', 'ls --help - display help information for ls'),
+      task('cli-b2-2', 'Read a manual page', 'man ls - display the manual page for ls'),
+      task('cli-b2-3', 'Find command location', 'which python - show the full path of a command'),
+      task('cli-b2-4', 'Check command type', 'type ls - display how a command name is interpreted'),
     ]
   ),
 ];
@@ -657,10 +657,10 @@ const cliStage2Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('cli-n1-1', 'Go to home directory', 'cd ~'),
-      task('cli-n1-2', 'Go up one level', 'cd ..'),
-      task('cli-n1-3', 'Go to specific path', 'cd /home/user'),
-      task('cli-n1-4', 'Return to previous directory', 'cd -'),
+      task('cli-n1-1', 'Go to home directory', 'cd ~ - change directory to home'),
+      task('cli-n1-2', 'Go up one level', 'cd .. - move up one directory level'),
+      task('cli-n1-3', 'Go to specific path', 'cd /home/user - change to a specific directory'),
+      task('cli-n1-4', 'Return to previous directory', 'cd - - switch to the previous directory'),
     ]
   ),
   lesson(
@@ -670,10 +670,10 @@ const cliStage2Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('cli-n2-1', 'List all files', 'ls -a'),
-      task('cli-n2-2', 'Long format with details', 'ls -l'),
-      task('cli-n2-3', 'Human readable sizes', 'ls -lh'),
-      task('cli-n2-4', 'Combined options', 'ls -la'),
+      task('cli-n2-1', 'List all files', 'ls -a - list all entries including hidden files'),
+      task('cli-n2-2', 'Long format with details', 'ls -l - list in long format with permissions and size'),
+      task('cli-n2-3', 'Human readable sizes', 'ls -lh - long format with human-readable file sizes'),
+      task('cli-n2-4', 'Combined options', 'ls -la - list all files in long format'),
     ]
   ),
 ];
@@ -687,10 +687,10 @@ const cliStage3Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('cli-f1-1', 'Create empty file', 'touch newfile.txt'),
-      task('cli-f1-2', 'Create directory', 'mkdir projects'),
-      task('cli-f1-3', 'Create nested directories', 'mkdir -p parent/child/grandchild'),
-      task('cli-f1-4', 'Create multiple files', 'touch file1.txt file2.txt file3.txt'),
+      task('cli-f1-1', 'Create empty file', 'touch newfile.txt - create an empty file or update timestamp'),
+      task('cli-f1-2', 'Create directory', 'mkdir projects - make a new directory'),
+      task('cli-f1-3', 'Create nested directories', 'mkdir -p parent/child/grandchild - create parent directories as needed'),
+      task('cli-f1-4', 'Create multiple files', 'touch file1.txt file2.txt file3.txt - create multiple files at once'),
     ]
   ),
   lesson(
@@ -700,10 +700,10 @@ const cliStage3Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('cli-f2-1', 'Copy a file', 'cp source.txt dest.txt'),
-      task('cli-f2-2', 'Copy directory recursively', 'cp -r folder/ backup/'),
-      task('cli-f2-3', 'Move or rename', 'mv old.txt new.txt'),
-      task('cli-f2-4', 'Remove file', 'rm unwanted.txt'),
+      task('cli-f2-1', 'Copy a file', 'cp source.txt dest.txt - copy files and directories'),
+      task('cli-f2-2', 'Copy directory recursively', 'cp -r folder/ backup/ - copy directories recursively'),
+      task('cli-f2-3', 'Move or rename', 'mv old.txt new.txt - move or rename files'),
+      task('cli-f2-4', 'Remove file', 'rm unwanted.txt - remove files permanently'),
     ]
   ),
 ];
@@ -717,10 +717,10 @@ const cliStage4Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('cli-r1-1', 'Display entire file', 'cat readme.txt'),
-      task('cli-r1-2', 'View first lines', 'head -n 10 file.txt'),
-      task('cli-r1-3', 'View last lines', 'tail -n 20 log.txt'),
-      task('cli-r1-4', 'Paginated view', 'less largefile.txt'),
+      task('cli-r1-1', 'Display entire file', 'cat readme.txt - concatenate and print file contents'),
+      task('cli-r1-2', 'View first lines', 'head -n 10 file.txt - output the first 10 lines of a file'),
+      task('cli-r1-3', 'View last lines', 'tail -n 20 log.txt - output the last 20 lines of a file'),
+      task('cli-r1-4', 'Paginated view', 'less largefile.txt - view file contents with scrollable pagination'),
     ]
   ),
   lesson(
@@ -730,10 +730,10 @@ const cliStage4Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-r2-1', 'Follow log updates', 'tail -f app.log'),
-      task('cli-r2-2', 'Count lines in file', 'wc -l data.txt'),
-      task('cli-r2-3', 'Count words', 'wc -w document.txt'),
-      task('cli-r2-4', 'Count with cat', 'cat file.txt | wc -l'),
+      task('cli-r2-1', 'Follow log updates', 'tail -f app.log - follow file output in real-time'),
+      task('cli-r2-2', 'Count lines in file', 'wc -l data.txt - print the number of lines in a file'),
+      task('cli-r2-3', 'Count words', 'wc -w document.txt - print the number of words in a file'),
+      task('cli-r2-4', 'Count with cat', 'cat file.txt | wc -l - pipe file contents to count lines'),
     ]
   ),
 ];
@@ -747,10 +747,10 @@ const cliStage5Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-s1-1', 'Find by name', 'find . -name "*.txt"'),
-      task('cli-s1-2', 'Find by type', 'find . -type f'),
-      task('cli-s1-3', 'Find directories', 'find . -type d -name "src"'),
-      task('cli-s1-4', 'Find by modification time', 'find . -mtime -7'),
+      task('cli-s1-1', 'Find by name', 'find . -name "*.txt" - search for files by name pattern'),
+      task('cli-s1-2', 'Find by type', 'find . -type f - find only regular files'),
+      task('cli-s1-3', 'Find directories', 'find . -type d -name "src" - find directories by name'),
+      task('cli-s1-4', 'Find by modification time', 'find . -mtime -7 - find files modified in the last 7 days'),
     ]
   ),
   lesson(
@@ -760,10 +760,10 @@ const cliStage5Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-s2-1', 'Basic grep', 'grep "error" log.txt'),
-      task('cli-s2-2', 'Case insensitive', 'grep -i "warning" file.txt'),
-      task('cli-s2-3', 'Recursive search', 'grep -r "TODO" ./src'),
-      task('cli-s2-4', 'Show line numbers', 'grep -n "function" *.js'),
+      task('cli-s2-1', 'Basic grep', 'grep "error" log.txt - print lines matching a pattern'),
+      task('cli-s2-2', 'Case insensitive', 'grep -i "warning" file.txt - ignore case when matching'),
+      task('cli-s2-3', 'Recursive search', 'grep -r "TODO" ./src - search recursively in directories'),
+      task('cli-s2-4', 'Show line numbers', 'grep -n "function" *.js - prefix output with line numbers'),
     ]
   ),
 ];
@@ -777,10 +777,10 @@ const cliStage6Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-t1-1', 'Sort alphabetically', 'sort names.txt'),
-      task('cli-t1-2', 'Sort numerically', 'sort -n numbers.txt'),
-      task('cli-t1-3', 'Reverse sort', 'sort -r data.txt'),
-      task('cli-t1-4', 'Find unique lines', 'sort file.txt | uniq'),
+      task('cli-t1-1', 'Sort alphabetically', 'sort names.txt - sort lines of text alphabetically'),
+      task('cli-t1-2', 'Sort numerically', 'sort -n numbers.txt - sort lines by numeric value'),
+      task('cli-t1-3', 'Reverse sort', 'sort -r data.txt - sort in reverse order'),
+      task('cli-t1-4', 'Find unique lines', 'sort file.txt | uniq - filter out repeated adjacent lines'),
     ]
   ),
   lesson(
@@ -790,10 +790,10 @@ const cliStage6Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-t2-1', 'Extract columns with cut', 'cut -d"," -f1 data.csv'),
-      task('cli-t2-2', 'Print first field with awk', 'awk "{print $1}" file.txt'),
-      task('cli-t2-3', 'Simple substitution', 'sed "s/old/new/g" file.txt'),
-      task('cli-t2-4', 'Count occurrences', 'uniq -c sorted.txt'),
+      task('cli-t2-1', 'Extract columns with cut', 'cut -d"," -f1 data.csv - remove sections from each line'),
+      task('cli-t2-2', 'Print first field with awk', 'awk "{print $1}" file.txt - pattern scanning and processing'),
+      task('cli-t2-3', 'Simple substitution', 'sed "s/old/new/g" file.txt - stream editor for text transformation'),
+      task('cli-t2-4', 'Count occurrences', 'uniq -c sorted.txt - report or omit repeated lines with counts'),
     ]
   ),
 ];
@@ -807,10 +807,10 @@ const cliStage7Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-p1-1', 'Pipe to grep', 'ls -la | grep ".txt"'),
-      task('cli-p1-2', 'Pipe to wc', 'cat file.txt | wc -l'),
-      task('cli-p1-3', 'Multiple pipes', 'cat log.txt | grep ERROR | wc -l'),
-      task('cli-p1-4', 'Sort and unique', 'cat data.txt | sort | uniq'),
+      task('cli-p1-1', 'Pipe to grep', 'ls -la | grep ".txt" - pipe output to filter results'),
+      task('cli-p1-2', 'Pipe to wc', 'cat file.txt | wc -l - pipe file contents to count lines'),
+      task('cli-p1-3', 'Multiple pipes', 'cat log.txt | grep ERROR | wc -l - chain multiple filters'),
+      task('cli-p1-4', 'Sort and unique', 'cat data.txt | sort | uniq - sort and remove duplicates'),
     ]
   ),
   lesson(
@@ -820,10 +820,10 @@ const cliStage7Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-p2-1', 'Redirect to file', 'echo "Hello" > file.txt'),
-      task('cli-p2-2', 'Append to file', 'echo "World" >> file.txt'),
-      task('cli-p2-3', 'Input redirection', 'sort < unsorted.txt'),
-      task('cli-p2-4', 'Combined redirection', 'sort < input.txt > output.txt'),
+      task('cli-p2-1', 'Redirect to file', 'echo "Hello" > file.txt - redirect output, overwrite file'),
+      task('cli-p2-2', 'Append to file', 'echo "World" >> file.txt - redirect output, append to file'),
+      task('cli-p2-3', 'Input redirection', 'sort < unsorted.txt - read input from a file'),
+      task('cli-p2-4', 'Combined redirection', 'sort < input.txt > output.txt - redirect both input and output'),
     ]
   ),
 ];
@@ -837,10 +837,10 @@ const cliStage8Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-sys1-1', 'List all processes', 'ps aux'),
-      task('cli-sys1-2', 'Interactive viewer', 'top'),
-      task('cli-sys1-3', 'Find specific process', 'ps aux | grep node'),
-      task('cli-sys1-4', 'Better process viewer', 'htop'),
+      task('cli-sys1-1', 'List all processes', 'ps aux - report a snapshot of all running processes'),
+      task('cli-sys1-2', 'Interactive viewer', 'top - display real-time system process information'),
+      task('cli-sys1-3', 'Find specific process', 'ps aux | grep node - filter processes by name'),
+      task('cli-sys1-4', 'Better process viewer', 'htop - interactive process viewer with color display'),
     ]
   ),
   lesson(
@@ -850,10 +850,10 @@ const cliStage8Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-sys2-1', 'Check disk space', 'df -h'),
-      task('cli-sys2-2', 'Directory size', 'du -sh ./folder'),
-      task('cli-sys2-3', 'Memory usage', 'free -h'),
-      task('cli-sys2-4', 'System info', 'uname -a'),
+      task('cli-sys2-1', 'Check disk space', 'df -h - report file system disk space usage'),
+      task('cli-sys2-2', 'Directory size', 'du -sh ./folder - estimate file and directory space usage'),
+      task('cli-sys2-3', 'Memory usage', 'free -h - display amount of free and used memory'),
+      task('cli-sys2-4', 'System info', 'uname -a - print system information'),
     ]
   ),
 ];
@@ -867,10 +867,10 @@ const cliStage9Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-git1-1', 'Initialize repository', 'git init'),
-      task('cli-git1-2', 'Check status', 'git status'),
-      task('cli-git1-3', 'Stage changes', 'git add .'),
-      task('cli-git1-4', 'Commit changes', 'git commit -m "Initial commit"'),
+      task('cli-git1-1', 'Initialize repository', 'git init - create an empty Git repository'),
+      task('cli-git1-2', 'Check status', 'git status - show the working tree status'),
+      task('cli-git1-3', 'Stage changes', 'git add . - add all changes to the staging area'),
+      task('cli-git1-4', 'Commit changes', 'git commit -m "Initial commit" - record changes to the repository'),
     ]
   ),
   lesson(
@@ -880,10 +880,10 @@ const cliStage9Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('cli-git2-1', 'Clone repository', 'git clone https://github.com/user/repo.git'),
-      task('cli-git2-2', 'Push changes', 'git push origin main'),
-      task('cli-git2-3', 'Pull updates', 'git pull origin main'),
-      task('cli-git2-4', 'View history', 'git log --oneline'),
+      task('cli-git2-1', 'Clone repository', 'git clone https://github.com/user/repo.git - clone a remote repository'),
+      task('cli-git2-2', 'Push changes', 'git push origin main - update remote refs with local commits'),
+      task('cli-git2-3', 'Pull updates', 'git pull origin main - fetch and integrate remote changes'),
+      task('cli-git2-4', 'View history', 'git log --oneline - show commit logs in compact format'),
     ]
   ),
 ];
@@ -897,10 +897,10 @@ const cliStage10Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('cli-perm1-1', 'Make executable', 'chmod +x script.sh'),
-      task('cli-perm1-2', 'Set octal permissions', 'chmod 755 file.sh'),
-      task('cli-perm1-3', 'View permissions', 'ls -l file.txt'),
-      task('cli-perm1-4', 'Change owner', 'chown user:group file.txt'),
+      task('cli-perm1-1', 'Make executable', 'chmod +x script.sh - change file mode bits to add execute'),
+      task('cli-perm1-2', 'Set octal permissions', 'chmod 755 file.sh - set permissions using octal notation'),
+      task('cli-perm1-3', 'View permissions', 'ls -l file.txt - list file with permission details'),
+      task('cli-perm1-4', 'Change owner', 'chown user:group file.txt - change file owner and group'),
     ]
   ),
   lesson(
@@ -910,10 +910,10 @@ const cliStage10Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('cli-perm2-1', 'Current user', 'whoami'),
-      task('cli-perm2-2', 'User ID info', 'id'),
-      task('cli-perm2-3', 'User groups', 'groups'),
-      task('cli-perm2-4', 'Switch user', 'sudo su - username'),
+      task('cli-perm2-1', 'Current user', 'whoami - print the current username'),
+      task('cli-perm2-2', 'User ID info', 'id - print user and group IDs'),
+      task('cli-perm2-3', 'User groups', 'groups - print group memberships for a user'),
+      task('cli-perm2-4', 'Switch user', 'sudo su - username - switch to another user account'),
     ]
   ),
 ];
@@ -927,10 +927,10 @@ const cliStage11Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('cli-net1-1', 'Test connection', 'ping -c 4 google.com'),
-      task('cli-net1-2', 'HTTP request', 'curl https://api.example.com'),
-      task('cli-net1-3', 'Download file', 'wget https://example.com/file.zip'),
-      task('cli-net1-4', 'View IP address', 'ip addr show'),
+      task('cli-net1-1', 'Test connection', 'ping -c 4 google.com - send ICMP echo requests to a host'),
+      task('cli-net1-2', 'HTTP request', 'curl https://api.example.com - transfer data from a URL'),
+      task('cli-net1-3', 'Download file', 'wget https://example.com/file.zip - non-interactive network downloader'),
+      task('cli-net1-4', 'View IP address', 'ip addr show - display IP addresses and network interfaces'),
     ]
   ),
   lesson(
@@ -940,10 +940,10 @@ const cliStage11Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('cli-net2-1', 'SSH connection', 'ssh user@hostname'),
-      task('cli-net2-2', 'Copy to remote', 'scp file.txt user@host:/path/'),
-      task('cli-net2-3', 'Check listening ports', 'ss -tuln'),
-      task('cli-net2-4', 'DNS lookup', 'dig example.com'),
+      task('cli-net2-1', 'SSH connection', 'ssh user@hostname - open a secure shell to a remote host'),
+      task('cli-net2-2', 'Copy to remote', 'scp file.txt user@host:/path/ - secure copy files over SSH'),
+      task('cli-net2-3', 'Check listening ports', 'ss -tuln - investigate sockets and listening ports'),
+      task('cli-net2-4', 'DNS lookup', 'dig example.com - DNS lookup utility'),
     ]
   ),
 ];
@@ -957,10 +957,10 @@ const cliStage12Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('cli-arch1-1', 'Create tar archive', 'tar -cvf archive.tar folder/'),
-      task('cli-arch1-2', 'Create gzipped tar', 'tar -czvf archive.tar.gz folder/'),
-      task('cli-arch1-3', 'Create zip', 'zip -r archive.zip folder/'),
-      task('cli-arch1-4', 'List archive contents', 'tar -tvf archive.tar'),
+      task('cli-arch1-1', 'Create tar archive', 'tar -cvf archive.tar folder/ - create a tar archive'),
+      task('cli-arch1-2', 'Create gzipped tar', 'tar -czvf archive.tar.gz folder/ - create a gzip compressed archive'),
+      task('cli-arch1-3', 'Create zip', 'zip -r archive.zip folder/ - package and compress files into a zip'),
+      task('cli-arch1-4', 'List archive contents', 'tar -tvf archive.tar - list the contents of a tar archive'),
     ]
   ),
   lesson(
@@ -970,10 +970,10 @@ const cliStage12Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('cli-arch2-1', 'Extract tar', 'tar -xvf archive.tar'),
-      task('cli-arch2-2', 'Extract gzipped tar', 'tar -xzvf archive.tar.gz'),
-      task('cli-arch2-3', 'Extract to directory', 'unzip archive.zip -d output/'),
-      task('cli-arch2-4', 'Extract specific file', 'tar -xvf archive.tar file.txt'),
+      task('cli-arch2-1', 'Extract tar', 'tar -xvf archive.tar - extract files from a tar archive'),
+      task('cli-arch2-2', 'Extract gzipped tar', 'tar -xzvf archive.tar.gz - extract a gzip compressed archive'),
+      task('cli-arch2-3', 'Extract to directory', 'unzip archive.zip -d output/ - extract zip to a directory'),
+      task('cli-arch2-4', 'Extract specific file', 'tar -xvf archive.tar file.txt - extract a single file from archive'),
     ]
   ),
 ];
@@ -987,10 +987,10 @@ const cliStage13Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('cli-proc1-1', 'Kill by PID', 'kill 1234'),
-      task('cli-proc1-2', 'Force kill', 'kill -9 1234'),
-      task('cli-proc1-3', 'Kill by name', 'pkill -f "python script.py"'),
-      task('cli-proc1-4', 'List jobs', 'jobs'),
+      task('cli-proc1-1', 'Kill by PID', 'kill 1234 - send a signal to a process by ID'),
+      task('cli-proc1-2', 'Force kill', 'kill -9 1234 - forcefully terminate a process'),
+      task('cli-proc1-3', 'Kill by name', 'pkill -f "python script.py" - signal processes by name pattern'),
+      task('cli-proc1-4', 'List jobs', 'jobs - list active jobs in the current shell'),
     ]
   ),
   lesson(
@@ -1000,10 +1000,10 @@ const cliStage13Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('cli-proc2-1', 'Run in background', 'nohup ./script.sh &'),
-      task('cli-proc2-2', 'Bring to foreground', 'fg %1'),
-      task('cli-proc2-3', 'Send to background', 'bg %1'),
-      task('cli-proc2-4', 'Disown process', 'disown %1'),
+      task('cli-proc2-1', 'Run in background', 'nohup ./script.sh & - run immune to hangups in background'),
+      task('cli-proc2-2', 'Bring to foreground', 'fg %1 - move a background job to the foreground'),
+      task('cli-proc2-3', 'Send to background', 'bg %1 - resume a suspended job in the background'),
+      task('cli-proc2-4', 'Disown process', 'disown %1 - remove job from the shell job table'),
     ]
   ),
 ];
@@ -1017,10 +1017,10 @@ const cliStage14Lessons: Lesson[] = [
     'commands',
     'expert',
     [
-      task('cli-docker1-1', 'Pull image', 'docker pull nginx'),
-      task('cli-docker1-2', 'List images', 'docker images'),
-      task('cli-docker1-3', 'Run container', 'docker run -d -p 80:80 nginx'),
-      task('cli-docker1-4', 'List containers', 'docker ps -a'),
+      task('cli-docker1-1', 'Pull image', 'docker pull nginx - download an image from a registry'),
+      task('cli-docker1-2', 'List images', 'docker images - list all downloaded container images'),
+      task('cli-docker1-3', 'Run container', 'docker run -d -p 80:80 nginx - create and start a container'),
+      task('cli-docker1-4', 'List containers', 'docker ps -a - list all containers including stopped'),
     ]
   ),
   lesson(
@@ -1030,10 +1030,10 @@ const cliStage14Lessons: Lesson[] = [
     'commands',
     'expert',
     [
-      task('cli-docker2-1', 'Enter container', 'docker exec -it container /bin/bash'),
-      task('cli-docker2-2', 'View logs', 'docker logs -f container'),
-      task('cli-docker2-3', 'Build image', 'docker build -t myapp .'),
-      task('cli-docker2-4', 'Docker Compose', 'docker-compose up -d'),
+      task('cli-docker2-1', 'Enter container', 'docker exec -it container /bin/bash - run a command in a running container'),
+      task('cli-docker2-2', 'View logs', 'docker logs -f container - fetch and follow container logs'),
+      task('cli-docker2-3', 'Build image', 'docker build -t myapp . - build an image from a Dockerfile'),
+      task('cli-docker2-4', 'Docker Compose', 'docker-compose up -d - start multi-container applications'),
     ]
   ),
 ];
@@ -1047,11 +1047,11 @@ const cliMasteryTest: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('test-b1', 'Navigate to home and list', 'cd ~ && ls -la'),
-      task('test-b2', 'Create dir and file', 'mkdir test && touch test/file.txt'),
-      task('test-b3', 'Copy and view', 'cp file.txt backup.txt && cat backup.txt'),
-      task('test-b4', 'Find text files', 'find . -name "*.txt" -type f'),
-      task('test-b5', 'Search in file', 'grep -n "error" app.log'),
+      task('test-b1', 'Navigate to home and list', 'cd ~ && ls -la - go home and list all files'),
+      task('test-b2', 'Create dir and file', 'mkdir test && touch test/file.txt - create directory and file'),
+      task('test-b3', 'Copy and view', 'cp file.txt backup.txt && cat backup.txt - copy then display'),
+      task('test-b4', 'Find text files', 'find . -name "*.txt" -type f - search for text files recursively'),
+      task('test-b5', 'Search in file', 'grep -n "error" app.log - search with line numbers'),
     ]
   ),
   lesson(
@@ -1061,11 +1061,11 @@ const cliMasteryTest: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('test-i1', 'Count error lines', 'grep "ERROR" log.txt | wc -l'),
-      task('test-i2', 'Sort and unique', 'cat data.txt | sort | uniq -c | sort -rn'),
-      task('test-i3', 'Extract column', 'cut -d"," -f2 users.csv | sort'),
-      task('test-i4', 'Replace text in file', 'sed "s/http/https/g" urls.txt > secure.txt'),
-      task('test-i5', 'Git workflow', 'git add . && git commit -m "Update" && git push'),
+      task('test-i1', 'Count error lines', 'grep "ERROR" log.txt | wc -l - count lines matching ERROR'),
+      task('test-i2', 'Sort and unique', 'cat data.txt | sort | uniq -c | sort -rn - count unique occurrences'),
+      task('test-i3', 'Extract column', 'cut -d"," -f2 users.csv | sort - extract and sort a CSV column'),
+      task('test-i4', 'Replace text in file', 'sed "s/http/https/g" urls.txt > secure.txt - find and replace text'),
+      task('test-i5', 'Git workflow', 'git add . && git commit -m "Update" && git push - stage, commit, push'),
     ]
   ),
   lesson(
@@ -1075,11 +1075,11 @@ const cliMasteryTest: Lesson[] = [
     'commands',
     'expert',
     [
-      task('test-a1', 'Find large files', 'find . -type f -size +100M -exec ls -lh {} +'),
-      task('test-a2', 'Monitor process memory', 'ps aux | grep node | awk "{sum += $6} END {print sum/1024}"'),
-      task('test-a3', 'Create and extract archive', 'tar -czvf backup.tar.gz ./data && tar -xzvf backup.tar.gz'),
-      task('test-a4', 'Docker cleanup', 'docker system prune -a --volumes'),
-      task('test-a5', 'Network check', 'ss -tuln | grep LISTEN | wc -l'),
+      task('test-a1', 'Find large files', 'find . -type f -size +100M -exec ls -lh {} + - find files over 100MB'),
+      task('test-a2', 'Monitor process memory', 'ps aux | grep node | awk "{sum += $6} END {print sum/1024}" - sum memory usage'),
+      task('test-a3', 'Create and extract archive', 'tar -czvf backup.tar.gz ./data && tar -xzvf backup.tar.gz - archive round-trip'),
+      task('test-a4', 'Docker cleanup', 'docker system prune -a --volumes - remove all unused Docker data'),
+      task('test-a5', 'Network check', 'ss -tuln | grep LISTEN | wc -l - count listening ports'),
     ]
   ),
   lesson(
@@ -1089,12 +1089,12 @@ const cliMasteryTest: Lesson[] = [
     'commands',
     'expert',
     [
-      task('test-m1', 'Complex pipeline', 'find . -name "*.log" -mtime -7 | xargs grep -l "ERROR" | wc -l'),
-      task('test-m2', 'Process management', 'ps aux | sort -nrk 4 | head -5'),
-      task('test-m3', 'Archive with exclusion', 'tar --exclude="node_modules" -czvf project.tar.gz ./'),
-      task('test-m4', 'Real-time log filter', 'tail -f /var/log/syslog | grep --line-buffered "error"'),
-      task('test-m5', 'Full Git workflow', 'git checkout -b feature && git add . && git commit -m "Add feature" && git push -u origin feature'),
-      task('test-m6', 'Docker deploy', 'docker build -t app:v1 . && docker run -d -p 3000:3000 --name myapp app:v1'),
+      task('test-m1', 'Complex pipeline', 'find . -name "*.log" -mtime -7 | xargs grep -l "ERROR" | wc -l - count error log files'),
+      task('test-m2', 'Process management', 'ps aux | sort -nrk 4 | head -5 - top 5 memory-consuming processes'),
+      task('test-m3', 'Archive with exclusion', 'tar --exclude="node_modules" -czvf project.tar.gz ./ - archive excluding node_modules'),
+      task('test-m4', 'Real-time log filter', 'tail -f /var/log/syslog | grep --line-buffered "error" - follow logs for errors'),
+      task('test-m5', 'Full Git workflow', 'git checkout -b feature && git add . && git commit -m "Add feature" && git push -u origin feature - branch, commit, push'),
+      task('test-m6', 'Docker deploy', 'docker build -t app:v1 . && docker run -d -p 3000:3000 --name myapp app:v1 - build and run container'),
     ]
   ),
 ];
@@ -1793,10 +1793,10 @@ const sqlStage1Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('sql-b1-1', 'Select all columns from a table', 'SELECT * FROM users;'),
-      task('sql-b1-2', 'Select specific columns', 'SELECT name, email FROM users;'),
-      task('sql-b1-3', 'Select with alias', 'SELECT name AS full_name FROM users;'),
-      task('sql-b1-4', 'Select distinct values', 'SELECT DISTINCT city FROM users;'),
+      task('sql-b1-1', 'Select all columns from a table', 'SELECT * FROM users; -- select all columns from a table'),
+      task('sql-b1-2', 'Select specific columns', 'SELECT name, email FROM users; -- choose only the columns you need'),
+      task('sql-b1-3', 'Select with alias', 'SELECT name AS full_name FROM users; -- rename a column in the output'),
+      task('sql-b1-4', 'Select distinct values', 'SELECT DISTINCT city FROM users; -- remove duplicate rows'),
     ]
   ),
   lesson(
@@ -1806,10 +1806,10 @@ const sqlStage1Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('sql-b2-1', 'Filter by equality', 'SELECT * FROM users WHERE active = true;'),
-      task('sql-b2-2', 'Filter by comparison', 'SELECT * FROM products WHERE price > 100;'),
-      task('sql-b2-3', 'Filter with LIKE', "SELECT * FROM users WHERE name LIKE 'J%';"),
-      task('sql-b2-4', 'Filter with IN', "SELECT * FROM users WHERE city IN ('NYC', 'LA');"),
+      task('sql-b2-1', 'Filter by equality', 'SELECT * FROM users WHERE active = true; -- filter rows by condition'),
+      task('sql-b2-2', 'Filter by comparison', 'SELECT * FROM products WHERE price > 100; -- compare column values'),
+      task('sql-b2-3', 'Filter with LIKE', "SELECT * FROM users WHERE name LIKE 'J%'; -- pattern matching with wildcards"),
+      task('sql-b2-4', 'Filter with IN', "SELECT * FROM users WHERE city IN ('NYC', 'LA'); -- match against a list"),
     ]
   ),
 ];
@@ -1823,10 +1823,10 @@ const sqlStage2Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('sql-so1-1', 'Sort ascending', 'SELECT * FROM users ORDER BY name ASC;'),
-      task('sql-so1-2', 'Sort descending', 'SELECT * FROM users ORDER BY created_at DESC;'),
-      task('sql-so1-3', 'Limit results', 'SELECT * FROM products ORDER BY price DESC LIMIT 10;'),
-      task('sql-so1-4', 'Offset results', 'SELECT * FROM products ORDER BY id LIMIT 10 OFFSET 20;'),
+      task('sql-so1-1', 'Sort ascending', 'SELECT * FROM users ORDER BY name ASC; -- sort results A to Z'),
+      task('sql-so1-2', 'Sort descending', 'SELECT * FROM users ORDER BY created_at DESC; -- newest first'),
+      task('sql-so1-3', 'Limit results', 'SELECT * FROM products ORDER BY price DESC LIMIT 10; -- return only 10 rows'),
+      task('sql-so1-4', 'Offset results', 'SELECT * FROM products ORDER BY id LIMIT 10 OFFSET 20; -- skip rows for pagination'),
     ]
   ),
   lesson(
@@ -1836,10 +1836,10 @@ const sqlStage2Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('sql-so2-1', 'AND operator', 'SELECT * FROM users WHERE active = true AND age > 18;'),
-      task('sql-so2-2', 'OR operator', "SELECT * FROM products WHERE category = 'books' OR category = 'music';"),
-      task('sql-so2-3', 'NOT operator', 'SELECT * FROM users WHERE NOT deleted;'),
-      task('sql-so2-4', 'BETWEEN operator', 'SELECT * FROM orders WHERE total BETWEEN 50 AND 200;'),
+      task('sql-so2-1', 'AND operator', 'SELECT * FROM users WHERE active = true AND age > 18; -- both conditions must be true'),
+      task('sql-so2-2', 'OR operator', "SELECT * FROM products WHERE category = 'books' OR category = 'music'; -- either condition"),
+      task('sql-so2-3', 'NOT operator', 'SELECT * FROM users WHERE NOT deleted; -- negate a condition'),
+      task('sql-so2-4', 'BETWEEN operator', 'SELECT * FROM orders WHERE total BETWEEN 50 AND 200; -- inclusive range check'),
     ]
   ),
 ];
@@ -1853,10 +1853,10 @@ const sqlStage3Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('sql-w1-1', 'Insert a single row', "INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');"),
-      task('sql-w1-2', 'Insert multiple rows', "INSERT INTO tags (name) VALUES ('sql'), ('python'), ('rust');"),
-      task('sql-w1-3', 'Insert with default values', 'INSERT INTO orders (user_id, total) VALUES (1, 99.99);'),
-      task('sql-w1-4', 'Insert from select', 'INSERT INTO archive SELECT * FROM logs WHERE created_at < NOW() - INTERVAL 1 YEAR;'),
+      task('sql-w1-1', 'Insert a single row', "INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com'); -- add a new row"),
+      task('sql-w1-2', 'Insert multiple rows', "INSERT INTO tags (name) VALUES ('sql'), ('python'), ('rust'); -- batch insert"),
+      task('sql-w1-3', 'Insert with default values', 'INSERT INTO orders (user_id, total) VALUES (1, 99.99); -- omitted columns use defaults'),
+      task('sql-w1-4', 'Insert from select', 'INSERT INTO archive SELECT * FROM logs WHERE created_at < NOW() - INTERVAL 1 YEAR; -- copy rows from another table'),
     ]
   ),
   lesson(
@@ -1866,10 +1866,10 @@ const sqlStage3Lessons: Lesson[] = [
     'commands',
     'beginner',
     [
-      task('sql-w2-1', 'Update a row', "UPDATE users SET email = 'new@example.com' WHERE id = 1;"),
-      task('sql-w2-2', 'Update multiple columns', "UPDATE products SET price = 19.99, stock = 50 WHERE id = 42;"),
-      task('sql-w2-3', 'Delete a row', 'DELETE FROM sessions WHERE expired_at < NOW();'),
-      task('sql-w2-4', 'Truncate a table', 'TRUNCATE TABLE temp_logs;'),
+      task('sql-w2-1', 'Update a row', "UPDATE users SET email = 'new@example.com' WHERE id = 1; -- modify existing data"),
+      task('sql-w2-2', 'Update multiple columns', "UPDATE products SET price = 19.99, stock = 50 WHERE id = 42; -- change several fields at once"),
+      task('sql-w2-3', 'Delete a row', 'DELETE FROM sessions WHERE expired_at < NOW(); -- remove rows matching condition'),
+      task('sql-w2-4', 'Truncate a table', 'TRUNCATE TABLE temp_logs; -- remove all rows instantly'),
     ]
   ),
 ];
@@ -1883,10 +1883,10 @@ const sqlStage4Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-a1-1', 'Count rows', 'SELECT COUNT(*) FROM users;'),
-      task('sql-a1-2', 'Count with condition', 'SELECT COUNT(*) FROM orders WHERE status = \'completed\';'),
-      task('sql-a1-3', 'Sum values', 'SELECT SUM(total) FROM orders;'),
-      task('sql-a1-4', 'Average value', 'SELECT AVG(price) FROM products WHERE category = \'electronics\';'),
+      task('sql-a1-1', 'Count rows', 'SELECT COUNT(*) FROM users; -- count the number of rows'),
+      task('sql-a1-2', 'Count with condition', 'SELECT COUNT(*) FROM orders WHERE status = \'completed\'; -- count filtered rows'),
+      task('sql-a1-3', 'Sum values', 'SELECT SUM(total) FROM orders; -- add up all values in a column'),
+      task('sql-a1-4', 'Average value', 'SELECT AVG(price) FROM products WHERE category = \'electronics\'; -- compute the mean'),
     ]
   ),
   lesson(
@@ -1896,10 +1896,10 @@ const sqlStage4Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-a2-1', 'Find minimum', 'SELECT MIN(price) FROM products;'),
-      task('sql-a2-2', 'Find maximum', 'SELECT MAX(created_at) FROM users;'),
-      task('sql-a2-3', 'Group by column', 'SELECT city, COUNT(*) FROM users GROUP BY city;'),
-      task('sql-a2-4', 'Group with HAVING', 'SELECT city, COUNT(*) FROM users GROUP BY city HAVING COUNT(*) > 5;'),
+      task('sql-a2-1', 'Find minimum', 'SELECT MIN(price) FROM products; -- find the smallest value'),
+      task('sql-a2-2', 'Find maximum', 'SELECT MAX(created_at) FROM users; -- find the largest value'),
+      task('sql-a2-3', 'Group by column', 'SELECT city, COUNT(*) FROM users GROUP BY city; -- aggregate rows by group'),
+      task('sql-a2-4', 'Group with HAVING', 'SELECT city, COUNT(*) FROM users GROUP BY city HAVING COUNT(*) > 5; -- filter groups'),
     ]
   ),
 ];
@@ -1913,10 +1913,10 @@ const sqlStage5Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-j1-1', 'Basic inner join', 'SELECT * FROM orders INNER JOIN users ON orders.user_id = users.id;'),
-      task('sql-j1-2', 'Join with aliases', 'SELECT o.id, u.name FROM orders o INNER JOIN users u ON o.user_id = u.id;'),
-      task('sql-j1-3', 'Join with filter', 'SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100;'),
-      task('sql-j1-4', 'Multi-table join', 'SELECT u.name, p.title FROM users u JOIN orders o ON u.id = o.user_id JOIN products p ON o.product_id = p.id;'),
+      task('sql-j1-1', 'Basic inner join', 'SELECT * FROM orders INNER JOIN users ON orders.user_id = users.id; -- combine matching rows'),
+      task('sql-j1-2', 'Join with aliases', 'SELECT o.id, u.name FROM orders o INNER JOIN users u ON o.user_id = u.id; -- use short table aliases'),
+      task('sql-j1-3', 'Join with filter', 'SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100; -- join then filter'),
+      task('sql-j1-4', 'Multi-table join', 'SELECT u.name, p.title FROM users u JOIN orders o ON u.id = o.user_id JOIN products p ON o.product_id = p.id; -- chain multiple joins'),
     ]
   ),
   lesson(
@@ -1926,10 +1926,10 @@ const sqlStage5Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-j2-1', 'Left join', 'SELECT u.name, o.id FROM users u LEFT JOIN orders o ON u.id = o.user_id;'),
-      task('sql-j2-2', 'Find unmatched rows', 'SELECT u.name FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE o.id IS NULL;'),
-      task('sql-j2-3', 'Right join', 'SELECT o.id, u.name FROM orders o RIGHT JOIN users u ON o.user_id = u.id;'),
-      task('sql-j2-4', 'Left join with aggregation', 'SELECT u.name, COUNT(o.id) FROM users u LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.name;'),
+      task('sql-j2-1', 'Left join', 'SELECT u.name, o.id FROM users u LEFT JOIN orders o ON u.id = o.user_id; -- keep all left rows'),
+      task('sql-j2-2', 'Find unmatched rows', 'SELECT u.name FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE o.id IS NULL; -- find rows with no match'),
+      task('sql-j2-3', 'Right join', 'SELECT o.id, u.name FROM orders o RIGHT JOIN users u ON o.user_id = u.id; -- keep all right rows'),
+      task('sql-j2-4', 'Left join with aggregation', 'SELECT u.name, COUNT(o.id) FROM users u LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.name; -- count per user'),
     ]
   ),
 ];
@@ -1943,10 +1943,10 @@ const sqlStage6Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-j3-1', 'Full outer join', 'SELECT * FROM employees e FULL OUTER JOIN departments d ON e.dept_id = d.id;'),
-      task('sql-j3-2', 'Cross join', 'SELECT colors.name, sizes.label FROM colors CROSS JOIN sizes;'),
-      task('sql-j3-3', 'Self join', 'SELECT e.name AS employee, m.name AS manager FROM employees e JOIN employees m ON e.manager_id = m.id;'),
-      task('sql-j3-4', 'Natural join', 'SELECT * FROM orders NATURAL JOIN users;'),
+      task('sql-j3-1', 'Full outer join', 'SELECT * FROM employees e FULL OUTER JOIN departments d ON e.dept_id = d.id; -- keep all rows from both sides'),
+      task('sql-j3-2', 'Cross join', 'SELECT colors.name, sizes.label FROM colors CROSS JOIN sizes; -- every combination of rows'),
+      task('sql-j3-3', 'Self join', 'SELECT e.name AS employee, m.name AS manager FROM employees e JOIN employees m ON e.manager_id = m.id; -- join a table to itself'),
+      task('sql-j3-4', 'Natural join', 'SELECT * FROM orders NATURAL JOIN users; -- join on columns with matching names'),
     ]
   ),
   lesson(
@@ -1956,10 +1956,10 @@ const sqlStage6Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-j4-1', 'Many-to-many join', 'SELECT s.name, c.title FROM students s JOIN enrollments e ON s.id = e.student_id JOIN courses c ON e.course_id = c.id;'),
-      task('sql-j4-2', 'Join with subquery', 'SELECT u.name, t.total FROM users u JOIN (SELECT user_id, SUM(amount) AS total FROM payments GROUP BY user_id) t ON u.id = t.user_id;'),
-      task('sql-j4-3', 'Conditional join', 'SELECT * FROM products p JOIN discounts d ON p.category = d.category AND p.price > d.min_price;'),
-      task('sql-j4-4', 'Anti-join pattern', 'SELECT p.title FROM products p LEFT JOIN order_items oi ON p.id = oi.product_id WHERE oi.id IS NULL;'),
+      task('sql-j4-1', 'Many-to-many join', 'SELECT s.name, c.title FROM students s JOIN enrollments e ON s.id = e.student_id JOIN courses c ON e.course_id = c.id; -- bridge table pattern'),
+      task('sql-j4-2', 'Join with subquery', 'SELECT u.name, t.total FROM users u JOIN (SELECT user_id, SUM(amount) AS total FROM payments GROUP BY user_id) t ON u.id = t.user_id; -- join to a derived table'),
+      task('sql-j4-3', 'Conditional join', 'SELECT * FROM products p JOIN discounts d ON p.category = d.category AND p.price > d.min_price; -- multi-condition join'),
+      task('sql-j4-4', 'Anti-join pattern', 'SELECT p.title FROM products p LEFT JOIN order_items oi ON p.id = oi.product_id WHERE oi.id IS NULL; -- find never-ordered products'),
     ]
   ),
 ];
@@ -1973,10 +1973,10 @@ const sqlStage7Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-sq1-1', 'Subquery in WHERE', 'SELECT * FROM users WHERE id IN (SELECT user_id FROM orders WHERE total > 500);'),
-      task('sql-sq1-2', 'Scalar subquery', 'SELECT name, price, (SELECT AVG(price) FROM products) AS avg_price FROM products;'),
-      task('sql-sq1-3', 'EXISTS subquery', 'SELECT u.name FROM users u WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);'),
-      task('sql-sq1-4', 'NOT EXISTS subquery', 'SELECT u.name FROM users u WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);'),
+      task('sql-sq1-1', 'Subquery in WHERE', 'SELECT * FROM users WHERE id IN (SELECT user_id FROM orders WHERE total > 500); -- filter using a subquery'),
+      task('sql-sq1-2', 'Scalar subquery', 'SELECT name, price, (SELECT AVG(price) FROM products) AS avg_price FROM products; -- embed a single-value query'),
+      task('sql-sq1-3', 'EXISTS subquery', 'SELECT u.name FROM users u WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id); -- check if related rows exist'),
+      task('sql-sq1-4', 'NOT EXISTS subquery', 'SELECT u.name FROM users u WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id); -- find rows with no match'),
     ]
   ),
   lesson(
@@ -1986,10 +1986,10 @@ const sqlStage7Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-sq2-1', 'Correlated subquery', 'SELECT p.title, p.price FROM products p WHERE p.price > (SELECT AVG(price) FROM products WHERE category = p.category);'),
-      task('sql-sq2-2', 'Subquery in FROM', 'SELECT dept, avg_salary FROM (SELECT department AS dept, AVG(salary) AS avg_salary FROM employees GROUP BY department) sub;'),
-      task('sql-sq2-3', 'ALL operator', 'SELECT * FROM products WHERE price >= ALL (SELECT price FROM products WHERE category = \'premium\');'),
-      task('sql-sq2-4', 'ANY operator', 'SELECT * FROM users WHERE age > ANY (SELECT age FROM users WHERE city = \'NYC\');'),
+      task('sql-sq2-1', 'Correlated subquery', 'SELECT p.title, p.price FROM products p WHERE p.price > (SELECT AVG(price) FROM products WHERE category = p.category); -- reference outer query'),
+      task('sql-sq2-2', 'Subquery in FROM', 'SELECT dept, avg_salary FROM (SELECT department AS dept, AVG(salary) AS avg_salary FROM employees GROUP BY department) sub; -- derived table'),
+      task('sql-sq2-3', 'ALL operator', 'SELECT * FROM products WHERE price >= ALL (SELECT price FROM products WHERE category = \'premium\'); -- compare against every row'),
+      task('sql-sq2-4', 'ANY operator', 'SELECT * FROM users WHERE age > ANY (SELECT age FROM users WHERE city = \'NYC\'); -- compare against any row'),
     ]
   ),
 ];
@@ -2003,10 +2003,10 @@ const sqlStage8Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-fn1-1', 'Concatenate strings', "SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM users;"),
-      task('sql-fn1-2', 'Uppercase and lowercase', 'SELECT UPPER(name), LOWER(email) FROM users;'),
-      task('sql-fn1-3', 'Substring extraction', 'SELECT SUBSTRING(phone, 1, 3) AS area_code FROM contacts;'),
-      task('sql-fn1-4', 'Replace and trim', "SELECT TRIM(name), REPLACE(email, 'old.com', 'new.com') FROM users;"),
+      task('sql-fn1-1', 'Concatenate strings', "SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM users; -- join strings together"),
+      task('sql-fn1-2', 'Uppercase and lowercase', 'SELECT UPPER(name), LOWER(email) FROM users; -- change text case'),
+      task('sql-fn1-3', 'Substring extraction', 'SELECT SUBSTRING(phone, 1, 3) AS area_code FROM contacts; -- extract part of a string'),
+      task('sql-fn1-4', 'Replace and trim', "SELECT TRIM(name), REPLACE(email, 'old.com', 'new.com') FROM users; -- clean and transform text"),
     ]
   ),
   lesson(
@@ -2016,10 +2016,10 @@ const sqlStage8Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-fn2-1', 'Current date and time', 'SELECT NOW(), CURRENT_DATE, CURRENT_TIMESTAMP;'),
-      task('sql-fn2-2', 'Extract date parts', 'SELECT EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at) FROM orders;'),
-      task('sql-fn2-3', 'Date arithmetic', "SELECT * FROM subscriptions WHERE end_date > NOW() + INTERVAL '30 days';"),
-      task('sql-fn2-4', 'Format dates', "SELECT TO_CHAR(created_at, 'YYYY-MM-DD') AS date_str FROM events;"),
+      task('sql-fn2-1', 'Current date and time', 'SELECT NOW(), CURRENT_DATE, CURRENT_TIMESTAMP; -- get the current date and time'),
+      task('sql-fn2-2', 'Extract date parts', 'SELECT EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at) FROM orders; -- pull out year or month'),
+      task('sql-fn2-3', 'Date arithmetic', "SELECT * FROM subscriptions WHERE end_date > NOW() + INTERVAL '30 days'; -- add or subtract time"),
+      task('sql-fn2-4', 'Format dates', "SELECT TO_CHAR(created_at, 'YYYY-MM-DD') AS date_str FROM events; -- format a timestamp as text"),
     ]
   ),
 ];
@@ -2033,10 +2033,10 @@ const sqlStage9Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-cs1-1', 'Simple CASE', "SELECT name, CASE status WHEN 'active' THEN 'Active' WHEN 'inactive' THEN 'Inactive' END FROM users;"),
-      task('sql-cs1-2', 'Searched CASE', "SELECT name, CASE WHEN age < 18 THEN 'minor' WHEN age < 65 THEN 'adult' ELSE 'senior' END AS group_label FROM users;"),
-      task('sql-cs1-3', 'CASE in aggregate', "SELECT COUNT(CASE WHEN status = 'completed' THEN 1 END) AS completed FROM orders;"),
-      task('sql-cs1-4', 'CASE in ORDER BY', "SELECT * FROM tasks ORDER BY CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END;"),
+      task('sql-cs1-1', 'Simple CASE', "SELECT name, CASE status WHEN 'active' THEN 'Active' WHEN 'inactive' THEN 'Inactive' END FROM users; -- value-based branching"),
+      task('sql-cs1-2', 'Searched CASE', "SELECT name, CASE WHEN age < 18 THEN 'minor' WHEN age < 65 THEN 'adult' ELSE 'senior' END AS group_label FROM users; -- condition-based branching"),
+      task('sql-cs1-3', 'CASE in aggregate', "SELECT COUNT(CASE WHEN status = 'completed' THEN 1 END) AS completed FROM orders; -- conditional counting"),
+      task('sql-cs1-4', 'CASE in ORDER BY', "SELECT * FROM tasks ORDER BY CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END; -- custom sort order"),
     ]
   ),
   lesson(
@@ -2046,10 +2046,10 @@ const sqlStage9Lessons: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-cs2-1', 'COALESCE function', "SELECT COALESCE(nickname, first_name, 'Anonymous') AS display_name FROM users;"),
-      task('sql-cs2-2', 'NULLIF function', "SELECT NULLIF(status, 'unknown') FROM records;"),
-      task('sql-cs2-3', 'IS NULL check', 'SELECT * FROM users WHERE deleted_at IS NULL;'),
-      task('sql-cs2-4', 'Cast types', 'SELECT CAST(price AS INTEGER), CAST(created_at AS DATE) FROM products;'),
+      task('sql-cs2-1', 'COALESCE function', "SELECT COALESCE(nickname, first_name, 'Anonymous') AS display_name FROM users; -- return first non-null value"),
+      task('sql-cs2-2', 'NULLIF function', "SELECT NULLIF(status, 'unknown') FROM records; -- return null if values are equal"),
+      task('sql-cs2-3', 'IS NULL check', 'SELECT * FROM users WHERE deleted_at IS NULL; -- test for null values'),
+      task('sql-cs2-4', 'Cast types', 'SELECT CAST(price AS INTEGER), CAST(created_at AS DATE) FROM products; -- convert between data types'),
     ]
   ),
 ];
@@ -2063,10 +2063,10 @@ const sqlStage10Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-d1-1', 'Create a table', 'CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, email VARCHAR(255) UNIQUE);'),
-      task('sql-d1-2', 'Add foreign key', 'CREATE TABLE orders (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id), total DECIMAL(10,2));'),
-      task('sql-d1-3', 'Add check constraint', 'CREATE TABLE products (id SERIAL PRIMARY KEY, price DECIMAL(10,2) CHECK (price > 0), stock INTEGER DEFAULT 0);'),
-      task('sql-d1-4', 'Create with timestamp', 'CREATE TABLE posts (id SERIAL PRIMARY KEY, title TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW());'),
+      task('sql-d1-1', 'Create a table', 'CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, email VARCHAR(255) UNIQUE); -- define a new table'),
+      task('sql-d1-2', 'Add foreign key', 'CREATE TABLE orders (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id), total DECIMAL(10,2)); -- reference another table'),
+      task('sql-d1-3', 'Add check constraint', 'CREATE TABLE products (id SERIAL PRIMARY KEY, price DECIMAL(10,2) CHECK (price > 0), stock INTEGER DEFAULT 0); -- enforce data rules'),
+      task('sql-d1-4', 'Create with timestamp', 'CREATE TABLE posts (id SERIAL PRIMARY KEY, title TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW()); -- auto-set creation time'),
     ]
   ),
   lesson(
@@ -2076,10 +2076,10 @@ const sqlStage10Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-d2-1', 'Add a column', 'ALTER TABLE users ADD COLUMN phone VARCHAR(20);'),
-      task('sql-d2-2', 'Drop a column', 'ALTER TABLE users DROP COLUMN phone;'),
-      task('sql-d2-3', 'Rename a column', 'ALTER TABLE users RENAME COLUMN name TO full_name;'),
-      task('sql-d2-4', 'Drop table safely', 'DROP TABLE IF EXISTS temp_data CASCADE;'),
+      task('sql-d2-1', 'Add a column', 'ALTER TABLE users ADD COLUMN phone VARCHAR(20); -- add a new column to a table'),
+      task('sql-d2-2', 'Drop a column', 'ALTER TABLE users DROP COLUMN phone; -- remove a column from a table'),
+      task('sql-d2-3', 'Rename a column', 'ALTER TABLE users RENAME COLUMN name TO full_name; -- change a column name'),
+      task('sql-d2-4', 'Drop table safely', 'DROP TABLE IF EXISTS temp_data CASCADE; -- delete a table if it exists'),
     ]
   ),
 ];
@@ -2093,10 +2093,10 @@ const sqlStage11Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-i1-1', 'Create an index', 'CREATE INDEX idx_users_email ON users (email);'),
-      task('sql-i1-2', 'Create unique index', 'CREATE UNIQUE INDEX idx_users_username ON users (username);'),
-      task('sql-i1-3', 'Composite index', 'CREATE INDEX idx_orders_user_date ON orders (user_id, created_at);'),
-      task('sql-i1-4', 'Drop an index', 'DROP INDEX IF EXISTS idx_users_email;'),
+      task('sql-i1-1', 'Create an index', 'CREATE INDEX idx_users_email ON users (email); -- speed up lookups on a column'),
+      task('sql-i1-2', 'Create unique index', 'CREATE UNIQUE INDEX idx_users_username ON users (username); -- enforce uniqueness with an index'),
+      task('sql-i1-3', 'Composite index', 'CREATE INDEX idx_orders_user_date ON orders (user_id, created_at); -- index on multiple columns'),
+      task('sql-i1-4', 'Drop an index', 'DROP INDEX IF EXISTS idx_users_email; -- remove an index'),
     ]
   ),
   lesson(
@@ -2106,10 +2106,10 @@ const sqlStage11Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-i2-1', 'Explain a query', 'EXPLAIN SELECT * FROM users WHERE email = \'test@example.com\';'),
-      task('sql-i2-2', 'Explain analyze', 'EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42;'),
-      task('sql-i2-3', 'Partial index', 'CREATE INDEX idx_active_users ON users (email) WHERE active = true;'),
-      task('sql-i2-4', 'Expression index', 'CREATE INDEX idx_lower_email ON users (LOWER(email));'),
+      task('sql-i2-1', 'Explain a query', 'EXPLAIN SELECT * FROM users WHERE email = \'test@example.com\'; -- show the query execution plan'),
+      task('sql-i2-2', 'Explain analyze', 'EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42; -- run and measure actual performance'),
+      task('sql-i2-3', 'Partial index', 'CREATE INDEX idx_active_users ON users (email) WHERE active = true; -- index only matching rows'),
+      task('sql-i2-4', 'Expression index', 'CREATE INDEX idx_lower_email ON users (LOWER(email)); -- index on a computed expression'),
     ]
   ),
 ];
@@ -2123,10 +2123,10 @@ const sqlStage12Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-wn1-1', 'ROW_NUMBER', 'SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS rank FROM employees;'),
-      task('sql-wn1-2', 'RANK with ties', 'SELECT name, score, RANK() OVER (ORDER BY score DESC) AS rank FROM students;'),
-      task('sql-wn1-3', 'DENSE_RANK', 'SELECT name, score, DENSE_RANK() OVER (ORDER BY score DESC) AS dense_rank FROM students;'),
-      task('sql-wn1-4', 'Partition by', 'SELECT dept, name, salary, ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC) AS dept_rank FROM employees;'),
+      task('sql-wn1-1', 'ROW_NUMBER', 'SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS rank FROM employees; -- assign sequential numbers'),
+      task('sql-wn1-2', 'RANK with ties', 'SELECT name, score, RANK() OVER (ORDER BY score DESC) AS rank FROM students; -- rank with gaps for ties'),
+      task('sql-wn1-3', 'DENSE_RANK', 'SELECT name, score, DENSE_RANK() OVER (ORDER BY score DESC) AS dense_rank FROM students; -- rank without gaps'),
+      task('sql-wn1-4', 'Partition by', 'SELECT dept, name, salary, ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC) AS dept_rank FROM employees; -- rank within groups'),
     ]
   ),
   lesson(
@@ -2136,10 +2136,10 @@ const sqlStage12Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-wn2-1', 'LAG function', 'SELECT date, revenue, LAG(revenue) OVER (ORDER BY date) AS prev_revenue FROM daily_sales;'),
-      task('sql-wn2-2', 'LEAD function', 'SELECT date, price, LEAD(price) OVER (ORDER BY date) AS next_price FROM stocks;'),
-      task('sql-wn2-3', 'Running total', 'SELECT date, amount, SUM(amount) OVER (ORDER BY date) AS running_total FROM transactions;'),
-      task('sql-wn2-4', 'Moving average', 'SELECT date, value, AVG(value) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg FROM metrics;'),
+      task('sql-wn2-1', 'LAG function', 'SELECT date, revenue, LAG(revenue) OVER (ORDER BY date) AS prev_revenue FROM daily_sales; -- access the previous row'),
+      task('sql-wn2-2', 'LEAD function', 'SELECT date, price, LEAD(price) OVER (ORDER BY date) AS next_price FROM stocks; -- access the next row'),
+      task('sql-wn2-3', 'Running total', 'SELECT date, amount, SUM(amount) OVER (ORDER BY date) AS running_total FROM transactions; -- cumulative sum'),
+      task('sql-wn2-4', 'Moving average', 'SELECT date, value, AVG(value) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg FROM metrics; -- 7-day rolling average'),
     ]
   ),
 ];
@@ -2153,10 +2153,10 @@ const sqlStage13Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-ct1-1', 'Basic CTE', 'WITH active_users AS (SELECT * FROM users WHERE active = true) SELECT * FROM active_users WHERE created_at > NOW() - INTERVAL \'30 days\';'),
-      task('sql-ct1-2', 'Multiple CTEs', 'WITH buyers AS (SELECT DISTINCT user_id FROM orders), active AS (SELECT id FROM users WHERE active = true) SELECT * FROM buyers JOIN active ON buyers.user_id = active.id;'),
-      task('sql-ct1-3', 'Recursive CTE', 'WITH RECURSIVE tree AS (SELECT id, name, parent_id, 0 AS depth FROM categories WHERE parent_id IS NULL UNION ALL SELECT c.id, c.name, c.parent_id, t.depth + 1 FROM categories c JOIN tree t ON c.parent_id = t.id) SELECT * FROM tree;'),
-      task('sql-ct1-4', 'CTE with aggregation', 'WITH monthly AS (SELECT DATE_TRUNC(\'month\', created_at) AS month, SUM(total) AS revenue FROM orders GROUP BY 1) SELECT month, revenue FROM monthly ORDER BY month;'),
+      task('sql-ct1-1', 'Basic CTE', 'WITH active_users AS (SELECT * FROM users WHERE active = true) SELECT * FROM active_users WHERE created_at > NOW() - INTERVAL \'30 days\'; -- named temporary result set'),
+      task('sql-ct1-2', 'Multiple CTEs', 'WITH buyers AS (SELECT DISTINCT user_id FROM orders), active AS (SELECT id FROM users WHERE active = true) SELECT * FROM buyers JOIN active ON buyers.user_id = active.id; -- chain CTEs'),
+      task('sql-ct1-3', 'Recursive CTE', 'WITH RECURSIVE tree AS (SELECT id, name, parent_id, 0 AS depth FROM categories WHERE parent_id IS NULL UNION ALL SELECT c.id, c.name, c.parent_id, t.depth + 1 FROM categories c JOIN tree t ON c.parent_id = t.id) SELECT * FROM tree; -- traverse hierarchies'),
+      task('sql-ct1-4', 'CTE with aggregation', 'WITH monthly AS (SELECT DATE_TRUNC(\'month\', created_at) AS month, SUM(total) AS revenue FROM orders GROUP BY 1) SELECT month, revenue FROM monthly ORDER BY month; -- summarize by month'),
     ]
   ),
   lesson(
@@ -2166,10 +2166,10 @@ const sqlStage13Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-ct2-1', 'Begin a transaction', 'BEGIN; UPDATE accounts SET balance = balance - 100 WHERE id = 1; UPDATE accounts SET balance = balance + 100 WHERE id = 2; COMMIT;'),
-      task('sql-ct2-2', 'Rollback on error', 'BEGIN; DELETE FROM orders WHERE id = 99; ROLLBACK;'),
-      task('sql-ct2-3', 'Savepoints', 'BEGIN; SAVEPOINT sp1; UPDATE users SET name = \'test\'; ROLLBACK TO sp1; COMMIT;'),
-      task('sql-ct2-4', 'Select for update', 'SELECT * FROM inventory WHERE product_id = 1 FOR UPDATE;'),
+      task('sql-ct2-1', 'Begin a transaction', 'BEGIN; UPDATE accounts SET balance = balance - 100 WHERE id = 1; UPDATE accounts SET balance = balance + 100 WHERE id = 2; COMMIT; -- atomic transfer'),
+      task('sql-ct2-2', 'Rollback on error', 'BEGIN; DELETE FROM orders WHERE id = 99; ROLLBACK; -- undo all changes'),
+      task('sql-ct2-3', 'Savepoints', 'BEGIN; SAVEPOINT sp1; UPDATE users SET name = \'test\'; ROLLBACK TO sp1; COMMIT; -- partial rollback'),
+      task('sql-ct2-4', 'Select for update', 'SELECT * FROM inventory WHERE product_id = 1 FOR UPDATE; -- lock rows for update'),
     ]
   ),
 ];
@@ -2183,10 +2183,10 @@ const sqlStage14Lessons: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-v1-1', 'Create a view', 'CREATE VIEW active_users AS SELECT id, name, email FROM users WHERE active = true;'),
-      task('sql-v1-2', 'Query a view', 'SELECT * FROM active_users WHERE name LIKE \'A%\';'),
-      task('sql-v1-3', 'Materialized view', 'CREATE MATERIALIZED VIEW monthly_revenue AS SELECT DATE_TRUNC(\'month\', created_at) AS month, SUM(total) AS revenue FROM orders GROUP BY 1;'),
-      task('sql-v1-4', 'Refresh materialized view', 'REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_revenue;'),
+      task('sql-v1-1', 'Create a view', 'CREATE VIEW active_users AS SELECT id, name, email FROM users WHERE active = true; -- define a reusable virtual table'),
+      task('sql-v1-2', 'Query a view', 'SELECT * FROM active_users WHERE name LIKE \'A%\'; -- query a view like a table'),
+      task('sql-v1-3', 'Materialized view', 'CREATE MATERIALIZED VIEW monthly_revenue AS SELECT DATE_TRUNC(\'month\', created_at) AS month, SUM(total) AS revenue FROM orders GROUP BY 1; -- cached query result'),
+      task('sql-v1-4', 'Refresh materialized view', 'REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_revenue; -- update cached data'),
     ]
   ),
   lesson(
@@ -2196,10 +2196,10 @@ const sqlStage14Lessons: Lesson[] = [
     'commands',
     'expert',
     [
-      task('sql-v2-1', 'Create a function', 'CREATE FUNCTION get_user_count() RETURNS INTEGER AS $$ SELECT COUNT(*) FROM users; $$ LANGUAGE SQL;'),
-      task('sql-v2-2', 'Function with parameter', 'CREATE FUNCTION get_order_total(uid INTEGER) RETURNS DECIMAL AS $$ SELECT SUM(total) FROM orders WHERE user_id = uid; $$ LANGUAGE SQL;'),
-      task('sql-v2-3', 'Create a trigger', 'CREATE TRIGGER update_timestamp BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION set_updated_at();'),
-      task('sql-v2-4', 'Drop function safely', 'DROP FUNCTION IF EXISTS get_user_count();'),
+      task('sql-v2-1', 'Create a function', 'CREATE FUNCTION get_user_count() RETURNS INTEGER AS $$ SELECT COUNT(*) FROM users; $$ LANGUAGE SQL; -- reusable logic'),
+      task('sql-v2-2', 'Function with parameter', 'CREATE FUNCTION get_order_total(uid INTEGER) RETURNS DECIMAL AS $$ SELECT SUM(total) FROM orders WHERE user_id = uid; $$ LANGUAGE SQL; -- parameterized function'),
+      task('sql-v2-3', 'Create a trigger', 'CREATE TRIGGER update_timestamp BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION set_updated_at(); -- auto-run on changes'),
+      task('sql-v2-4', 'Drop function safely', 'DROP FUNCTION IF EXISTS get_user_count(); -- remove a function if it exists'),
     ]
   ),
 ];
@@ -2213,11 +2213,11 @@ const sqlMasteryTest: Lesson[] = [
     'commands',
     'intermediate',
     [
-      task('sql-tb1', 'Select with filter and sort', "SELECT name, email FROM users WHERE active = true ORDER BY created_at DESC LIMIT 20;"),
-      task('sql-tb2', 'Insert and update', "INSERT INTO users (name, email) VALUES ('Bob', 'bob@test.com'); UPDATE users SET active = true WHERE email = 'bob@test.com';"),
-      task('sql-tb3', 'Group and aggregate', "SELECT category, COUNT(*) AS cnt, AVG(price) AS avg_price FROM products GROUP BY category HAVING COUNT(*) > 3;"),
-      task('sql-tb4', 'Inner join with filter', "SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100 ORDER BY o.total DESC;"),
-      task('sql-tb5', 'Subquery in WHERE', "SELECT * FROM products WHERE price > (SELECT AVG(price) FROM products);"),
+      task('sql-tb1', 'Select with filter and sort', "SELECT name, email FROM users WHERE active = true ORDER BY created_at DESC LIMIT 20; -- filter, sort, limit"),
+      task('sql-tb2', 'Insert and update', "INSERT INTO users (name, email) VALUES ('Bob', 'bob@test.com'); UPDATE users SET active = true WHERE email = 'bob@test.com'; -- insert then update"),
+      task('sql-tb3', 'Group and aggregate', "SELECT category, COUNT(*) AS cnt, AVG(price) AS avg_price FROM products GROUP BY category HAVING COUNT(*) > 3; -- group with filter"),
+      task('sql-tb4', 'Inner join with filter', "SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100 ORDER BY o.total DESC; -- join and filter"),
+      task('sql-tb5', 'Subquery in WHERE', "SELECT * FROM products WHERE price > (SELECT AVG(price) FROM products); -- above-average prices"),
     ]
   ),
   lesson(
@@ -2227,11 +2227,11 @@ const sqlMasteryTest: Lesson[] = [
     'commands',
     'advanced',
     [
-      task('sql-ti1', 'Left join with NULL check', 'SELECT u.name FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE o.id IS NULL;'),
-      task('sql-ti2', 'CTE with aggregation', "WITH monthly AS (SELECT DATE_TRUNC('month', created_at) AS m, SUM(total) AS rev FROM orders GROUP BY 1) SELECT m, rev FROM monthly ORDER BY m;"),
-      task('sql-ti3', 'Window function ranking', 'SELECT name, salary, RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS dept_rank FROM employees;'),
-      task('sql-ti4', 'CASE with aggregation', "SELECT COUNT(CASE WHEN status = 'active' THEN 1 END) AS active, COUNT(CASE WHEN status = 'inactive' THEN 1 END) AS inactive FROM users;"),
-      task('sql-ti5', 'Correlated subquery', 'SELECT p.title FROM products p WHERE p.price > (SELECT AVG(price) FROM products WHERE category = p.category);'),
+      task('sql-ti1', 'Left join with NULL check', 'SELECT u.name FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE o.id IS NULL; -- users without orders'),
+      task('sql-ti2', 'CTE with aggregation', "WITH monthly AS (SELECT DATE_TRUNC('month', created_at) AS m, SUM(total) AS rev FROM orders GROUP BY 1) SELECT m, rev FROM monthly ORDER BY m; -- monthly revenue"),
+      task('sql-ti3', 'Window function ranking', 'SELECT name, salary, RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS dept_rank FROM employees; -- rank per department'),
+      task('sql-ti4', 'CASE with aggregation', "SELECT COUNT(CASE WHEN status = 'active' THEN 1 END) AS active, COUNT(CASE WHEN status = 'inactive' THEN 1 END) AS inactive FROM users; -- pivot counts"),
+      task('sql-ti5', 'Correlated subquery', 'SELECT p.title FROM products p WHERE p.price > (SELECT AVG(price) FROM products WHERE category = p.category); -- above category average'),
     ]
   ),
   lesson(
@@ -2241,11 +2241,11 @@ const sqlMasteryTest: Lesson[] = [
     'commands',
     'expert',
     [
-      task('sql-ta1', 'Create table with constraints', 'CREATE TABLE reviews (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id), rating INTEGER CHECK (rating BETWEEN 1 AND 5), body TEXT, created_at TIMESTAMP DEFAULT NOW());'),
-      task('sql-ta2', 'Transaction with savepoint', "BEGIN; UPDATE inventory SET stock = stock - 1 WHERE product_id = 1; SAVEPOINT check_stock; SELECT stock FROM inventory WHERE product_id = 1; COMMIT;"),
-      task('sql-ta3', 'Recursive CTE', 'WITH RECURSIVE chain AS (SELECT id, name, manager_id FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id FROM employees e JOIN chain c ON e.manager_id = c.id) SELECT * FROM chain;'),
-      task('sql-ta4', 'Create index and explain', "CREATE INDEX idx_orders_date ON orders (created_at); EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > '2024-01-01';"),
-      task('sql-ta5', 'Complex window function', 'SELECT date, revenue, SUM(revenue) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS weekly_total, LAG(revenue, 7) OVER (ORDER BY date) AS last_week FROM daily_sales;'),
+      task('sql-ta1', 'Create table with constraints', 'CREATE TABLE reviews (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id), rating INTEGER CHECK (rating BETWEEN 1 AND 5), body TEXT, created_at TIMESTAMP DEFAULT NOW()); -- full DDL'),
+      task('sql-ta2', 'Transaction with savepoint', "BEGIN; UPDATE inventory SET stock = stock - 1 WHERE product_id = 1; SAVEPOINT check_stock; SELECT stock FROM inventory WHERE product_id = 1; COMMIT; -- safe stock update"),
+      task('sql-ta3', 'Recursive CTE', 'WITH RECURSIVE chain AS (SELECT id, name, manager_id FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id FROM employees e JOIN chain c ON e.manager_id = c.id) SELECT * FROM chain; -- org chart'),
+      task('sql-ta4', 'Create index and explain', "CREATE INDEX idx_orders_date ON orders (created_at); EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > '2024-01-01'; -- index then measure"),
+      task('sql-ta5', 'Complex window function', 'SELECT date, revenue, SUM(revenue) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS weekly_total, LAG(revenue, 7) OVER (ORDER BY date) AS last_week FROM daily_sales; -- weekly comparison'),
     ]
   ),
   lesson(
@@ -2255,11 +2255,11 @@ const sqlMasteryTest: Lesson[] = [
     'commands',
     'expert',
     [
-      task('sql-tm1', 'Multi-join aggregation', 'SELECT c.name, COUNT(o.id) AS order_count, SUM(o.total) AS total_spent FROM customers c JOIN orders o ON c.id = o.customer_id JOIN order_items oi ON o.id = oi.order_id GROUP BY c.name HAVING SUM(o.total) > 1000 ORDER BY total_spent DESC;'),
-      task('sql-tm2', 'Window + CTE combo', 'WITH ranked AS (SELECT name, department, salary, DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rank FROM employees) SELECT * FROM ranked WHERE rank <= 3;'),
-      task('sql-tm3', 'Upsert pattern', "INSERT INTO user_stats (user_id, login_count) VALUES (1, 1) ON CONFLICT (user_id) DO UPDATE SET login_count = user_stats.login_count + 1;"),
-      task('sql-tm4', 'Materialized view with index', "CREATE MATERIALIZED VIEW top_products AS SELECT p.id, p.title, SUM(oi.quantity) AS total_sold FROM products p JOIN order_items oi ON p.id = oi.product_id GROUP BY p.id, p.title; CREATE INDEX idx_top_products_sold ON top_products (total_sold DESC);"),
-      task('sql-tm5', 'Full reporting query', "SELECT DATE_TRUNC('month', o.created_at) AS month, COUNT(DISTINCT o.user_id) AS unique_buyers, COUNT(o.id) AS total_orders, SUM(o.total) AS revenue, AVG(o.total) AS avg_order_value FROM orders o WHERE o.created_at >= NOW() - INTERVAL '12 months' GROUP BY 1 ORDER BY 1;"),
+      task('sql-tm1', 'Multi-join aggregation', 'SELECT c.name, COUNT(o.id) AS order_count, SUM(o.total) AS total_spent FROM customers c JOIN orders o ON c.id = o.customer_id JOIN order_items oi ON o.id = oi.order_id GROUP BY c.name HAVING SUM(o.total) > 1000 ORDER BY total_spent DESC; -- top customer report'),
+      task('sql-tm2', 'Window + CTE combo', 'WITH ranked AS (SELECT name, department, salary, DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rank FROM employees) SELECT * FROM ranked WHERE rank <= 3; -- top 3 per department'),
+      task('sql-tm3', 'Upsert pattern', "INSERT INTO user_stats (user_id, login_count) VALUES (1, 1) ON CONFLICT (user_id) DO UPDATE SET login_count = user_stats.login_count + 1; -- insert or increment"),
+      task('sql-tm4', 'Materialized view with index', "CREATE MATERIALIZED VIEW top_products AS SELECT p.id, p.title, SUM(oi.quantity) AS total_sold FROM products p JOIN order_items oi ON p.id = oi.product_id GROUP BY p.id, p.title; CREATE INDEX idx_top_products_sold ON top_products (total_sold DESC); -- cached ranking"),
+      task('sql-tm5', 'Full reporting query', "SELECT DATE_TRUNC('month', o.created_at) AS month, COUNT(DISTINCT o.user_id) AS unique_buyers, COUNT(o.id) AS total_orders, SUM(o.total) AS revenue, AVG(o.total) AS avg_order_value FROM orders o WHERE o.created_at >= NOW() - INTERVAL '12 months' GROUP BY 1 ORDER BY 1; -- monthly dashboard"),
     ]
   ),
 ];

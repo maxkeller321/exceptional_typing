@@ -27,6 +27,9 @@
   });
 
   function handleSelectCourse(course: Course) {
+    // Clear keyboard focus when selecting via mouse
+    focusedIndex = -1;
+    usingKeyboard = false;
     courseStore.selectCourse(course.id);
     onSelectCourse(course.id);
   }
@@ -37,9 +40,11 @@
 
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
       event.preventDefault();
+      usingKeyboard = true;
       focusedIndex = focusedIndex < allCourses.length - 1 ? focusedIndex + 1 : 0;
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
       event.preventDefault();
+      usingKeyboard = true;
       focusedIndex = focusedIndex > 0 ? focusedIndex - 1 : allCourses.length - 1;
     } else if (event.key === 'Enter' && focusedIndex >= 0) {
       event.preventDefault();
@@ -110,8 +115,10 @@
       <button
         class="course-card"
         class:enrolled={info.enrolled}
-        class:focused={focusedIndex === i}
+        class:focused={usingKeyboard && focusedIndex === i}
+        class:no-hover={usingKeyboard}
         onclick={() => handleSelectCourse(course)}
+        onmouseenter={() => { usingKeyboard = false; focusedIndex = -1; }}
       >
         <div class="card-main">
           <div class="card-left">
@@ -216,12 +223,12 @@
     border: 2px solid transparent;
   }
 
-  .course-card:hover,
+  .course-card:hover:not(.no-hover),
   .course-card.focused {
     border-color: var(--accent);
   }
 
-  .course-card:hover {
+  .course-card:hover:not(.no-hover) {
     transform: translateY(-1px);
   }
 

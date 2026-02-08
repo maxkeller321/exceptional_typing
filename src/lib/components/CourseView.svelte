@@ -59,11 +59,6 @@
     };
   });
 
-  function handleSelectCourse(courseId: string) {
-    courseStore.selectCourse(courseId);
-    selectedStageId = null;
-  }
-
   function handleEnroll() {
     courseStore.enroll();
     selectedStageId = selectedCourse.stages[0].id;
@@ -281,25 +276,6 @@
 <svelte:window onkeydown={handleKeyDown} />
 
 <div class="course-view">
-  <!-- Course Selector Tabs -->
-  <div class="course-tabs">
-    {#each allCourses as course}
-      {@const isSelected = selectedCourse.id === course.id}
-      {@const courseEnrolled = courseProgressMap.has(course.id)}
-      <button
-        class="course-tab"
-        class:selected={isSelected}
-        onclick={() => handleSelectCourse(course.id)}
-      >
-        <span class="tab-icon">{course.id === 'ten-finger' ? '⌨️' : course.id === 'claude-code' ? '🤖' : course.id === 'sql-mastery' ? '🗄️' : '🖥️'}</span>
-        <span class="tab-name">{course.name}</span>
-        {#if courseEnrolled}
-          <span class="tab-badge enrolled">Started</span>
-        {/if}
-      </button>
-    {/each}
-  </div>
-
   {#if !enrolled}
     <!-- Enrollment Screen -->
     <div class="enroll-panel">
@@ -453,48 +429,6 @@
 <style>
   .course-view {
     @apply h-full;
-  }
-
-  /* Course Tabs */
-  .course-tabs {
-    @apply flex gap-2 mb-5 overflow-x-auto pb-2;
-  }
-
-  .course-tab {
-    @apply flex items-center gap-2 px-4 py-2.5 rounded-lg;
-    @apply text-sm font-medium whitespace-nowrap;
-    @apply transition-all duration-200;
-    background-color: var(--bg-secondary);
-    color: var(--text-secondary);
-    border: 2px solid transparent;
-  }
-
-  .course-tab:hover {
-    background-color: var(--bg-tertiary);
-    color: var(--text-primary);
-  }
-
-  .course-tab.selected {
-    background-color: rgba(226, 183, 20, 0.1);
-    border-color: var(--accent);
-    color: var(--text-primary);
-  }
-
-  .tab-icon {
-    @apply text-lg;
-  }
-
-  .tab-name {
-    @apply hidden sm:inline;
-  }
-
-  .tab-badge {
-    @apply px-1.5 py-0.5 rounded text-[10px] uppercase font-medium;
-  }
-
-  .tab-badge.enrolled {
-    background-color: var(--success);
-    color: var(--bg-primary);
   }
 
   /* Enrollment Screen */

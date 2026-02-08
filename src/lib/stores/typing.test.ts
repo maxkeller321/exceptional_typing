@@ -330,4 +330,142 @@ describe('Typing Store', () => {
       expect(get(typingStore.liveTrueAccuracy)).toBe(50); // 2/4 correct
     });
   });
+
+  describe('Next Task transition (reset before subscribe)', () => {
+    const task1: Task = {
+      id: 'task-1',
+      instruction: 'Type this',
+      targetText: 'ab',
+      minAccuracy: 0.5,
+    };
+
+    const task2: Task = {
+      id: 'task-2',
+      instruction: 'Type this',
+      targetText: 'cd',
+      minAccuracy: 0.5,
+    };
+
+    it('after completing a task, isComplete is true', () => {
+      typingStore.reset(task1);
+      vi.setSystemTime(new Date('2024-01-01T12:00:00.000Z'));
+      typingStore.handleKeyPress('a');
+      vi.advanceTimersByTime(500);
+      typingStore.handleKeyPress('b');
+
+      const state = get(typingStore);
+      expect(state.isComplete).toBe(true);
+    });
+
+    it('reset() clears isComplete before subscribing to a new task', () => {
+      // Complete task 1
+      typingStore.reset(task1);
+      vi.setSystemTime(new Date('2024-01-01T12:00:00.000Z'));
+      typingStore.handleKeyPress('a');
+      vi.advanceTimersByTime(500);
+      typingStore.handleKeyPress('b');
+      expect(get(typingStore).isComplete).toBe(true);
+
+      // Now simulate what TypingArea.onMount does:
+      // Reset BEFORE subscribing (the fix)
+      typingStore.reset(task2);
+
+      // Subscribe — should see isComplete: false
+      let completionFired = false;
+      const unsub = typingStore.subscribe(s => {
+        if (s.isComplete) {
+          completionFired = true;
+        }
+      });
+
+      // The subscription should NOT see a completed state
+      expect(completionFired).toBe(false);
+      expect(get(typingStore).isComplete).toBe(false);
+
+      unsub();
+    });
+
+    it('subscribing WITHOUT reset first sees stale isComplete: true', () => {
+      // Complete task 1
+      typingStore.reset(task1);
+      vi.setSystemTime(new Date('2024-01-01T12:00:00.000Z'));
+      typingStore.handleKeyPress('a');
+      vi.advanceTimersByTime(500);
+      typingStore.handleKeyPress('b');
+      expect(get(typingStore).isComplete).toBe(true);
+
+      // Subscribe WITHOUT resetting first (the old buggy behavior)
+      let completionFired = false;
+      const unsub = typingStore.subscribe(s => {
+        if (s.isComplete) {
+          completionFired = true;
+        }
+      });
+
+      // The subscription DOES see stale completed state — this proves the bug
+      expect(completionFired).toBe(true);
+
+      unsub();
+    });
+
+    it('after reset, new task can be completed independently', () => {
+      // Complete task 1
+      typingStore.reset(task1);
+      vi.setSystemTime(new Date('2024-01-01T12:00:00.000Z'));
+      typingStore.handleKeyPress('a');
+      vi.advanceTimersByTime(500);
+      typingStore.handleKeyPress('b');
+      expect(get(typingStore).isComplete).toBe(true);
+
+      // Reset to task 2
+      typingStore.reset(task2);
+      expect(get(typingStore).isComplete).toBe(false);
+      expect(get(typingStore).currentIndex).toBe(0);
+
+      // Complete task 2
+      vi.setSystemTime(new Date('2024-01-01T12:00:01.000Z'));
+      typingStore.handleKeyPress('c');
+      vi.advanceTimersByTime(500);
+      typingStore.handleKeyPress('d');
+
+      const state = get(typingStore);
+      expect(state.isComplete).toBe(true);
+      expect(state.currentIndex).toBe(2);
+    });
+
+    it('simulates full Next Task flow without false completion', () => {
+      // Complete task 1
+      typingStore.reset(task1);
+      vi.setSystemTime(new Date('2024-01-01T12:00:00.000Z'));
+      typingStore.handleKeyPress('a');
+      vi.advanceTimersByTime(500);
+      typingStore.handleKeyPress('b');
+      expect(get(typingStore).isComplete).toBe(true);
+
+      // Simulate handleNextTask + TypingArea remount:
+      // 1. Reset first (as fixed TypingArea.onMount does)
+      typingStore.reset(task2);
+
+      // 2. Subscribe (as TypingArea.onMount does after reset)
+      const completions: boolean[] = [];
+      const unsub = typingStore.subscribe(s => {
+        completions.push(s.isComplete);
+      });
+
+      // Initial subscription should see isComplete: false
+      expect(completions).toEqual([false]);
+
+      // 3. Type in new task — should complete normally
+      vi.setSystemTime(new Date('2024-01-01T12:00:01.000Z'));
+      typingStore.handleKeyPress('c');
+      vi.advanceTimersByTime(500);
+      typingStore.handleKeyPress('d');
+
+      // Should have seen: false (initial), false (first key), true (completion)
+      expect(completions[0]).toBe(false);
+      expect(completions[completions.length - 1]).toBe(true);
+
+      unsub();
+    });
+  });
 });

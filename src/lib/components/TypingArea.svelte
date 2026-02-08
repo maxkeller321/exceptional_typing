@@ -121,6 +121,15 @@
   let wasComplete = $state(false);
 
   onMount(() => {
+    // Reset the typing store BEFORE subscribing so the subscription
+    // sees fresh state (isComplete: false), not stale completed state
+    // from the previous task. Without this, the subscription fires
+    // immediately with isComplete: true and triggers a false completion.
+    if (task) {
+      typingStore.reset(task);
+      previousTaskId = task.id;
+    }
+
     // Subscribe to all stores
     const unsubTargetText = typingStore.targetText.subscribe(t => {
       targetText = t;
@@ -153,12 +162,6 @@
     const unsubAccuracy = typingStore.liveAccuracy.subscribe(a => {
       liveAccuracy = a;
     });
-
-    // Initial task reset
-    if (task) {
-      typingStore.reset(task);
-      previousTaskId = task.id;
-    }
 
     // Delay focus to avoid interfering with button clicks that trigger component mount
     // Using requestAnimationFrame ensures we don't steal focus during the current event cycle

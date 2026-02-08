@@ -79,33 +79,16 @@
   <div class="hands-display">
     <!-- Left Hand -->
     <div class="hand-section">
-      <svg class="hand-svg" viewBox="0 0 120 150" fill="none">
-        <!-- Hand outline - single connected path -->
-        <path
-          d="M25 95
-             L25 75 Q25 65 30 60 L30 45 Q30 35 35 32 Q40 29 45 32 Q50 35 50 45 L50 55
-             L50 40 Q50 28 55 24 Q60 20 65 24 Q70 28 70 40 L70 50
-             L70 35 Q70 22 75 18 Q80 14 85 18 Q90 22 90 35 L90 50
-             L90 40 Q90 28 95 24 Q100 20 105 24 Q110 28 110 40 L110 60
-             Q115 65 115 75 L115 85
-             Q120 90 118 100 Q115 110 105 115
-             L105 105 Q100 100 95 105 L95 95
-             Q90 130 60 140 Q30 140 25 110
-             Z"
-          class="hand-outline"
-        />
-
-        <!-- Finger highlights when active -->
-        <!-- Pinky (1) -->
-        <rect x="28" y="32" width="20" height="35" rx="10" class="finger-zone" class:active={isFingerActive(1)} />
-        <!-- Ring (2) -->
-        <rect x="48" y="22" width="20" height="40" rx="10" class="finger-zone" class:active={isFingerActive(2)} />
-        <!-- Middle (3) -->
-        <rect x="68" y="16" width="20" height="45" rx="10" class="finger-zone" class:active={isFingerActive(3)} />
-        <!-- Index (4) -->
-        <rect x="88" y="22" width="20" height="45" rx="10" class="finger-zone" class:active={isFingerActive(4)} />
-        <!-- Thumb (5) -->
-        <ellipse cx="108" cy="100" rx="14" ry="20" transform="rotate(-20 108 100)" class="finger-zone" class:active={isFingerActive(5)} />
+      <svg class="hand-svg" viewBox="0 0 200 250" fill="none">
+        <!-- Palm -->
+        <path d="M40 180 Q20 140 30 100 L50 60 L70 40 L90 35 L110 40 L130 50 L150 80 Q160 120 150 180 Q140 220 100 240 Q60 240 40 180"
+              class="hand-palm" stroke-width="2"/>
+        <!-- Fingers -->
+        <ellipse cx="50" cy="55" rx="12" ry="25" class="finger" class:active={isFingerActive(1)}/>
+        <ellipse cx="75" cy="35" rx="12" ry="28" class="finger" class:active={isFingerActive(2)}/>
+        <ellipse cx="100" cy="28" rx="12" ry="30" class="finger" class:active={isFingerActive(3)}/>
+        <ellipse cx="125" cy="38" rx="12" ry="28" class="finger" class:active={isFingerActive(4)}/>
+        <ellipse cx="160" cy="95" rx="20" ry="12" transform="rotate(-30 160 95)" class="finger" class:active={isFingerActive(5)}/>
       </svg>
       <div class="hand-info">
         <span class="hand-label">LEFT HAND</span>
@@ -116,33 +99,16 @@
 
     <!-- Right Hand (mirrored) -->
     <div class="hand-section">
-      <svg class="hand-svg" viewBox="0 0 120 150" fill="none">
-        <!-- Hand outline - mirrored -->
-        <path
-          d="M95 95
-             L95 75 Q95 65 90 60 L90 45 Q90 35 85 32 Q80 29 75 32 Q70 35 70 45 L70 55
-             L70 40 Q70 28 65 24 Q60 20 55 24 Q50 28 50 40 L50 50
-             L50 35 Q50 22 45 18 Q40 14 35 18 Q30 22 30 35 L30 50
-             L30 40 Q30 28 25 24 Q20 20 15 24 Q10 28 10 40 L10 60
-             Q5 65 5 75 L5 85
-             Q0 90 2 100 Q5 110 15 115
-             L15 105 Q20 100 25 105 L25 95
-             Q30 130 60 140 Q90 140 95 110
-             Z"
-          class="hand-outline"
-        />
-
-        <!-- Finger highlights when active (mirrored positions) -->
-        <!-- Pinky (10) -->
-        <rect x="72" y="32" width="20" height="35" rx="10" class="finger-zone" class:active={isFingerActive(10)} />
-        <!-- Ring (9) -->
-        <rect x="52" y="22" width="20" height="40" rx="10" class="finger-zone" class:active={isFingerActive(9)} />
-        <!-- Middle (8) -->
-        <rect x="32" y="16" width="20" height="45" rx="10" class="finger-zone" class:active={isFingerActive(8)} />
-        <!-- Index (7) -->
-        <rect x="12" y="22" width="20" height="45" rx="10" class="finger-zone" class:active={isFingerActive(7)} />
-        <!-- Thumb (6) -->
-        <ellipse cx="12" cy="100" rx="14" ry="20" transform="rotate(20 12 100)" class="finger-zone" class:active={isFingerActive(6)} />
+      <svg class="hand-svg" viewBox="0 0 200 250" fill="none">
+        <!-- Palm (mirrored) -->
+        <path d="M160 180 Q180 140 170 100 L150 60 L130 40 L110 35 L90 40 L70 50 L50 80 Q40 120 50 180 Q60 220 100 240 Q140 240 160 180"
+              class="hand-palm" stroke-width="2"/>
+        <!-- Fingers (mirrored) -->
+        <ellipse cx="150" cy="55" rx="12" ry="25" class="finger" class:active={isFingerActive(10)}/>
+        <ellipse cx="125" cy="35" rx="12" ry="28" class="finger" class:active={isFingerActive(9)}/>
+        <ellipse cx="100" cy="28" rx="12" ry="30" class="finger" class:active={isFingerActive(8)}/>
+        <ellipse cx="75" cy="38" rx="12" ry="28" class="finger" class:active={isFingerActive(7)}/>
+        <ellipse cx="40" cy="95" rx="20" ry="12" transform="rotate(30 40 95)" class="finger" class:active={isFingerActive(6)}/>
       </svg>
       <div class="hand-info">
         <span class="hand-label">RIGHT HAND</span>
@@ -272,23 +238,24 @@
   .hand-svg {
     width: 100%;
     height: auto;
-    max-width: 120px;
+    max-width: 140px;
   }
 
-  .hand-outline {
+  .hand-palm {
     fill: var(--bg-tertiary);
     stroke: var(--text-muted);
-    stroke-width: 1.5;
   }
 
-  .finger-zone {
-    fill: transparent;
-    stroke: none;
+  .finger {
+    fill: var(--bg-secondary);
+    stroke: var(--text-muted);
+    stroke-width: 1.5;
     transition: all 0.3s ease;
   }
 
-  .finger-zone.active {
+  .finger.active {
     fill: var(--accent);
+    stroke: var(--accent);
     opacity: 0.85;
   }
 

@@ -41,10 +41,6 @@
   // Track navigation state to prevent double-clicks
   let isNavigating = $state(false);
 
-  // Track which task index the current results are for
-  // This prevents advancing twice from the same results screen
-  let resultsForTaskIndex = $state<number | null>(null);
-
   // Compute formatted task when auto-format is enabled
   let formattedTask = $derived.by(() => {
     if (!task) return null;
@@ -62,7 +58,6 @@
     lastResult = null;
     lastKeystrokes = [];
     lastTargetText = '';
-    resultsForTaskIndex = null;
   }
 
   // Check if a specific task (by index) is actually completed (has a passed result)
@@ -125,8 +120,6 @@
     lastResult = result;
     lastKeystrokes = typingStore.getKeystrokes();
     lastTargetText = typingStore.getTargetText();
-    // Track which task index these results are for
-    resultsForTaskIndex = taskIndex;
     showResults = true;
     recordTaskResult(result);
   }
@@ -134,63 +127,42 @@
   function handleNextTask(): void {
     // Prevent double-clicks
     if (isNavigating) return;
-
-    // If we're on the results screen, verify we're advancing from the correct task
-    // This prevents double-advancing if the button is clicked twice rapidly
-    if (showResults && resultsForTaskIndex !== null) {
-      // Only advance if results are for the current task
-      if (resultsForTaskIndex !== taskIndex) {
-        // Results are stale (already advanced), don't advance again
-        return;
-      }
-    }
-
     isNavigating = true;
 
-    // Clear the results state BEFORE advancing to prevent race conditions
-    const wasShowingResults = showResults;
+    // Advance to next task and clear results
+    nextTask();
     resetResultsState();
-
-    // Only advance if we successfully cleared results state
-    if (wasShowingResults || !showResults) {
-      nextTask();
-    }
 
     // Reset navigation lock after a short delay
     setTimeout(() => {
       isNavigating = false;
-    }, 100);
+    }, 300);
   }
 
   function handlePrevTask(): void {
-    // Prevent double-clicks
     if (isNavigating) return;
     isNavigating = true;
 
-    resetResultsState();
     previousTask();
+    resetResultsState();
 
-    // Reset navigation lock after a short delay
     setTimeout(() => {
       isNavigating = false;
-    }, 100);
+    }, 300);
   }
 
   function handleRetry(): void {
-    // Prevent double-clicks
     if (isNavigating) return;
     isNavigating = true;
 
     resetResultsState();
-    // Reset the typing store with the current task to restart
     if (formattedTask) {
       typingStore.reset(formattedTask);
     }
 
-    // Reset navigation lock after a short delay
     setTimeout(() => {
       isNavigating = false;
-    }, 100);
+    }, 300);
   }
 
   function handleBack(): void {
@@ -205,12 +177,12 @@
     if (index === taskIndex) return;
 
     isNavigating = true;
-    resetResultsState();
     currentTaskIndex.set(index);
+    resetResultsState();
 
     setTimeout(() => {
       isNavigating = false;
-    }, 100);
+    }, 300);
   }
 
   function handleKeyDown(event: KeyboardEvent): void {

@@ -6,6 +6,7 @@
   import PracticeView from './lib/components/PracticeView.svelte';
   import DailyTestView from './lib/components/DailyTestView.svelte';
   import CourseView from './lib/components/CourseView.svelte';
+  import CourseOverview from './lib/components/CourseOverview.svelte';
   import UserPicker from './lib/components/user/UserPicker.svelte';
   import UserMenu from './lib/components/user/UserMenu.svelte';
   import ModeToggle from './lib/components/ModeToggle.svelte';
@@ -30,6 +31,9 @@
   let dailyCompleted = $state(false);
   let showOnboarding = $state(false);
 
+  // Course sub-view: 'overview' shows all courses, 'detail' shows stages/lessons
+  let courseSubView = $state<'overview' | 'detail'>('overview');
+
   // Lesson session key - incremented each time a lesson is selected
   // This forces LessonView to re-mount with fresh state
   let lessonSessionKey = $state(0);
@@ -49,6 +53,10 @@
     }
 
     const unsubView = currentView.subscribe((v) => {
+      // Reset course sub-view when navigating to course from sidebar
+      if (v === 'course' && view !== 'course') {
+        courseSubView = 'overview';
+      }
       view = v;
     });
 
@@ -126,8 +134,8 @@
         return;
       }
       event.preventDefault();
-      if (view === 'course') {
-        navigateTo('home');
+      if (view === 'course' && courseSubView === 'detail') {
+        courseSubView = 'overview';
       } else {
         navigateTo('home');
       }
@@ -269,11 +277,21 @@
         </div>
       {:else if view === 'course'}
         <div class="page course-page">
-          <header class="page-header">
-            <h1>10 Fingers (touch typing)</h1>
-            <p class="subtitle">Learn proper typing technique step by step</p>
-          </header>
-          <CourseView />
+          {#if courseSubView === 'overview'}
+            <header class="page-header">
+              <h1>Courses</h1>
+              <p class="subtitle">Choose a structured learning path</p>
+            </header>
+            <CourseOverview onSelectCourse={() => { courseSubView = 'detail'; }} />
+          {:else}
+            <header class="page-header course-detail-header">
+              <button class="back-btn" onclick={() => { courseSubView = 'overview'; }}>
+                <span class="back-arrow">←</span>
+                <span>All Courses</span>
+              </button>
+            </header>
+            <CourseView />
+          {/if}
         </div>
       {:else if view === 'stats'}
         <div class="page stats-page">
@@ -619,5 +637,25 @@
 
   .tutorial-btn:hover {
     background-color: rgba(99, 102, 241, 0.25);
+  }
+
+  /* Course back button */
+  .course-detail-header {
+    @apply mb-4;
+  }
+
+  .back-btn {
+    @apply flex items-center gap-2 px-3 py-1.5 rounded;
+    @apply text-sm transition-colors;
+    color: var(--text-secondary);
+  }
+
+  .back-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+  }
+
+  .back-arrow {
+    @apply text-base;
   }
 </style>

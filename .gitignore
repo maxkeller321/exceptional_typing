@@ -97,6 +97,10 @@ stats.json
 *.rpm
 *.AppImage
 
+# Screenshots
+screenshots/
+fastlane/metadata/en-US/screenshots/*.png
+
 # Fastlane
 fastlane/.env
 fastlane/.env.*

@@ -144,7 +144,7 @@
         class:selected={isSelected}
         onclick={() => handleSelectCourse(course.id)}
       >
-        <span class="tab-icon">{course.id === 'ten-finger' ? '⌨️' : '🖥️'}</span>
+        <span class="tab-icon">{course.id === 'ten-finger' ? '⌨️' : course.id === 'claude-code' ? '🤖' : '🖥️'}</span>
         <span class="tab-name">{course.name}</span>
         {#if courseEnrolled}
           <span class="tab-badge enrolled">Started</span>
@@ -157,7 +157,7 @@
     <!-- Enrollment Screen -->
     <div class="enroll-panel">
       <div class="enroll-content">
-        <div class="enroll-icon">{selectedCourse.id === 'ten-finger' ? '⌨️' : '💻'}</div>
+        <div class="enroll-icon">{selectedCourse.id === 'ten-finger' ? '⌨️' : selectedCourse.id === 'claude-code' ? '🤖' : '💻'}</div>
         <h2>{selectedCourse.name}</h2>
         <p class="enroll-description">
           {selectedCourse.description}

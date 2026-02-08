@@ -21,6 +21,7 @@
   import { get } from 'svelte/store';
   import { completedToday } from './lib/stores/daily';
   import { APP_NAME } from './lib/constants';
+  import { checkAndConsumeDemoFlag, initializeDemoMode } from './lib/utils/demo';
   import type { AppView, UserSettings } from './lib/types';
 
   let view = $state<AppView>('home');
@@ -39,7 +40,13 @@
 
   // Subscribe to stores
   onMount(() => {
-    loadUsers();
+    // Demo mode: if the self-cleaning flag is set, initialize demo data
+    // and auto-login. Otherwise load real users normally.
+    if (checkAndConsumeDemoFlag()) {
+      initializeDemoMode();
+    } else {
+      loadUsers();
+    }
 
     const unsubView = currentView.subscribe((v) => {
       view = v;
@@ -549,7 +556,7 @@
   }
 
   .settings-list {
-    @apply space-y-3;
+    @apply flex flex-col gap-3;
   }
 
   .setting-item {

@@ -40,6 +40,7 @@
     class:active={checked}
     role="switch"
     aria-checked={checked}
+    aria-label={label ?? 'Toggle'}
     {disabled}
     onclick={handleClick}
     onkeydown={handleKeyDown}

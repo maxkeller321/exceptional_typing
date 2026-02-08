@@ -121,6 +121,8 @@
               fill={segment.color}
               class="donut-segment"
               class:hovered={hoveredSegment === segment.type}
+              role="img"
+              aria-label="{segment.type}: {segment.percentage.toFixed(1)}%"
               onmouseenter={() => hoveredSegment = segment.type}
               onmouseleave={() => hoveredSegment = null}
             />

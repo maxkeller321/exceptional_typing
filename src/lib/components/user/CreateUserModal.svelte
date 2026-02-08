@@ -54,7 +54,8 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<div class="modal-backdrop" onclick={handleBackdropClick} role="dialog" aria-modal="true">
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<div class="modal-backdrop" onclick={handleBackdropClick} role="dialog" aria-modal="true" tabindex="-1">
   <div class="modal">
     <div class="modal-header">
       <h2>Create Profile</h2>
@@ -82,8 +83,8 @@
       </div>
 
       <div class="form-group">
-        <label>Choose an Avatar</label>
-        <div class="avatar-grid">
+        <span class="avatar-label" id="avatar-label">Choose an Avatar</span>
+        <div class="avatar-grid" role="radiogroup" aria-labelledby="avatar-label">
           {#each avatarOptions as avatar}
             <button
               type="button"
@@ -152,7 +153,8 @@
     @apply mb-5;
   }
 
-  .form-group label {
+  .form-group label,
+  .form-group .avatar-label {
     @apply block text-sm mb-1.5;
     color: var(--text-secondary);
   }

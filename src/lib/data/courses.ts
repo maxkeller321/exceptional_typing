@@ -590,7 +590,10 @@ export function getCourseLesson(lessonId: string): Lesson | undefined {
   const tenFingerLesson = courseLessons.find(l => l.id === lessonId);
   if (tenFingerLesson) return tenFingerLesson;
   // Then check CLI course
-  return cliCourseLessons.find(l => l.id === lessonId);
+  const cliLesson = cliCourseLessons.find(l => l.id === lessonId);
+  if (cliLesson) return cliLesson;
+  // Then check Claude Code course
+  return ccCourseLessons.find(l => l.id === lessonId);
 }
 
 // Get stage by ID (searches all courses)
@@ -599,7 +602,10 @@ export function getCourseStage(stageId: string): CourseStage | undefined {
   const tenFingerStage = tenFingerCourse.stages.find(s => s.id === stageId);
   if (tenFingerStage) return tenFingerStage;
   // Then check CLI course
-  return cliCourse.stages.find(s => s.id === stageId);
+  const cliStage = cliCourse.stages.find(s => s.id === stageId);
+  if (cliStage) return cliStage;
+  // Then check Claude Code course
+  return claudeCodeCourse.stages.find(s => s.id === stageId);
 }
 
 // ============================================
@@ -1230,5 +1236,543 @@ export function getCliCourseStage(stageId: string): CourseStage | undefined {
   return cliCourse.stages.find(s => s.id === stageId);
 }
 
+// ============================================
+// Claude Code Course - Master the AI Coding Assistant
+// ============================================
+
+// Stage 1: Getting Started
+const ccStage1Lessons: Lesson[] = [
+  lesson(
+    'cc-start-1',
+    'First Steps',
+    'Launch Claude Code and learn the basics',
+    'commands',
+    'beginner',
+    [
+      task('cc-s1-1', 'Type the command to start Claude Code', 'claude - Start an interactive Claude Code session in your terminal'),
+      task('cc-s1-2', 'Type the command to start with a prompt', 'claude "explain this project" - Start a session with an initial prompt'),
+      task('cc-s1-3', 'Type the command to check the version', 'claude -v - Output the current version number of Claude Code'),
+      task('cc-s1-4', 'Type the command to update', 'claude update - Update Claude Code to the latest version'),
+    ]
+  ),
+  lesson(
+    'cc-start-2',
+    'Getting Help',
+    'Learn how to find help and check status',
+    'commands',
+    'beginner',
+    [
+      task('cc-s2-1', 'Type the help command', '/help - Get usage help and list all available slash commands'),
+      task('cc-s2-2', 'Type the status command', '/status - Open Settings interface showing version, model, and account info'),
+      task('cc-s2-3', 'Type the doctor command', '/doctor - Check the health of your Claude Code installation'),
+      task('cc-s2-4', 'Type the cost command', '/cost - Show token usage statistics for the current session'),
+    ]
+  ),
+];
+
+// Stage 2: Print Mode & Piping
+const ccStage2Lessons: Lesson[] = [
+  lesson(
+    'cc-print-1',
+    'Print Mode Basics',
+    'Use Claude Code for one-shot queries and scripting',
+    'commands',
+    'beginner',
+    [
+      task('cc-p1-1', 'Type the print mode flag', 'claude -p "explain this function" - Print response without interactive mode'),
+      task('cc-p1-2', 'Type a piped command', 'cat logs.txt | claude -p "explain these errors" - Process piped content'),
+      task('cc-p1-3', 'Type the JSON output flag', 'claude -p --output-format json "analyze this" - Get structured JSON output'),
+      task('cc-p1-4', 'Type the stream JSON flag', 'claude -p --output-format stream-json "query" - Stream JSON events'),
+    ]
+  ),
+  lesson(
+    'cc-print-2',
+    'Budget & Limits',
+    'Control spending and turn limits in print mode',
+    'commands',
+    'beginner',
+    [
+      task('cc-p2-1', 'Type the budget flag', 'claude -p --max-budget-usd 5.00 "query" - Set maximum dollar spend'),
+      task('cc-p2-2', 'Type the max turns flag', 'claude -p --max-turns 3 "query" - Limit the number of agentic turns'),
+      task('cc-p2-3', 'Type a scripting workflow', 'cat build-error.txt | claude -p "explain the root cause" > output.txt'),
+      task('cc-p2-4', 'Type a linting workflow', 'claude -p "look at changes vs main and report issues"'),
+    ]
+  ),
+];
+
+// Stage 3: Session Management
+const ccStage3Lessons: Lesson[] = [
+  lesson(
+    'cc-session-1',
+    'Continue & Resume',
+    'Pick up where you left off',
+    'commands',
+    'intermediate',
+    [
+      task('cc-se1-1', 'Type the continue flag', 'claude -c - Continue the most recent conversation in the current directory'),
+      task('cc-se1-2', 'Type the continue with print flag', 'claude -c -p "check for type errors" - Continue in print mode'),
+      task('cc-se1-3', 'Type the resume flag', 'claude -r "auth-refactor" "finish this PR" - Resume a session by name'),
+      task('cc-se1-4', 'Type the fork session flag', 'claude --resume abc123 --fork-session - Fork a session into a new one'),
+    ]
+  ),
+  lesson(
+    'cc-session-2',
+    'Session Slash Commands',
+    'Manage sessions from inside the REPL',
+    'commands',
+    'intermediate',
+    [
+      task('cc-se2-1', 'Type the rename command', '/rename auth-refactor - Rename the current session for easy identification'),
+      task('cc-se2-2', 'Type the resume command', '/resume - Open the session picker to resume a previous conversation'),
+      task('cc-se2-3', 'Type the export command', '/export conversation.md - Export the current conversation to a file'),
+      task('cc-se2-4', 'Type the clear command', '/clear - Clear conversation history and start fresh'),
+    ]
+  ),
+];
+
+// Stage 4: Context & Memory
+const ccStage4Lessons: Lesson[] = [
+  lesson(
+    'cc-ctx-1',
+    'Context Management',
+    'Control what Claude knows about your project',
+    'commands',
+    'intermediate',
+    [
+      task('cc-c1-1', 'Type the compact command', '/compact - Compress conversation to free up context window space'),
+      task('cc-c1-2', 'Type compact with focus', '/compact "focus on authentication" - Compact with focus instructions'),
+      task('cc-c1-3', 'Type the context command', '/context - Visualize current context usage as a colored grid'),
+      task('cc-c1-4', 'Type the rewind command', '/rewind - Rewind the conversation and code to a previous state'),
+    ]
+  ),
+  lesson(
+    'cc-ctx-2',
+    'Memory & CLAUDE.md',
+    'Set up persistent project memory',
+    'commands',
+    'intermediate',
+    [
+      task('cc-c2-1', 'Type the init command', '/init - Initialize project with a CLAUDE.md guide file'),
+      task('cc-c2-2', 'Type the memory command', '/memory - Edit CLAUDE.md memory files for persistent instructions'),
+      task('cc-c2-3', 'Type a file reference', '@src/utils/auth.js - Reference a file to add it to context'),
+      task('cc-c2-4', 'Type a directory reference', '@src/components/ - Reference a directory listing for context'),
+    ]
+  ),
+];
+
+// Stage 5: Model & Thinking
+const ccStage5Lessons: Lesson[] = [
+  lesson(
+    'cc-model-1',
+    'Model Selection',
+    'Choose and configure AI models',
+    'commands',
+    'intermediate',
+    [
+      task('cc-m1-1', 'Type the model flag', 'claude --model sonnet - Set the model for the session'),
+      task('cc-m1-2', 'Type the model slash command', '/model - Select or change the AI model interactively'),
+      task('cc-m1-3', 'Type the fallback model flag', 'claude -p --fallback-model sonnet "query" - Auto-fallback when overloaded'),
+      task('cc-m1-4', 'Type the effort level env var', 'CLAUDE_CODE_EFFORT_LEVEL=high claude - Set reasoning effort level'),
+    ]
+  ),
+  lesson(
+    'cc-model-2',
+    'Extended Thinking',
+    'Enable deeper reasoning for complex tasks',
+    'commands',
+    'intermediate',
+    [
+      task('cc-m2-1', 'Type the verbose flag', 'claude --verbose - Enable verbose logging with full turn-by-turn output'),
+      task('cc-m2-2', 'Type the plan mode command', '/plan - Enter plan mode for read-only analysis before coding'),
+      task('cc-m2-3', 'Type the thinking env var', 'MAX_THINKING_TOKENS=16000 - Override the extended thinking token budget'),
+      task('cc-m2-4', 'Type the output tokens env var', 'CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000 - Set maximum output token limit'),
+    ]
+  ),
+];
+
+// Stage 6: Permissions & Security
+const ccStage6Lessons: Lesson[] = [
+  lesson(
+    'cc-perm-1',
+    'Permission Modes',
+    'Control what Claude can do automatically',
+    'commands',
+    'intermediate',
+    [
+      task('cc-pe1-1', 'Type the permissions command', '/permissions - View or update current permission settings'),
+      task('cc-pe1-2', 'Type the permission mode flag', 'claude --permission-mode plan - Start in plan mode (read-only)'),
+      task('cc-pe1-3', 'Type the allowed tools flag', 'claude --allowedTools "Bash(git log *)" "Read" - Allow specific tools'),
+      task('cc-pe1-4', 'Type the disallowed tools flag', 'claude --disallowedTools "Bash(curl *)" - Block specific tools'),
+    ]
+  ),
+  lesson(
+    'cc-perm-2',
+    'Settings Configuration',
+    'Configure Claude Code behavior',
+    'commands',
+    'intermediate',
+    [
+      task('cc-pe2-1', 'Type the config command', '/config - Open the Settings interface to configure Claude Code'),
+      task('cc-pe2-2', 'Type the theme command', '/theme - Change the color theme of the interface'),
+      task('cc-pe2-3', 'Type the settings flag', 'claude --settings ./settings.json - Load settings from a JSON file'),
+      task('cc-pe2-4', 'Type the add dir flag', 'claude --add-dir ../apps ../lib - Add extra working directories'),
+    ]
+  ),
+];
+
+// Stage 7: MCP Servers
+const ccStage7Lessons: Lesson[] = [
+  lesson(
+    'cc-mcp-1',
+    'MCP Basics',
+    'Add and manage Model Context Protocol servers',
+    'commands',
+    'advanced',
+    [
+      task('cc-mc1-1', 'Type the MCP list command', 'claude mcp list - List all configured MCP servers'),
+      task('cc-mc1-2', 'Type the MCP add command', 'claude mcp add --transport http notion https://mcp.notion.com/mcp'),
+      task('cc-mc1-3', 'Type the MCP remove command', 'claude mcp remove github - Remove a configured MCP server'),
+      task('cc-mc1-4', 'Type the MCP get command', 'claude mcp get github - Get details for a specific MCP server'),
+    ]
+  ),
+  lesson(
+    'cc-mcp-2',
+    'MCP Advanced',
+    'Advanced MCP configuration and scoping',
+    'commands',
+    'advanced',
+    [
+      task('cc-mc2-1', 'Type the MCP scope flag', 'claude mcp add --scope user my-server - Add server with user scope'),
+      task('cc-mc2-2', 'Type the MCP serve command', 'claude mcp serve - Start Claude Code itself as an MCP server'),
+      task('cc-mc2-3', 'Type the MCP config flag', 'claude --mcp-config ./mcp.json - Load MCP servers from a config file'),
+      task('cc-mc2-4', 'Type the MCP import command', 'claude mcp add-from-claude-desktop - Import servers from Claude Desktop'),
+    ]
+  ),
+];
+
+// Stage 8: Keyboard Shortcuts
+const ccStage8Lessons: Lesson[] = [
+  lesson(
+    'cc-keys-1',
+    'Essential Shortcuts',
+    'Core keyboard shortcuts for the REPL',
+    'commands',
+    'intermediate',
+    [
+      task('cc-k1-1', 'Type the cancel shortcut', 'Ctrl+C - Cancel current input or generation'),
+      task('cc-k1-2', 'Type the exit shortcut', 'Ctrl+D - Exit the Claude Code session'),
+      task('cc-k1-3', 'Type the clear screen shortcut', 'Ctrl+L - Clear terminal screen while keeping conversation'),
+      task('cc-k1-4', 'Type the verbose toggle', 'Ctrl+O - Toggle verbose output to show thinking'),
+    ]
+  ),
+  lesson(
+    'cc-keys-2',
+    'Advanced Shortcuts',
+    'Power user keyboard shortcuts',
+    'commands',
+    'intermediate',
+    [
+      task('cc-k2-1', 'Type the background shortcut', 'Ctrl+B - Background running tasks'),
+      task('cc-k2-2', 'Type the task list toggle', 'Ctrl+T - Toggle task list display'),
+      task('cc-k2-3', 'Type the editor shortcut', 'Ctrl+G - Open current prompt in your default text editor'),
+      task('cc-k2-4', 'Type the model switch shortcut', 'Option+P - Switch model without clearing the current prompt'),
+    ]
+  ),
+];
+
+// Stage 9: System Prompts & Agents
+const ccStage9Lessons: Lesson[] = [
+  lesson(
+    'cc-sys-1',
+    'Custom System Prompts',
+    'Override and extend the system prompt',
+    'commands',
+    'advanced',
+    [
+      task('cc-sy1-1', 'Type the system prompt flag', 'claude --system-prompt "You are a code reviewer" - Replace system prompt'),
+      task('cc-sy1-2', 'Type the append system prompt flag', 'claude --append-system-prompt "Always use TypeScript" - Extend prompt'),
+      task('cc-sy1-3', 'Type the system prompt file flag', 'claude -p --system-prompt-file prompt.txt "query" - Load prompt from file'),
+      task('cc-sy1-4', 'Type the append file flag', 'claude -p --append-system-prompt-file rules.txt "query" - Append from file'),
+    ]
+  ),
+  lesson(
+    'cc-sys-2',
+    'Agents & Tasks',
+    'Create and manage custom agents',
+    'commands',
+    'advanced',
+    [
+      task('cc-sy2-1', 'Type the agents command', '/agents - Manage subagents: view, create, and edit them'),
+      task('cc-sy2-2', 'Type the agent flag', 'claude --agent my-custom-agent - Use a specific agent for the session'),
+      task('cc-sy2-3', 'Type the tasks command', '/tasks - List and manage background tasks'),
+      task('cc-sy2-4', 'Type the todos command', '/todos - List current TODO items being tracked'),
+    ]
+  ),
+];
+
+// Stage 10: Git & GitHub Integration
+const ccStage10Lessons: Lesson[] = [
+  lesson(
+    'cc-git-1',
+    'GitHub Workflows',
+    'Use Claude Code with GitHub',
+    'commands',
+    'advanced',
+    [
+      task('cc-g1-1', 'Type the from-pr flag', 'claude --from-pr 123 - Resume sessions linked to a specific GitHub PR'),
+      task('cc-g1-2', 'Type the install github app command', '/install-github-app - Set up GitHub Actions for auto PR reviews'),
+      task('cc-g1-3', 'Type a bash mode command', '!git status - Run shell commands directly with output added to context'),
+      task('cc-g1-4', 'Type the copy command', '/copy - Copy the last assistant response to clipboard'),
+    ]
+  ),
+  lesson(
+    'cc-git-2',
+    'Remote Sessions',
+    'Work with Claude Code across environments',
+    'commands',
+    'advanced',
+    [
+      task('cc-g2-1', 'Type the remote flag', 'claude --remote "Fix the login bug" - Create a web session on claude.ai'),
+      task('cc-g2-2', 'Type the teleport flag', 'claude --teleport - Resume a web session in your local terminal'),
+      task('cc-g2-3', 'Type the teleport slash command', '/teleport - Resume a remote session from inside the REPL'),
+      task('cc-g2-4', 'Type the IDE flag', 'claude --ide - Auto-connect to IDE on startup if available'),
+    ]
+  ),
+];
+
+// Stage 11: Environment Variables
+const ccStage11Lessons: Lesson[] = [
+  lesson(
+    'cc-env-1',
+    'Core Environment Variables',
+    'Configure Claude Code with environment variables',
+    'commands',
+    'advanced',
+    [
+      task('cc-e1-1', 'Type the API key variable', 'ANTHROPIC_API_KEY=sk-ant-... claude - Authenticate with an API key'),
+      task('cc-e1-2', 'Type the model variable', 'ANTHROPIC_MODEL=claude-sonnet-4-5-20250929 claude - Override default model'),
+      task('cc-e1-3', 'Type the shell variable', 'CLAUDE_CODE_SHELL=/bin/zsh claude - Override shell detection'),
+      task('cc-e1-4', 'Type the tmpdir variable', 'CLAUDE_CODE_TMPDIR=/custom/tmp claude - Override temp directory'),
+    ]
+  ),
+  lesson(
+    'cc-env-2',
+    'Advanced Variables',
+    'Fine-tune behavior with environment variables',
+    'commands',
+    'advanced',
+    [
+      task('cc-e2-1', 'Type the MCP timeout variable', 'MCP_TIMEOUT=10000 claude - Set MCP server startup timeout in ms'),
+      task('cc-e2-2', 'Type the MCP output variable', 'MAX_MCP_OUTPUT_TOKENS=25000 - Set max tokens for MCP tool output'),
+      task('cc-e2-3', 'Type the telemetry variable', 'DISABLE_TELEMETRY=1 claude - Opt out of telemetry collection'),
+      task('cc-e2-4', 'Type the auto-update variable', 'DISABLE_AUTOUPDATER=1 claude - Disable automatic updates'),
+    ]
+  ),
+];
+
+// Stage 12: Configuration Files
+const ccStage12Lessons: Lesson[] = [
+  lesson(
+    'cc-cfg-1',
+    'Settings Files',
+    'Understand the Claude Code configuration hierarchy',
+    'commands',
+    'advanced',
+    [
+      task('cc-cf1-1', 'Type the user settings path', '~/.claude/settings.json - User-level global settings file'),
+      task('cc-cf1-2', 'Type the project settings path', '.claude/settings.json - Project-level team-shared settings file'),
+      task('cc-cf1-3', 'Type the local settings path', '.claude/settings.local.json - Project-level personal settings (gitignored)'),
+      task('cc-cf1-4', 'Type the MCP config path', '.mcp.json - Project-scoped MCP server configuration file'),
+    ]
+  ),
+  lesson(
+    'cc-cfg-2',
+    'Skills & Commands',
+    'Create custom slash commands and skills',
+    'commands',
+    'advanced',
+    [
+      task('cc-cf2-1', 'Type the project skills path', '.claude/skills/ - Project-specific skills directory'),
+      task('cc-cf2-2', 'Type the personal skills path', '~/.claude/skills/ - Personal skills directory for all projects'),
+      task('cc-cf2-3', 'Type the project commands path', '.claude/commands/ - Project-specific custom slash commands'),
+      task('cc-cf2-4', 'Type the agents path', '.claude/agents/ - Project-specific subagent definitions'),
+    ]
+  ),
+];
+
+// Stage 13: Advanced Workflows
+const ccStage13Lessons: Lesson[] = [
+  lesson(
+    'cc-adv-1',
+    'Multiline & Editing',
+    'Master multiline input and editing modes',
+    'commands',
+    'advanced',
+    [
+      task('cc-a1-1', 'Type the multiline escape', 'Press \\ then Enter to start a new line in the prompt'),
+      task('cc-a1-2', 'Type the vim command', '/vim - Enable vim-style editing mode in the REPL'),
+      task('cc-a1-3', 'Type the terminal setup command', '/terminal-setup - Install Shift+Enter binding for multiline input'),
+      task('cc-a1-4', 'Type the stats command', '/stats - Visualize daily usage, session history, and streaks'),
+    ]
+  ),
+  lesson(
+    'cc-adv-2',
+    'Hooks & Lifecycle',
+    'Run custom commands at lifecycle events',
+    'commands',
+    'expert',
+    [
+      task('cc-a2-1', 'Type the PreToolUse hook', 'PreToolUse - Hook that fires before a tool is executed'),
+      task('cc-a2-2', 'Type the PostToolUse hook', 'PostToolUse - Hook that fires after a tool completes'),
+      task('cc-a2-3', 'Type the UserPromptSubmit hook', 'UserPromptSubmit - Hook that fires when the user submits a prompt'),
+      task('cc-a2-4', 'Type the SessionStart hook', 'SessionStart - Hook that fires when a new session begins'),
+    ]
+  ),
+];
+
+// Stage 14: Mastery Test
+const ccMasteryTest: Lesson[] = [
+  lesson(
+    'cc-test-1',
+    'Claude Code Mastery Test',
+    'Prove your Claude Code knowledge',
+    'commands',
+    'expert',
+    [
+      task('cc-t1-1', 'Type a complete print mode workflow', 'cat error.log | claude -p --output-format json "diagnose this"'),
+      task('cc-t1-2', 'Type a session management workflow', 'claude -r "feature-auth" --fork-session "continue from here"'),
+      task('cc-t1-3', 'Type an MCP configuration command', 'claude mcp add --transport http --scope user github https://mcp.github.com'),
+      task('cc-t1-4', 'Type a full flags combo', 'claude --model opus --permission-mode plan --add-dir ../shared --verbose'),
+      task('cc-t1-5', 'Type environment setup', 'ANTHROPIC_API_KEY=sk-ant-key CLAUDE_CODE_EFFORT_LEVEL=high claude'),
+      task('cc-t1-6', 'Type all essential slash commands', '/compact /context /model /permissions /memory /config'),
+    ]
+  ),
+];
+
+// All Claude Code course lessons
+export const ccCourseLessons: Lesson[] = [
+  ...ccStage1Lessons,
+  ...ccStage2Lessons,
+  ...ccStage3Lessons,
+  ...ccStage4Lessons,
+  ...ccStage5Lessons,
+  ...ccStage6Lessons,
+  ...ccStage7Lessons,
+  ...ccStage8Lessons,
+  ...ccStage9Lessons,
+  ...ccStage10Lessons,
+  ...ccStage11Lessons,
+  ...ccStage12Lessons,
+  ...ccStage13Lessons,
+  ...ccMasteryTest,
+];
+
+// Create the Claude Code course
+export const claudeCodeCourse: Course = {
+  id: 'claude-code',
+  name: 'Claude Code Mastery',
+  description: 'Master Claude Code from basic commands to advanced workflows and MCP configuration',
+  stages: [
+    {
+      id: 'cc-stage-1',
+      name: 'Getting Started',
+      description: 'Launch Claude Code and learn the essential first commands',
+      lessons: ccStage1Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: false },
+    },
+    {
+      id: 'cc-stage-2',
+      name: 'Print Mode & Piping',
+      description: 'Use Claude Code for scripting, one-shot queries, and CI/CD',
+      lessons: ccStage2Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-3',
+      name: 'Session Management',
+      description: 'Continue, resume, and manage conversations',
+      lessons: ccStage3Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-4',
+      name: 'Context & Memory',
+      description: 'Manage context, compact conversations, and set up CLAUDE.md',
+      lessons: ccStage4Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-5',
+      name: 'Model & Thinking',
+      description: 'Choose models, configure reasoning depth, and use plan mode',
+      lessons: ccStage5Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-6',
+      name: 'Permissions & Security',
+      description: 'Control permissions, tool access, and settings',
+      lessons: ccStage6Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-7',
+      name: 'MCP Servers',
+      description: 'Add, configure, and manage Model Context Protocol servers',
+      lessons: ccStage7Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-8',
+      name: 'Keyboard Shortcuts',
+      description: 'Essential and advanced keyboard shortcuts for the REPL',
+      lessons: ccStage8Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-9',
+      name: 'System Prompts & Agents',
+      description: 'Customize system prompts and work with subagents',
+      lessons: ccStage9Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-10',
+      name: 'Git & GitHub',
+      description: 'GitHub integration, remote sessions, and IDE connection',
+      lessons: ccStage10Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-11',
+      name: 'Environment Variables',
+      description: 'Configure Claude Code with environment variables',
+      lessons: ccStage11Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true, minWpm: 20 },
+    },
+    {
+      id: 'cc-stage-12',
+      name: 'Configuration Files',
+      description: 'Understand settings hierarchy, skills, and custom commands',
+      lessons: ccStage12Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-13',
+      name: 'Advanced Workflows',
+      description: 'Multiline editing, vim mode, and lifecycle hooks',
+      lessons: ccStage13Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'cc-stage-test',
+      name: 'Claude Code Mastery Test',
+      description: 'Prove your Claude Code expertise',
+      lessons: ccMasteryTest.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true, minWpm: 25, minAccuracy: 0.90 },
+    },
+  ],
+};
+
 // All available courses
-export const allCourses: Course[] = [tenFingerCourse, cliCourse];
+export const allCourses: Course[] = [tenFingerCourse, cliCourse, claudeCodeCourse];

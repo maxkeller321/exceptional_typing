@@ -291,11 +291,6 @@
     background-color: var(--bg-secondary);
   }
 
-  .last-practice {
-    @apply text-sm;
-    color: var(--text-secondary);
-  }
-
   .empty-message {
     @apply text-sm italic;
     color: var(--text-muted);

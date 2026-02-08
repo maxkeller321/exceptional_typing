@@ -4,6 +4,7 @@ import { currentUser } from './user';
 import {
   tenFingerCourse,
   cliCourse,
+  claudeCodeCourse,
   allCourses,
   getCourseStage,
   getCliCourseStage,
@@ -562,4 +563,4 @@ export const currentSkippableStageId = derived(
 );
 
 // Export all courses for easy access
-export { allCourses, tenFingerCourse, cliCourse };
+export { allCourses, tenFingerCourse, cliCourse, claudeCodeCourse };

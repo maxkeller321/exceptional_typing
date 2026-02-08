@@ -232,6 +232,8 @@
       <svg
         class="chart-svg"
         viewBox="0 0 {width} {height}"
+        role="img"
+        aria-label="WPM over time chart"
         onmousemove={handleMouseMove}
         onmouseleave={handleMouseLeave}
       >

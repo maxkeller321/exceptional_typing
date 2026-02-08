@@ -9,6 +9,7 @@ import {
   currentSkippableStageId,
   tenFingerCourse,
   cliCourse,
+  claudeCodeCourse,
   allCourses,
 } from './course';
 import { lessonProgress } from './app';
@@ -467,10 +468,11 @@ describe('Course Store', () => {
       courseStore.resetAll();
     });
 
-    it('allCourses contains both ten-finger and CLI courses', () => {
-      expect(allCourses.length).toBe(2);
+    it('allCourses contains all available courses', () => {
+      expect(allCourses.length).toBe(3);
       expect(allCourses.find(c => c.id === 'ten-finger')).toBeDefined();
       expect(allCourses.find(c => c.id === 'cli-mastery')).toBeDefined();
+      expect(allCourses.find(c => c.id === 'claude-code')).toBeDefined();
     });
 
     it('cliCourse has correct structure', () => {
@@ -586,6 +588,34 @@ describe('Course Store', () => {
         expect(stage.name).toBeTruthy();
         expect(stage.description).toBeTruthy();
       }
+    });
+
+    it('Claude Code course has correct structure', () => {
+      expect(claudeCodeCourse.id).toBe('claude-code');
+      expect(claudeCodeCourse.name).toBe('Claude Code Mastery');
+      expect(claudeCodeCourse.stages.length).toBeGreaterThan(0);
+      expect(claudeCodeCourse.stages[0].unlockCriteria.previousStageComplete).toBe(false);
+    });
+
+    it('Claude Code course has 14 stages', () => {
+      expect(claudeCodeCourse.stages.length).toBe(14);
+    });
+
+    it('Claude Code course stages have valid lessons', () => {
+      for (const stage of claudeCodeCourse.stages) {
+        expect(stage.lessons.length).toBeGreaterThan(0);
+        expect(stage.name).toBeTruthy();
+        expect(stage.description).toBeTruthy();
+      }
+    });
+
+    it('can enroll in Claude Code course independently', () => {
+      courseStore.selectCourse(claudeCodeCourse.id);
+      expect(courseStore.isEnrolled()).toBe(false);
+      courseStore.enroll();
+      expect(courseStore.isEnrolled()).toBe(true);
+      expect(courseStore.isEnrolled(tenFingerCourse.id)).toBe(false);
+      expect(courseStore.isEnrolled(cliCourse.id)).toBe(false);
     });
   });
 

@@ -33,7 +33,7 @@
   }
 </script>
 
-<button class="user-card" onclick={() => onSelect?.(user.id)} type="button">
+<div class="user-card" onclick={() => onSelect?.(user.id)} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect?.(user.id); }} role="button" tabindex="0">
   <div class="avatar-container">
     <div class="avatar {avatar.color}">
       <span class="avatar-emoji">{avatar.emoji}</span>
@@ -56,7 +56,7 @@
       </svg>
     </button>
   {/if}
-</button>
+</div>
 
 <style>
   .user-card {

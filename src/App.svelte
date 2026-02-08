@@ -117,6 +117,23 @@
     { value: 'one-dark', label: 'One Dark' },
   ];
 
+  function handleGlobalKeyDown(event: KeyboardEvent): void {
+    // Backspace to navigate back (only when not in an input/textarea and not in lesson view)
+    if (event.key === 'Backspace' && view !== 'lesson' && view !== 'home') {
+      // Don't capture if user is in an input element
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        return;
+      }
+      event.preventDefault();
+      if (view === 'course') {
+        navigateTo('home');
+      } else {
+        navigateTo('home');
+      }
+    }
+  }
+
   const localeOptions = [
     { value: 'en', label: 'English' },
     { value: 'de', label: 'Deutsch' },
@@ -129,6 +146,8 @@
     { value: 'midnight', label: 'Midnight' },
   ];
 </script>
+
+<svelte:window onkeydown={handleGlobalKeyDown} />
 
 {#if !hasUser}
   <UserPicker />

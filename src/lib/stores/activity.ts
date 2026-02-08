@@ -1,12 +1,9 @@
 import { writable, derived, get } from 'svelte/store';
+import type { DailyActivity } from '../types';
 import { currentUser } from './user';
+import { getStorage } from '../services';
 
-export interface DailyActivity {
-  date: string; // YYYY-MM-DD format
-  practiceTime: number; // ms
-  characters: number;
-  sessions: number;
-}
+export type { DailyActivity };
 
 // Internal store for daily activity data
 const activityInternal = writable<Map<string, DailyActivity>>(new Map());
@@ -25,31 +22,21 @@ currentUser.subscribe((user) => {
   }
 });
 
-// Load activity from localStorage
+// Load activity from storage
 function loadActivity(userId: number): void {
   if (typeof window === 'undefined') return;
 
-  const stored = localStorage.getItem(`exceptional-typing-activity-${userId}`);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      // Convert array back to Map
-      activityInternal.set(new Map(parsed));
-    } catch {
-      activityInternal.set(new Map());
-    }
-  } else {
+  getStorage().getActivity(userId).then((activity) => {
+    activityInternal.set(activity);
+  }).catch(() => {
     activityInternal.set(new Map());
-  }
+  });
 }
 
-// Save activity to localStorage
+// Save activity via storage service (fire-and-forget)
 function saveActivity(activity: Map<string, DailyActivity>): void {
   if (typeof window === 'undefined' || currentUserId === null) return;
-  localStorage.setItem(
-    `exceptional-typing-activity-${currentUserId}`,
-    JSON.stringify(Array.from(activity.entries()))
-  );
+  getStorage().saveActivity(currentUserId, activity).catch(console.error);
 }
 
 // Get today's date string in YYYY-MM-DD format
@@ -118,7 +105,7 @@ function createActivityStore() {
     // Reset all activity data
     reset(): void {
       if (currentUserId === null) return;
-      localStorage.removeItem(`exceptional-typing-activity-${currentUserId}`);
+      getStorage().deleteActivity(currentUserId).catch(console.error);
       activityInternal.set(new Map());
     },
   };

@@ -1,6 +1,7 @@
 import { writable, derived, get } from 'svelte/store';
 import type { DailyTestResult } from '../types';
 import { currentUser } from './user';
+import { getStorage } from '../services';
 import { getDateString, hasCompletedToday, getTodayResult, getStreak, getBestResult } from '../utils/dailyTest';
 
 // Internal store for all daily results
@@ -19,25 +20,21 @@ currentUser.subscribe((user) => {
   }
 });
 
-// Load results from localStorage (global, not per-user, since we filter by userId)
+// Load results from storage (global, not per-user, since we filter by userId)
 function loadResults(): void {
   if (typeof window === 'undefined') return;
 
-  const stored = localStorage.getItem('exceptional-typing-daily-results');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      resultsInternal.set(parsed);
-    } catch {
-      resultsInternal.set([]);
-    }
-  }
+  getStorage().getDailyResults().then((results) => {
+    resultsInternal.set(results);
+  }).catch(() => {
+    resultsInternal.set([]);
+  });
 }
 
-// Save results to localStorage
+// Save results via storage service (fire-and-forget)
 function saveResults(results: DailyTestResult[]): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem('exceptional-typing-daily-results', JSON.stringify(results));
+  getStorage().saveDailyResults(results).catch(console.error);
 }
 
 // Create the daily test store

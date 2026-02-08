@@ -1,25 +1,11 @@
 import { writable, derived, get } from 'svelte/store';
 import type { UserSettings, TypingMode, KeyboardLayoutId, Locale, AppTheme, LessonCategory, Difficulty } from '../types';
 import { currentUser } from './user';
+import { getStorage } from '../services';
+import { DEFAULT_SETTINGS } from '../defaults';
 
-// Default settings
-export const DEFAULT_SETTINGS: UserSettings = {
-  showVirtualKeyboard: true,
-  showHandGuides: true,
-  showSyntaxHighlighting: true,
-  showProgressPercentage: true,
-  fontSize: 24,
-  typingMode: 'normal',
-  appTheme: 'dark-blue',
-  codeTheme: 'vscode-dark',
-  autoFormatCode: true,
-  soundEffectsEnabled: false,
-  keyboardLayout: 'qwerty-us',
-  locale: 'en',
-  hasCompletedOnboarding: false,
-  lessonPickerCategory: 'home_row',
-  lessonPickerDifficulty: 'all',
-};
+// Re-export for backwards compatibility
+export { DEFAULT_SETTINGS };
 
 // Internal store
 const settingsInternal = writable<UserSettings>(DEFAULT_SETTINGS);
@@ -38,30 +24,21 @@ currentUser.subscribe((user) => {
   }
 });
 
-// Load settings from localStorage for a user
+// Load settings from storage
 function loadSettings(userId: number): void {
   if (typeof window === 'undefined') return;
 
-  const stored = localStorage.getItem(`exceptional-typing-settings-${userId}`);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      settingsInternal.set({ ...DEFAULT_SETTINGS, ...parsed });
-    } catch {
-      settingsInternal.set(DEFAULT_SETTINGS);
-    }
-  } else {
+  getStorage().getSettings(userId).then((settings) => {
+    settingsInternal.set(settings ?? DEFAULT_SETTINGS);
+  }).catch(() => {
     settingsInternal.set(DEFAULT_SETTINGS);
-  }
+  });
 }
 
-// Save settings to localStorage
+// Save settings via storage service
 function saveSettings(settings: UserSettings): void {
   if (typeof window === 'undefined' || currentUserId === null) return;
-  localStorage.setItem(
-    `exceptional-typing-settings-${currentUserId}`,
-    JSON.stringify(settings)
-  );
+  getStorage().saveSettings(currentUserId, settings).catch(console.error);
 }
 
 // Debounce save to prevent excessive writes

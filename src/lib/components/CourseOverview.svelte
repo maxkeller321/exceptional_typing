@@ -68,6 +68,8 @@
         return '⚡';
       case 'claude-code':
         return '🤖';
+      case 'sql-mastery':
+        return '🗄️';
       default:
         return '📚';
     }

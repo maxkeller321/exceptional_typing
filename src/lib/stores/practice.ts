@@ -1,6 +1,7 @@
 import { writable, derived, get } from 'svelte/store';
 import type { CustomSnippet, CodeLanguage, PracticeMode } from '../types';
 import { currentUser } from './user';
+import { getStorage } from '../services';
 
 // Internal stores
 const snippetsInternal = writable<CustomSnippet[]>([]);
@@ -21,30 +22,21 @@ currentUser.subscribe((user) => {
   }
 });
 
-// Load snippets from localStorage
+// Load snippets from storage
 function loadSnippets(userId: number): void {
   if (typeof window === 'undefined') return;
 
-  const stored = localStorage.getItem(`exceptional-typing-snippets-${userId}`);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      snippetsInternal.set(parsed);
-    } catch {
-      snippetsInternal.set([]);
-    }
-  } else {
+  getStorage().getSnippets(userId).then((snippets) => {
+    snippetsInternal.set(snippets);
+  }).catch(() => {
     snippetsInternal.set([]);
-  }
+  });
 }
 
-// Save snippets to localStorage
+// Save snippets via storage service (fire-and-forget)
 function saveSnippets(snippets: CustomSnippet[]): void {
   if (typeof window === 'undefined' || currentUserId === null) return;
-  localStorage.setItem(
-    `exceptional-typing-snippets-${currentUserId}`,
-    JSON.stringify(snippets)
-  );
+  getStorage().saveSnippets(currentUserId, snippets).catch(console.error);
 }
 
 // Generate unique ID

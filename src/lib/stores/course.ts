@@ -1,10 +1,12 @@
 import { writable, derived, get } from 'svelte/store';
 import type { CourseProgress, CourseStage, Course } from '../types';
 import { currentUser } from './user';
+import { getStorage } from '../services';
 import {
   tenFingerCourse,
   cliCourse,
   claudeCodeCourse,
+  sqlCourse,
   allCourses,
   getCourseStage,
   getCliCourseStage,
@@ -31,52 +33,21 @@ currentUser.subscribe((user) => {
   }
 });
 
-// Load all course progress from localStorage
+// Load all course progress from storage
 function loadAllProgress(userId: number): void {
   if (typeof window === 'undefined') return;
 
-  const stored = localStorage.getItem(`exceptional-typing-all-courses-${userId}`);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      // Convert array back to Map
-      allProgressInternal.set(new Map(parsed));
-    } catch {
-      // Try loading legacy single-course data
-      loadLegacyProgress(userId);
-    }
-  } else {
-    // Try loading legacy single-course data
-    loadLegacyProgress(userId);
-  }
-}
-
-// Load legacy single-course progress (backwards compatibility)
-function loadLegacyProgress(userId: number): void {
-  const stored = localStorage.getItem(`exceptional-typing-course-${userId}`);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      const progressMap = new Map<string, CourseProgress>();
-      progressMap.set(parsed.courseId, parsed);
-      allProgressInternal.set(progressMap);
-      // Migrate to new format
-      saveAllProgress(progressMap);
-    } catch {
-      allProgressInternal.set(new Map());
-    }
-  } else {
+  getStorage().getAllCourseProgress(userId).then((progress) => {
+    allProgressInternal.set(progress);
+  }).catch(() => {
     allProgressInternal.set(new Map());
-  }
+  });
 }
 
-// Save all course progress to localStorage
+// Save all course progress via storage service (fire-and-forget)
 function saveAllProgress(progressMap: Map<string, CourseProgress>): void {
   if (typeof window === 'undefined' || currentUserId === null) return;
-  localStorage.setItem(
-    `exceptional-typing-all-courses-${currentUserId}`,
-    JSON.stringify(Array.from(progressMap.entries()))
-  );
+  getStorage().saveCourseProgress(currentUserId, progressMap).catch(console.error);
 }
 
 // Helper to get the correct course by ID
@@ -398,7 +369,7 @@ function createCourseStore() {
     // Reset all course progress
     resetAll(): void {
       if (currentUserId === null) return;
-      localStorage.removeItem(`exceptional-typing-all-courses-${currentUserId}`);
+      getStorage().deleteAllCourseProgress(currentUserId).catch(console.error);
       allProgressInternal.set(new Map());
     },
 
@@ -562,5 +533,11 @@ export const currentSkippableStageId = derived(
   }
 );
 
+// Reactive store exposing the full progress map (for components that need to react to any progress change)
+export const allCourseProgress = derived(
+  allProgressInternal,
+  ($allProgress) => $allProgress
+);
+
 // Export all courses for easy access
-export { allCourses, tenFingerCourse, cliCourse, claudeCodeCourse };
+export { allCourses, tenFingerCourse, cliCourse, claudeCodeCourse, sqlCourse };

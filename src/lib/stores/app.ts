@@ -2,6 +2,7 @@ import { writable, derived, get } from 'svelte/store';
 import type { AppView, Lesson, UserStats, LessonProgress, TaskResult } from '../types';
 import { currentUser } from './user';
 import { activityStore } from './activity';
+import { getStorage } from '../services';
 
 // Current view state
 export const currentView = writable<AppView>('home');
@@ -49,65 +50,38 @@ currentUser.subscribe((user) => {
   }
 });
 
-// Load user stats from localStorage
+// Load user stats from storage
 function loadUserStats(userId: number): void {
   if (typeof window === 'undefined') return;
 
-  const stored = localStorage.getItem(`exceptional-typing-stats-${userId}`);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      // Restore Map from array
-      parsed.problemKeys = new Map(parsed.problemKeys || []);
-      userStats.set(parsed);
-    } catch {
-      userStats.set({ ...defaultStats, problemKeys: new Map() });
-    }
-  } else {
+  getStorage().getUserStats(userId).then((stats) => {
+    userStats.set(stats);
+  }).catch(() => {
     userStats.set({ ...defaultStats, problemKeys: new Map() });
-  }
+  });
 }
 
-// Save user stats to localStorage
+// Save user stats via storage service (fire-and-forget)
 function saveUserStats(stats: UserStats): void {
   if (typeof window === 'undefined' || currentUserId === null) return;
-  // Convert Map to array for JSON serialization
-  const toSave = {
-    ...stats,
-    problemKeys: Array.from(stats.problemKeys.entries()),
-  };
-  localStorage.setItem(
-    `exceptional-typing-stats-${currentUserId}`,
-    JSON.stringify(toSave)
-  );
+  getStorage().saveUserStats(currentUserId, stats).catch(console.error);
 }
 
-// Load lesson progress from localStorage
+// Load lesson progress from storage
 function loadLessonProgress(userId: number): void {
   if (typeof window === 'undefined') return;
 
-  const stored = localStorage.getItem(`exceptional-typing-progress-${userId}`);
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      // Convert array back to Map
-      lessonProgress.set(new Map(parsed));
-    } catch {
-      lessonProgress.set(new Map());
-    }
-  } else {
+  getStorage().getAllLessonProgress(userId).then((progress) => {
+    lessonProgress.set(progress);
+  }).catch(() => {
     lessonProgress.set(new Map());
-  }
+  });
 }
 
-// Save lesson progress to localStorage
+// Save lesson progress via storage service (fire-and-forget)
 function saveLessonProgress(progress: Map<string, LessonProgress>): void {
   if (typeof window === 'undefined' || currentUserId === null) return;
-  // Convert Map to array for JSON serialization
-  localStorage.setItem(
-    `exceptional-typing-progress-${currentUserId}`,
-    JSON.stringify(Array.from(progress.entries()))
-  );
+  getStorage().saveLessonProgress(currentUserId, progress).catch(console.error);
 }
 
 // Navigation functions

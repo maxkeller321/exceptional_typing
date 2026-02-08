@@ -219,6 +219,17 @@ export interface CustomSnippet {
 }
 
 // ============================================
+// Daily Activity Types (for heatmap)
+// ============================================
+
+export interface DailyActivity {
+  date: string; // YYYY-MM-DD format
+  practiceTime: number; // ms
+  characters: number;
+  sessions: number;
+}
+
+// ============================================
 // Daily Test Types
 // ============================================
 

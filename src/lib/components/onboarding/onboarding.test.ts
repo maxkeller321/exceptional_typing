@@ -16,14 +16,16 @@ describe('Onboarding System', () => {
   });
 
   describe('Onboarding state management', () => {
-    it('new users have onboarding not completed by default', () => {
+    it('new users have onboarding not completed by default', async () => {
       currentUser.set({ id: 1, name: 'NewUser', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(get(hasCompletedOnboarding)).toBe(false);
     });
 
-    it('completeOnboarding marks tutorial as done', () => {
+    it('completeOnboarding marks tutorial as done', async () => {
       currentUser.set({ id: 2, name: 'User', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(get(hasCompletedOnboarding)).toBe(false);
 
@@ -32,8 +34,9 @@ describe('Onboarding System', () => {
       expect(get(hasCompletedOnboarding)).toBe(true);
     });
 
-    it('resetOnboarding allows tutorial to be shown again', () => {
+    it('resetOnboarding allows tutorial to be shown again', async () => {
       currentUser.set({ id: 3, name: 'User', avatar: 'fox', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       settingsStore.completeOnboarding();
       expect(get(hasCompletedOnboarding)).toBe(true);
@@ -42,14 +45,16 @@ describe('Onboarding System', () => {
       expect(get(hasCompletedOnboarding)).toBe(false);
     });
 
-    it('onboarding status persists per user', () => {
+    it('onboarding status persists per user', async () => {
       // User 1 completes onboarding
       currentUser.set({ id: 10, name: 'User1', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.completeOnboarding();
       expect(get(hasCompletedOnboarding)).toBe(true);
 
       // Switch to User 2 (new user)
       currentUser.set({ id: 20, name: 'User2', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(false);
 
       // Switch back to User 1 - should still be completed
@@ -210,8 +215,9 @@ describe('Onboarding System', () => {
   });
 
   describe('Rerun tutorial from settings', () => {
-    it('resetOnboarding followed by showOnboarding=true shows tutorial', () => {
+    it('resetOnboarding followed by showOnboarding=true shows tutorial', async () => {
       currentUser.set({ id: 5, name: 'User', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       // Complete onboarding
       settingsStore.completeOnboarding();
@@ -226,8 +232,9 @@ describe('Onboarding System', () => {
       // and the tutorial would be shown again
     });
 
-    it('completing tutorial after rerun marks it done again', () => {
+    it('completing tutorial after rerun marks it done again', async () => {
       currentUser.set({ id: 6, name: 'User', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       // First run
       settingsStore.completeOnboarding();
@@ -272,17 +279,19 @@ describe('Onboarding System', () => {
      * 2. onboardingCheckedForUser in App.svelte (prevents re-triggering on settings updates)
      */
 
-    it('new users trigger onboarding (hasCompletedOnboarding is false)', () => {
+    it('new users trigger onboarding (hasCompletedOnboarding is false)', async () => {
       // New user has no saved settings, so DEFAULT_SETTINGS apply
       currentUser.set({ id: 4001, name: 'NewUser', avatar: 'cat', createdAt: new Date().toISOString(), lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       // New users have onboarding not completed
       expect(get(hasCompletedOnboarding)).toBe(false);
     });
 
-    it('returning users with completed onboarding do not trigger onboarding', () => {
+    it('returning users with completed onboarding do not trigger onboarding', async () => {
       // First login - complete onboarding
       currentUser.set({ id: 4002, name: 'ReturningUser', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.completeOnboarding();
       vi.advanceTimersByTime(300); // Wait for settings to persist
       expect(get(hasCompletedOnboarding)).toBe(true);
@@ -293,13 +302,15 @@ describe('Onboarding System', () => {
 
       // Log back in (returning user)
       currentUser.set({ id: 4002, name: 'ReturningUser', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       // Settings are loaded from localStorage, so onboarding should remain completed
       expect(get(hasCompletedOnboarding)).toBe(true);
     });
 
-    it('onboarding status is tied to user profile, not the session', () => {
+    it('onboarding status is tied to user profile, not the session', async () => {
       // User A (new user)
       currentUser.set({ id: 4010, name: 'UserA', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(false);
       settingsStore.completeOnboarding();
       vi.advanceTimersByTime(300);
@@ -307,27 +318,33 @@ describe('Onboarding System', () => {
 
       // User B (new user)
       currentUser.set({ id: 4020, name: 'UserB', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(false); // B has not completed onboarding
 
       // Back to User A (returning user)
       currentUser.set({ id: 4010, name: 'UserA', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true); // A already completed onboarding
 
       // User B completes onboarding
       currentUser.set({ id: 4020, name: 'UserB', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.completeOnboarding();
       vi.advanceTimersByTime(300);
 
       // Both users now have completed onboarding
       currentUser.set({ id: 4010, name: 'UserA', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true);
       currentUser.set({ id: 4020, name: 'UserB', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true);
     });
 
-    it('rerun tutorial from settings works correctly', () => {
+    it('rerun tutorial from settings works correctly', async () => {
       // User completes initial onboarding
       currentUser.set({ id: 4030, name: 'TutorialUser', avatar: 'fox', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.completeOnboarding();
       vi.advanceTimersByTime(300);
       expect(get(hasCompletedOnboarding)).toBe(true);
@@ -345,10 +362,11 @@ describe('Onboarding System', () => {
       // Log out and log back in - should NOT show onboarding again
       currentUser.set(null);
       currentUser.set({ id: 4030, name: 'TutorialUser', avatar: 'fox', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true);
     });
 
-    it('onboarding check only triggers once per user session (not on every settings update)', () => {
+    it('onboarding check only triggers once per user session (not on every settings update)', async () => {
       /**
        * This documents an important App.svelte behavior:
        * The onboarding check should only happen ONCE when a user logs in,
@@ -361,6 +379,7 @@ describe('Onboarding System', () => {
        */
 
       currentUser.set({ id: 4040, name: 'SessionUser', avatar: 'owl', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       // Initial onboarding check happens here (handled by App.svelte)
       expect(get(hasCompletedOnboarding)).toBe(false);

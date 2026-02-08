@@ -212,7 +212,29 @@
       isNavigating = false;
     }, 100);
   }
+
+  function handleKeyDown(event: KeyboardEvent): void {
+    // Only handle shortcuts when showing results (not during typing)
+    if (showResults && lastResult) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        if (lastResult.passed && taskIndex < lesson!.tasks.length - 1) {
+          handleNextTask();
+        } else if (taskIndex === lesson!.tasks.length - 1 && lastResult.passed) {
+          handleBack();
+        }
+        return;
+      }
+      if (event.key === 'Backspace') {
+        event.preventDefault();
+        handleRetry();
+        return;
+      }
+    }
+  }
 </script>
+
+<svelte:window onkeydown={handleKeyDown} />
 
 {#if lesson && task}
   <div class="lesson-view">
@@ -310,15 +332,15 @@
 
         <div class="result-actions">
           <button class="action-btn secondary" onclick={handleRetry} disabled={isNavigating}>
-            Try Again
+            <kbd>⌫</kbd> Try Again
           </button>
           {#if lastResult.passed && taskIndex < lesson.tasks.length - 1}
             <button class="action-btn primary" onclick={handleNextTask} disabled={isNavigating}>
-              Next Task →
+              Next Task → <kbd>Enter</kbd>
             </button>
           {:else if taskIndex === lesson.tasks.length - 1 && lastResult.passed}
             <button class="action-btn primary" onclick={handleBack}>
-              Finish Lesson ✓
+              Finish Lesson ✓ <kbd>Enter</kbd>
             </button>
           {/if}
         </div>
@@ -332,8 +354,17 @@
       <TypingArea task={formattedTask} {codeTheme} onComplete={handleComplete} />
     {/if}
 
-    <!-- Keyboard hints (only show during typing, not on results) -->
-    {#if !showResults}
+    <!-- Keyboard hints -->
+    {#if showResults}
+      <div class="hints">
+        {#if lastResult?.passed && taskIndex < lesson.tasks.length - 1}
+          <span class="hint"><kbd>Enter</kbd> Next task</span>
+        {:else if taskIndex === lesson.tasks.length - 1 && lastResult?.passed}
+          <span class="hint"><kbd>Enter</kbd> Finish</span>
+        {/if}
+        <span class="hint"><kbd>⌫</kbd> Retry</span>
+      </div>
+    {:else}
       <div class="hints">
         <span class="hint"><kbd>Esc</kbd> Pause</span>
         <span class="hint"><kbd>Backspace</kbd> Fix errors</span>
@@ -490,6 +521,22 @@
   .action-btn {
     @apply px-5 py-2 rounded text-sm;
     @apply transition-all duration-200;
+    @apply flex items-center gap-2;
+  }
+
+  .action-btn kbd {
+    @apply px-1.5 py-0.5 rounded text-xs;
+    opacity: 0.7;
+  }
+
+  .action-btn.secondary kbd {
+    background-color: var(--bg-secondary);
+    color: var(--text-secondary);
+  }
+
+  .action-btn.primary kbd {
+    background-color: rgba(0, 0, 0, 0.2);
+    color: inherit;
   }
 
   .action-btn.primary {

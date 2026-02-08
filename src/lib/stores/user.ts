@@ -1,5 +1,6 @@
 import { writable, derived } from 'svelte/store';
 import type { UserProfile, AvatarType, AvatarOption } from '../types';
+import { getStorage } from '../services';
 
 // Avatar options configuration
 export const avatarOptions: AvatarOption[] = [
@@ -35,46 +36,25 @@ export function getAvatarOption(avatarId: AvatarType): AvatarOption {
   return avatarOptions.find((a) => a.id === avatarId) || avatarOptions[8];
 }
 
-// Generate unique ID for new users
-function generateUserId(): number {
-  return Date.now();
+// Load users from storage
+export async function loadUsers(): Promise<void> {
+  const storage = getStorage();
+  const userList = await storage.getAllUsers();
+  users.set(userList);
 }
 
-// Load users from localStorage
-export function loadUsers(): void {
-  if (typeof window === 'undefined') return;
-
-  const stored = localStorage.getItem('exceptional-typing-users');
-  if (stored) {
-    try {
-      const parsed = JSON.parse(stored);
-      users.set(parsed);
-    } catch {
-      users.set([]);
-    }
-  }
-}
-
-// Save users to localStorage
-function saveUsers(userList: UserProfile[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem('exceptional-typing-users', JSON.stringify(userList));
-}
+// Save users to storage (internal helper for updates that modify the list in-place)
+// The storage service doesn't have a "save all users" method — individual updates
+// go through updateUser(). For selectUser (lastActiveAt update), we use updateUser.
+// For deleteUser, the storage service handles cascade deletion.
 
 // Create a new user
-export function createUser(name: string, avatar: AvatarType): UserProfile {
-  const newUser: UserProfile = {
-    id: generateUserId(),
-    name: name.trim(),
-    avatar,
-    createdAt: new Date().toISOString(),
-    lastActiveAt: null,
-  };
+export async function createUser(name: string, avatar: AvatarType): Promise<UserProfile> {
+  const storage = getStorage();
+  const newUser = await storage.createUser(name, avatar);
 
   users.update((list) => {
-    const updated = [...list, newUser];
-    saveUsers(updated);
-    return updated;
+    return [...list, newUser];
   });
 
   return newUser;
@@ -89,7 +69,6 @@ export function selectUser(userId: number): void {
     if (user) {
       // Update last active time
       user.lastActiveAt = new Date().toISOString();
-      saveUsers(list);
       foundUser = { ...user }; // Copy the user to set after update completes
     }
     return list;
@@ -98,6 +77,8 @@ export function selectUser(userId: number): void {
   // Set currentUser AFTER users.update completes to avoid subscription race conditions
   if (foundUser) {
     currentUser.set(foundUser);
+    // Persist the lastActiveAt update via storage service (fire-and-forget)
+    getStorage().updateUser(userId, { lastActiveAt: foundUser!.lastActiveAt }).catch(console.error);
   }
 }
 
@@ -109,16 +90,11 @@ export function logout(): void {
 // Delete a user
 export function deleteUser(userId: number): void {
   users.update((list) => {
-    const updated = list.filter((u) => u.id !== userId);
-    saveUsers(updated);
-
-    // Also delete user's settings and stats from localStorage
-    localStorage.removeItem(`exceptional-typing-settings-${userId}`);
-    localStorage.removeItem(`exceptional-typing-stats-${userId}`);
-    localStorage.removeItem(`exceptional-typing-progress-${userId}`);
-
-    return updated;
+    return list.filter((u) => u.id !== userId);
   });
+
+  // Delete user and all their data via storage service (fire-and-forget)
+  getStorage().deleteUser(userId).catch(console.error);
 
   // If current user was deleted, logout
   currentUser.update((user) => {
@@ -136,7 +112,6 @@ export function updateUser(userId: number, updates: Partial<Pick<UserProfile, 'n
     if (user) {
       if (updates.name !== undefined) user.name = updates.name.trim();
       if (updates.avatar !== undefined) user.avatar = updates.avatar;
-      saveUsers(list);
 
       // Update current user if it's the same
       currentUser.update((current) => {
@@ -148,6 +123,9 @@ export function updateUser(userId: number, updates: Partial<Pick<UserProfile, 'n
     }
     return list;
   });
+
+  // Persist via storage service (fire-and-forget)
+  getStorage().updateUser(userId, updates).catch(console.error);
 }
 
 // Check if username is available

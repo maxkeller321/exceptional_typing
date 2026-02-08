@@ -10,6 +10,7 @@ import {
   tenFingerCourse,
   cliCourse,
   claudeCodeCourse,
+  sqlCourse,
   allCourses,
 } from './course';
 import { lessonProgress } from './app';
@@ -469,10 +470,11 @@ describe('Course Store', () => {
     });
 
     it('allCourses contains all available courses', () => {
-      expect(allCourses.length).toBe(3);
+      expect(allCourses.length).toBe(4);
       expect(allCourses.find(c => c.id === 'ten-finger')).toBeDefined();
       expect(allCourses.find(c => c.id === 'cli-mastery')).toBeDefined();
       expect(allCourses.find(c => c.id === 'claude-code')).toBeDefined();
+      expect(allCourses.find(c => c.id === 'sql-mastery')).toBeDefined();
     });
 
     it('cliCourse has correct structure', () => {
@@ -616,6 +618,35 @@ describe('Course Store', () => {
       expect(courseStore.isEnrolled()).toBe(true);
       expect(courseStore.isEnrolled(tenFingerCourse.id)).toBe(false);
       expect(courseStore.isEnrolled(cliCourse.id)).toBe(false);
+    });
+
+    it('SQL course has correct structure', () => {
+      expect(sqlCourse.id).toBe('sql-mastery');
+      expect(sqlCourse.name).toBe('SQL Mastery');
+      expect(sqlCourse.stages.length).toBeGreaterThan(0);
+      expect(sqlCourse.stages[0].unlockCriteria.previousStageComplete).toBe(false);
+    });
+
+    it('SQL course has 15 stages', () => {
+      expect(sqlCourse.stages.length).toBe(15);
+    });
+
+    it('SQL course stages have valid lessons', () => {
+      for (const stage of sqlCourse.stages) {
+        expect(stage.lessons.length).toBeGreaterThan(0);
+        expect(stage.name).toBeTruthy();
+        expect(stage.description).toBeTruthy();
+      }
+    });
+
+    it('can enroll in SQL course independently', () => {
+      courseStore.selectCourse(sqlCourse.id);
+      expect(courseStore.isEnrolled()).toBe(false);
+      courseStore.enroll();
+      expect(courseStore.isEnrolled()).toBe(true);
+      expect(courseStore.isEnrolled(tenFingerCourse.id)).toBe(false);
+      expect(courseStore.isEnrolled(cliCourse.id)).toBe(false);
+      expect(courseStore.isEnrolled(claudeCodeCourse.id)).toBe(false);
     });
   });
 

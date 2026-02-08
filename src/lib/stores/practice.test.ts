@@ -278,7 +278,7 @@ describe('Practice Store', () => {
   });
 
   describe('user switching', () => {
-    it('loads different snippets for different users', () => {
+    it('loads different snippets for different users', async () => {
       // Create snippet for user 1
       practiceStore.createSnippet('User1Snippet', 'content', null, 'text');
       expect(practiceStore.getSnippets()).toHaveLength(1);
@@ -291,6 +291,9 @@ describe('Practice Store', () => {
         createdAt: '2024-01-01',
         lastActiveAt: null,
       });
+
+      // Flush microtask queue (loadSnippets is async)
+      await new Promise(r => setTimeout(r, 0));
 
       // User 2 has no snippets
       expect(practiceStore.getSnippets()).toHaveLength(0);
@@ -307,6 +310,9 @@ describe('Practice Store', () => {
         createdAt: '2024-01-01',
         lastActiveAt: null,
       });
+
+      // Flush microtask queue
+      await new Promise(r => setTimeout(r, 0));
 
       // User 1's snippets are back
       const snippets = practiceStore.getSnippets();

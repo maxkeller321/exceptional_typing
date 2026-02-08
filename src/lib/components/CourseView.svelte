@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import LessonView from './LessonView.svelte';
-  import { courseStore, isEnrolled, courseProgressPercent, currentStageId, currentSkippableStageId } from '../stores/course';
+  import { courseStore, isEnrolled, courseProgressPercent, currentStageId, currentSkippableStageId, allCourseProgress } from '../stores/course';
   import { selectLesson, currentView, navigateTo, lessonProgress } from '../stores/app';
   import { allCourses, getCourseLesson, getCourseStage } from '../data/courses';
   import type { Course, CourseStage, CourseProgress, Lesson, LessonProgress } from '../types';
@@ -15,6 +15,7 @@
   let selectedLessonId = $state<string | null>(null);
   let isInLesson = $state(false);
   let progressMap = $state<Map<string, LessonProgress>>(new Map());
+  let courseProgressMap = $state<Map<string, CourseProgress>>(new Map());
 
   onMount(() => {
     // Subscribe to the selected course from the store
@@ -41,6 +42,11 @@
     const unsubSkippable = currentSkippableStageId.subscribe((id) => {
       skippableStageId = id;
     });
+    const unsubCourseProgress = allCourseProgress.subscribe((p) => {
+      // Create a new Map so Svelte's $state reactivity detects the change
+      // (the store mutates the Map in place, so reference stays the same)
+      courseProgressMap = new Map(p);
+    });
 
     return () => {
       unsubSelectedCourse();
@@ -49,6 +55,7 @@
       unsubStage();
       unsubLessonProgress();
       unsubSkippable();
+      unsubCourseProgress();
     };
   });
 
@@ -63,7 +70,7 @@
   }
 
   function handleSelectStage(stageId: string) {
-    if (courseStore.isStageUnlocked(stageId)) {
+    if (isStageUnlockedReactive(stageId)) {
       selectedStageId = stageId;
     }
   }
@@ -92,13 +99,41 @@
     }
   }
 
+  // Reactive stage status computation — reads from $state courseProgressMap
+  // so Svelte re-renders when progress changes (e.g. after skip)
+  function isStageUnlockedReactive(stageId: string): boolean {
+    const progress = courseProgressMap.get(selectedCourse.id);
+    if (!progress) return false;
+
+    const stage = selectedCourse.stages.find(s => s.id === stageId);
+    if (!stage) return false;
+
+    // First stage is always unlocked if enrolled
+    if (!stage.unlockCriteria.previousStageComplete) return true;
+
+    // Check if this stage was skipped to (explicitly unlocked)
+    if (progress.skippedStages?.includes(stageId)) return true;
+
+    const stageIndex = selectedCourse.stages.findIndex(s => s.id === stageId);
+    if (stageIndex === 0) return true;
+
+    const prevStage = selectedCourse.stages[stageIndex - 1];
+    return (
+      progress.completedStages.includes(prevStage.id) ||
+      progress.skippedStages?.includes(prevStage.id) ||
+      progress.currentStageId === prevStage.id
+    );
+  }
+
   function getStageStatus(stageId: string): 'locked' | 'current' | 'completed' | 'skipped' {
-    if (courseStore.isStageCompleted(stageId)) return 'completed';
-    // Check if stage is skipped (unlocked but not completed, with skipped stages before it)
-    if (courseStore.isStageSkipped(stageId) && !courseStore.isStageCompleted(stageId)) {
+    const progress = courseProgressMap.get(selectedCourse.id);
+    if (!progress) return 'locked';
+
+    if (progress.completedStages.includes(stageId)) return 'completed';
+    if (progress.skippedStages?.includes(stageId) && !progress.completedStages.includes(stageId)) {
       return 'skipped';
     }
-    if (!courseStore.isStageUnlocked(stageId)) return 'locked';
+    if (!isStageUnlockedReactive(stageId)) return 'locked';
     return 'current';
   }
 
@@ -131,20 +166,132 @@
   // Find the current skippable stage (the one the user is working on, to skip it)
   // Use the reactive derived store instead of calling the method directly
   let skippableStageId = $state<string | null>(null);
+
+  // Two-panel keyboard navigation state
+  let focusPanel = $state<'stages' | 'lessons'>('stages');
+  let focusedStageIndex = $state(0);
+  let focusedLessonIndex = $state(0);
+
+  // Find the index of the selected stage
+  function getSelectedStageIndex(): number {
+    if (!selectedStageId) return 0;
+    const idx = selectedCourse.stages.findIndex(s => s.id === selectedStageId);
+    return idx >= 0 ? idx : 0;
+  }
+
+  function handleKeyDown(event: KeyboardEvent): void {
+    // Don't capture if in lesson view
+    if (isInLesson) return;
+
+    if (!enrolled) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleEnroll();
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (focusPanel === 'stages') {
+        // Navigate up through stages (skip locked stages)
+        let newIndex = focusedStageIndex - 1;
+        while (newIndex >= 0) {
+          const stage = selectedCourse.stages[newIndex];
+          const status = getStageStatus(stage.id);
+          if (status !== 'locked') {
+            focusedStageIndex = newIndex;
+            selectedStageId = stage.id;
+            break;
+          }
+          newIndex--;
+        }
+      } else {
+        // Navigate up through lessons
+        if (focusedLessonIndex > 0) {
+          focusedLessonIndex--;
+        }
+      }
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (focusPanel === 'stages') {
+        // Navigate down through stages (skip locked stages)
+        let newIndex = focusedStageIndex + 1;
+        while (newIndex < selectedCourse.stages.length) {
+          const stage = selectedCourse.stages[newIndex];
+          const status = getStageStatus(stage.id);
+          if (status !== 'locked') {
+            focusedStageIndex = newIndex;
+            selectedStageId = stage.id;
+            break;
+          }
+          newIndex++;
+        }
+      } else {
+        // Navigate down through lessons
+        if (focusedLessonIndex < stageLessons.length - 1) {
+          focusedLessonIndex++;
+        }
+      }
+    } else if (event.key === 'ArrowRight' || (event.key === 'Enter' && focusPanel === 'stages')) {
+      event.preventDefault();
+      // Move focus from stages to lessons panel
+      if (focusPanel === 'stages' && selectedStageId && stageLessons.length > 0) {
+        const status = getStageStatus(selectedCourse.stages[focusedStageIndex].id);
+        if (status !== 'locked') {
+          focusPanel = 'lessons';
+          focusedLessonIndex = 0;
+        }
+      }
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      if (focusPanel === 'lessons') {
+        // Move focus back to stages panel
+        focusPanel = 'stages';
+      }
+    } else if (event.key === 'Enter' && focusPanel === 'lessons') {
+      event.preventDefault();
+      if (focusedLessonIndex >= 0 && focusedLessonIndex < stageLessons.length) {
+        handleStartLesson(stageLessons[focusedLessonIndex].id);
+      }
+    } else if (event.key === 'Backspace') {
+      event.preventDefault();
+      navigateTo('home');
+    }
+  }
+
+  // Sync focusedStageIndex when selectedStageId changes externally
+  $effect(() => {
+    if (selectedStageId) {
+      const idx = selectedCourse.stages.findIndex(s => s.id === selectedStageId);
+      if (idx >= 0) {
+        focusedStageIndex = idx;
+      }
+    }
+  });
+
+  // Reset focused lesson when stage changes
+  $effect(() => {
+    if (selectedStageId && focusPanel === 'lessons') {
+      focusedLessonIndex = 0;
+    }
+  });
 </script>
+
+<svelte:window onkeydown={handleKeyDown} />
 
 <div class="course-view">
   <!-- Course Selector Tabs -->
   <div class="course-tabs">
     {#each allCourses as course}
       {@const isSelected = selectedCourse.id === course.id}
-      {@const courseEnrolled = courseStore.isEnrolled(course.id)}
+      {@const courseEnrolled = courseProgressMap.has(course.id)}
       <button
         class="course-tab"
         class:selected={isSelected}
         onclick={() => handleSelectCourse(course.id)}
       >
-        <span class="tab-icon">{course.id === 'ten-finger' ? '⌨️' : course.id === 'claude-code' ? '🤖' : '🖥️'}</span>
+        <span class="tab-icon">{course.id === 'ten-finger' ? '⌨️' : course.id === 'claude-code' ? '🤖' : course.id === 'sql-mastery' ? '🗄️' : '🖥️'}</span>
         <span class="tab-name">{course.name}</span>
         {#if courseEnrolled}
           <span class="tab-badge enrolled">Started</span>
@@ -157,7 +304,7 @@
     <!-- Enrollment Screen -->
     <div class="enroll-panel">
       <div class="enroll-content">
-        <div class="enroll-icon">{selectedCourse.id === 'ten-finger' ? '⌨️' : selectedCourse.id === 'claude-code' ? '🤖' : '💻'}</div>
+        <div class="enroll-icon">{selectedCourse.id === 'ten-finger' ? '⌨️' : selectedCourse.id === 'claude-code' ? '🤖' : selectedCourse.id === 'sql-mastery' ? '🗄️' : '💻'}</div>
         <h2>{selectedCourse.name}</h2>
         <p class="enroll-description">
           {selectedCourse.description}
@@ -213,6 +360,7 @@
                   class:completed={status === 'completed'}
                   class:skipped={status === 'skipped'}
                   class:selected={selectedStageId === stage.id}
+                  class:focused={focusPanel === 'stages' && focusedStageIndex === index}
                   onclick={() => handleSelectStage(stage.id)}
                   disabled={status === 'locked'}
                 >
@@ -263,7 +411,7 @@
               {#each stageLessons as lesson, index}
                 {@const completed = isLessonCompleted(lesson.id, lesson.tasks.length)}
                 {@const lessonProg = getLessonProgress(lesson.id)}
-                <div class="lesson-card" class:completed>
+                <div class="lesson-card" class:completed class:focused={focusPanel === 'lessons' && focusedLessonIndex === index}>
                   <div class="lesson-number" class:completed>
                     {#if completed}
                       ✓
@@ -474,6 +622,11 @@
     border-left: 2px solid var(--accent);
   }
 
+  .stage-item.focused {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
   .stage-item.locked {
     @apply opacity-50 cursor-not-allowed;
   }
@@ -590,6 +743,11 @@
   .lesson-progress {
     @apply ml-1;
     color: var(--accent);
+  }
+
+  .lesson-card.focused {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
   }
 
   .lesson-card.completed {

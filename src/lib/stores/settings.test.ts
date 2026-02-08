@@ -17,6 +17,8 @@ import {
 } from './settings';
 import { currentUser } from './user';
 
+const flushPromises = () => new Promise(r => setTimeout(r, 0));
+
 describe('Settings Store', () => {
   beforeEach(() => {
     // Reset to defaults
@@ -137,8 +139,9 @@ describe('Settings Store', () => {
       expect(get(appTheme)).toBe('dark-blue');
     });
 
-    it('persists theme setting', () => {
+    it('persists theme setting', async () => {
       currentUser.set({ id: 999, name: 'ThemeTest', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       settingsStore.setAppTheme('midnight');
 
@@ -151,11 +154,12 @@ describe('Settings Store', () => {
       expect(parsed.appTheme).toBe('midnight');
     });
 
-    it('loads theme when user is selected', () => {
+    it('loads theme when user is selected', async () => {
       const savedSettings = { ...DEFAULT_SETTINGS, appTheme: 'light' };
       localStorage.setItem('exceptional-typing-settings-888', JSON.stringify(savedSettings));
 
       currentUser.set({ id: 888, name: 'ThemeLoad', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(get(appTheme)).toBe('light');
     });
@@ -196,9 +200,10 @@ describe('Settings Store', () => {
   });
 
   describe('persistence', () => {
-    it('saves settings to localStorage after debounce', () => {
+    it('saves settings to localStorage after debounce', async () => {
       // Set up a mock user
       currentUser.set({ id: 123, name: 'Test', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       settingsStore.setFontSize(32);
 
@@ -216,13 +221,14 @@ describe('Settings Store', () => {
       expect(parsed.fontSize).toBe(32);
     });
 
-    it('loads settings when user is selected', () => {
+    it('loads settings when user is selected', async () => {
       // Pre-populate localStorage
       const savedSettings = { ...DEFAULT_SETTINGS, fontSize: 36, typingMode: 'coder' };
       localStorage.setItem('exceptional-typing-settings-456', JSON.stringify(savedSettings));
 
       // Select user
       currentUser.set({ id: 456, name: 'LoadTest', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       // Settings should be loaded
       const settings = get(settingsStore);
@@ -230,9 +236,10 @@ describe('Settings Store', () => {
       expect(settings.typingMode).toBe('coder');
     });
 
-    it('resets to defaults when user logs out', () => {
+    it('resets to defaults when user logs out', async () => {
       // Set up user and change settings
       currentUser.set({ id: 789, name: 'Logout', avatar: 'fox', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.setFontSize(40);
 
       // Logout
@@ -274,8 +281,9 @@ describe('Settings Store', () => {
       expect(settings.hasCompletedOnboarding).toBe(false);
     });
 
-    it('persists onboarding status', () => {
+    it('persists onboarding status', async () => {
       currentUser.set({ id: 111, name: 'OnboardTest', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       settingsStore.completeOnboarding();
 
@@ -288,20 +296,22 @@ describe('Settings Store', () => {
       expect(parsed.hasCompletedOnboarding).toBe(true);
     });
 
-    it('loads onboarding status when user is selected', () => {
+    it('loads onboarding status when user is selected', async () => {
       const savedSettings = { ...DEFAULT_SETTINGS, hasCompletedOnboarding: true };
       localStorage.setItem('exceptional-typing-settings-222', JSON.stringify(savedSettings));
 
       currentUser.set({ id: 222, name: 'OnboardLoad', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(get(hasCompletedOnboarding)).toBe(true);
     });
 
-    it('new users have onboarding not completed', () => {
+    it('new users have onboarding not completed', async () => {
       // Make sure no saved settings exist
       localStorage.removeItem('exceptional-typing-settings-333');
 
       currentUser.set({ id: 333, name: 'NewUser', avatar: 'fox', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(get(hasCompletedOnboarding)).toBe(false);
     });
@@ -316,9 +326,10 @@ describe('Settings Store', () => {
       expect(get(hasCompletedOnboarding)).toBe(false);
     });
 
-    it('onboarding status persists across user sessions', () => {
+    it('onboarding status persists across user sessions', async () => {
       // User 1 completes onboarding
       currentUser.set({ id: 1001, name: 'User1', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.completeOnboarding();
       vi.advanceTimersByTime(300);
       expect(get(hasCompletedOnboarding)).toBe(true);
@@ -329,26 +340,31 @@ describe('Settings Store', () => {
 
       // User logs back in - onboarding should still be completed
       currentUser.set({ id: 1001, name: 'User1', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true);
     });
 
-    it('each user has independent onboarding status', () => {
+    it('each user has independent onboarding status', async () => {
       // User 1 completes onboarding
       currentUser.set({ id: 2001, name: 'User1', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.completeOnboarding();
       vi.advanceTimersByTime(300);
       expect(get(hasCompletedOnboarding)).toBe(true);
 
       // Switch to User 2 (new user) - should have onboarding not completed
       currentUser.set({ id: 2002, name: 'User2', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(false);
 
       // Switch back to User 1 - should still be completed
       currentUser.set({ id: 2001, name: 'User1', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true);
 
       // Switch to User 2 - still not completed
       currentUser.set({ id: 2002, name: 'User2', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(false);
 
       // User 2 completes onboarding
@@ -358,31 +374,37 @@ describe('Settings Store', () => {
 
       // Both users now have completed onboarding
       currentUser.set({ id: 2001, name: 'User1', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true);
 
       currentUser.set({ id: 2002, name: 'User2', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true);
     });
 
-    it('rerunning tutorial resets only current user onboarding status', () => {
+    it('rerunning tutorial resets only current user onboarding status', async () => {
       // User 1 completes onboarding
       currentUser.set({ id: 3001, name: 'User1', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.completeOnboarding();
       vi.advanceTimersByTime(300);
 
       // User 2 completes onboarding
       currentUser.set({ id: 3002, name: 'User2', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.completeOnboarding();
       vi.advanceTimersByTime(300);
 
       // User 1 wants to rerun tutorial
       currentUser.set({ id: 3001, name: 'User1', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.resetOnboarding();
       vi.advanceTimersByTime(300);
       expect(get(hasCompletedOnboarding)).toBe(false);
 
       // User 2 should still have completed onboarding
       currentUser.set({ id: 3002, name: 'User2', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(hasCompletedOnboarding)).toBe(true);
     });
   });
@@ -418,8 +440,9 @@ describe('Settings Store', () => {
       expect(get(lessonPickerDifficulty)).toBe('all');
     });
 
-    it('persists lesson picker filters', () => {
+    it('persists lesson picker filters', async () => {
       currentUser.set({ id: 444, name: 'FilterTest', avatar: 'cat', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       settingsStore.setLessonPickerCategory('commands');
       settingsStore.setLessonPickerDifficulty('intermediate');
@@ -434,7 +457,7 @@ describe('Settings Store', () => {
       expect(parsed.lessonPickerDifficulty).toBe('intermediate');
     });
 
-    it('loads lesson picker filters when user is selected', () => {
+    it('loads lesson picker filters when user is selected', async () => {
       const savedSettings = {
         ...DEFAULT_SETTINGS,
         lessonPickerCategory: 'sentences',
@@ -443,14 +466,16 @@ describe('Settings Store', () => {
       localStorage.setItem('exceptional-typing-settings-555', JSON.stringify(savedSettings));
 
       currentUser.set({ id: 555, name: 'FilterLoad', avatar: 'dog', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
 
       expect(get(lessonPickerCategory)).toBe('sentences');
       expect(get(lessonPickerDifficulty)).toBe('advanced');
     });
 
-    it('filters persist across user sessions', () => {
+    it('filters persist across user sessions', async () => {
       // User sets filters
       currentUser.set({ id: 666, name: 'FilterPersist', avatar: 'fox', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       settingsStore.setLessonPickerCategory('words');
       settingsStore.setLessonPickerDifficulty('beginner');
       vi.advanceTimersByTime(300);
@@ -462,6 +487,7 @@ describe('Settings Store', () => {
 
       // User logs back in - filters should be restored
       currentUser.set({ id: 666, name: 'FilterPersist', avatar: 'fox', createdAt: '', lastActiveAt: null });
+      await vi.advanceTimersByTimeAsync(0);
       expect(get(lessonPickerCategory)).toBe('words');
       expect(get(lessonPickerDifficulty)).toBe('beginner');
     });

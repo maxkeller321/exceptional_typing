@@ -593,7 +593,10 @@ export function getCourseLesson(lessonId: string): Lesson | undefined {
   const cliLesson = cliCourseLessons.find(l => l.id === lessonId);
   if (cliLesson) return cliLesson;
   // Then check Claude Code course
-  return ccCourseLessons.find(l => l.id === lessonId);
+  const ccLesson = ccCourseLessons.find(l => l.id === lessonId);
+  if (ccLesson) return ccLesson;
+  // Then check SQL course
+  return sqlCourseLessons.find(l => l.id === lessonId);
 }
 
 // Get stage by ID (searches all courses)
@@ -605,7 +608,10 @@ export function getCourseStage(stageId: string): CourseStage | undefined {
   const cliStage = cliCourse.stages.find(s => s.id === stageId);
   if (cliStage) return cliStage;
   // Then check Claude Code course
-  return claudeCodeCourse.stages.find(s => s.id === stageId);
+  const ccStage = claudeCodeCourse.stages.find(s => s.id === stageId);
+  if (ccStage) return ccStage;
+  // Then check SQL course
+  return sqlCourse.stages.find(s => s.id === stageId);
 }
 
 // ============================================
@@ -1774,5 +1780,622 @@ export const claudeCodeCourse: Course = {
   ],
 };
 
+// ============================================
+// SQL Course - Master SQL from basics to advanced
+// ============================================
+
+// Stage 1: Your First Queries
+const sqlStage1Lessons: Lesson[] = [
+  lesson(
+    'sql-basics-1',
+    'SELECT Fundamentals',
+    'Learn to retrieve data from tables',
+    'commands',
+    'beginner',
+    [
+      task('sql-b1-1', 'Select all columns from a table', 'SELECT * FROM users;'),
+      task('sql-b1-2', 'Select specific columns', 'SELECT name, email FROM users;'),
+      task('sql-b1-3', 'Select with alias', 'SELECT name AS full_name FROM users;'),
+      task('sql-b1-4', 'Select distinct values', 'SELECT DISTINCT city FROM users;'),
+    ]
+  ),
+  lesson(
+    'sql-basics-2',
+    'Filtering with WHERE',
+    'Filter rows using conditions',
+    'commands',
+    'beginner',
+    [
+      task('sql-b2-1', 'Filter by equality', 'SELECT * FROM users WHERE active = true;'),
+      task('sql-b2-2', 'Filter by comparison', 'SELECT * FROM products WHERE price > 100;'),
+      task('sql-b2-3', 'Filter with LIKE', "SELECT * FROM users WHERE name LIKE 'J%';"),
+      task('sql-b2-4', 'Filter with IN', "SELECT * FROM users WHERE city IN ('NYC', 'LA');"),
+    ]
+  ),
+];
+
+// Stage 2: Sorting & Limiting
+const sqlStage2Lessons: Lesson[] = [
+  lesson(
+    'sql-sort-1',
+    'ORDER BY & LIMIT',
+    'Sort and limit your query results',
+    'commands',
+    'beginner',
+    [
+      task('sql-so1-1', 'Sort ascending', 'SELECT * FROM users ORDER BY name ASC;'),
+      task('sql-so1-2', 'Sort descending', 'SELECT * FROM users ORDER BY created_at DESC;'),
+      task('sql-so1-3', 'Limit results', 'SELECT * FROM products ORDER BY price DESC LIMIT 10;'),
+      task('sql-so1-4', 'Offset results', 'SELECT * FROM products ORDER BY id LIMIT 10 OFFSET 20;'),
+    ]
+  ),
+  lesson(
+    'sql-sort-2',
+    'Combining Conditions',
+    'Use AND, OR, NOT, and BETWEEN',
+    'commands',
+    'beginner',
+    [
+      task('sql-so2-1', 'AND operator', 'SELECT * FROM users WHERE active = true AND age > 18;'),
+      task('sql-so2-2', 'OR operator', "SELECT * FROM products WHERE category = 'books' OR category = 'music';"),
+      task('sql-so2-3', 'NOT operator', 'SELECT * FROM users WHERE NOT deleted;'),
+      task('sql-so2-4', 'BETWEEN operator', 'SELECT * FROM orders WHERE total BETWEEN 50 AND 200;'),
+    ]
+  ),
+];
+
+// Stage 3: INSERT, UPDATE, DELETE
+const sqlStage3Lessons: Lesson[] = [
+  lesson(
+    'sql-write-1',
+    'Inserting Data',
+    'Add new rows to tables',
+    'commands',
+    'beginner',
+    [
+      task('sql-w1-1', 'Insert a single row', "INSERT INTO users (name, email) VALUES ('Alice', 'alice@example.com');"),
+      task('sql-w1-2', 'Insert multiple rows', "INSERT INTO tags (name) VALUES ('sql'), ('python'), ('rust');"),
+      task('sql-w1-3', 'Insert with default values', 'INSERT INTO orders (user_id, total) VALUES (1, 99.99);'),
+      task('sql-w1-4', 'Insert from select', 'INSERT INTO archive SELECT * FROM logs WHERE created_at < NOW() - INTERVAL 1 YEAR;'),
+    ]
+  ),
+  lesson(
+    'sql-write-2',
+    'Updating & Deleting',
+    'Modify and remove existing data',
+    'commands',
+    'beginner',
+    [
+      task('sql-w2-1', 'Update a row', "UPDATE users SET email = 'new@example.com' WHERE id = 1;"),
+      task('sql-w2-2', 'Update multiple columns', "UPDATE products SET price = 19.99, stock = 50 WHERE id = 42;"),
+      task('sql-w2-3', 'Delete a row', 'DELETE FROM sessions WHERE expired_at < NOW();'),
+      task('sql-w2-4', 'Truncate a table', 'TRUNCATE TABLE temp_logs;'),
+    ]
+  ),
+];
+
+// Stage 4: Aggregate Functions
+const sqlStage4Lessons: Lesson[] = [
+  lesson(
+    'sql-agg-1',
+    'COUNT, SUM, AVG',
+    'Summarize data with aggregate functions',
+    'commands',
+    'intermediate',
+    [
+      task('sql-a1-1', 'Count rows', 'SELECT COUNT(*) FROM users;'),
+      task('sql-a1-2', 'Count with condition', 'SELECT COUNT(*) FROM orders WHERE status = \'completed\';'),
+      task('sql-a1-3', 'Sum values', 'SELECT SUM(total) FROM orders;'),
+      task('sql-a1-4', 'Average value', 'SELECT AVG(price) FROM products WHERE category = \'electronics\';'),
+    ]
+  ),
+  lesson(
+    'sql-agg-2',
+    'MIN, MAX & GROUP BY',
+    'Find extremes and group results',
+    'commands',
+    'intermediate',
+    [
+      task('sql-a2-1', 'Find minimum', 'SELECT MIN(price) FROM products;'),
+      task('sql-a2-2', 'Find maximum', 'SELECT MAX(created_at) FROM users;'),
+      task('sql-a2-3', 'Group by column', 'SELECT city, COUNT(*) FROM users GROUP BY city;'),
+      task('sql-a2-4', 'Group with HAVING', 'SELECT city, COUNT(*) FROM users GROUP BY city HAVING COUNT(*) > 5;'),
+    ]
+  ),
+];
+
+// Stage 5: INNER & LEFT JOINs
+const sqlStage5Lessons: Lesson[] = [
+  lesson(
+    'sql-join-1',
+    'INNER JOIN',
+    'Combine rows from related tables',
+    'commands',
+    'intermediate',
+    [
+      task('sql-j1-1', 'Basic inner join', 'SELECT * FROM orders INNER JOIN users ON orders.user_id = users.id;'),
+      task('sql-j1-2', 'Join with aliases', 'SELECT o.id, u.name FROM orders o INNER JOIN users u ON o.user_id = u.id;'),
+      task('sql-j1-3', 'Join with filter', 'SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100;'),
+      task('sql-j1-4', 'Multi-table join', 'SELECT u.name, p.title FROM users u JOIN orders o ON u.id = o.user_id JOIN products p ON o.product_id = p.id;'),
+    ]
+  ),
+  lesson(
+    'sql-join-2',
+    'LEFT & RIGHT JOIN',
+    'Include unmatched rows from one side',
+    'commands',
+    'intermediate',
+    [
+      task('sql-j2-1', 'Left join', 'SELECT u.name, o.id FROM users u LEFT JOIN orders o ON u.id = o.user_id;'),
+      task('sql-j2-2', 'Find unmatched rows', 'SELECT u.name FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE o.id IS NULL;'),
+      task('sql-j2-3', 'Right join', 'SELECT o.id, u.name FROM orders o RIGHT JOIN users u ON o.user_id = u.id;'),
+      task('sql-j2-4', 'Left join with aggregation', 'SELECT u.name, COUNT(o.id) FROM users u LEFT JOIN orders o ON u.id = o.user_id GROUP BY u.name;'),
+    ]
+  ),
+];
+
+// Stage 6: Advanced JOINs
+const sqlStage6Lessons: Lesson[] = [
+  lesson(
+    'sql-join-3',
+    'FULL & CROSS JOIN',
+    'All join types and self-joins',
+    'commands',
+    'intermediate',
+    [
+      task('sql-j3-1', 'Full outer join', 'SELECT * FROM employees e FULL OUTER JOIN departments d ON e.dept_id = d.id;'),
+      task('sql-j3-2', 'Cross join', 'SELECT colors.name, sizes.label FROM colors CROSS JOIN sizes;'),
+      task('sql-j3-3', 'Self join', 'SELECT e.name AS employee, m.name AS manager FROM employees e JOIN employees m ON e.manager_id = m.id;'),
+      task('sql-j3-4', 'Natural join', 'SELECT * FROM orders NATURAL JOIN users;'),
+    ]
+  ),
+  lesson(
+    'sql-join-4',
+    'JOIN Patterns',
+    'Common real-world join patterns',
+    'commands',
+    'intermediate',
+    [
+      task('sql-j4-1', 'Many-to-many join', 'SELECT s.name, c.title FROM students s JOIN enrollments e ON s.id = e.student_id JOIN courses c ON e.course_id = c.id;'),
+      task('sql-j4-2', 'Join with subquery', 'SELECT u.name, t.total FROM users u JOIN (SELECT user_id, SUM(amount) AS total FROM payments GROUP BY user_id) t ON u.id = t.user_id;'),
+      task('sql-j4-3', 'Conditional join', 'SELECT * FROM products p JOIN discounts d ON p.category = d.category AND p.price > d.min_price;'),
+      task('sql-j4-4', 'Anti-join pattern', 'SELECT p.title FROM products p LEFT JOIN order_items oi ON p.id = oi.product_id WHERE oi.id IS NULL;'),
+    ]
+  ),
+];
+
+// Stage 7: Subqueries
+const sqlStage7Lessons: Lesson[] = [
+  lesson(
+    'sql-sub-1',
+    'Basic Subqueries',
+    'Use queries inside queries',
+    'commands',
+    'intermediate',
+    [
+      task('sql-sq1-1', 'Subquery in WHERE', 'SELECT * FROM users WHERE id IN (SELECT user_id FROM orders WHERE total > 500);'),
+      task('sql-sq1-2', 'Scalar subquery', 'SELECT name, price, (SELECT AVG(price) FROM products) AS avg_price FROM products;'),
+      task('sql-sq1-3', 'EXISTS subquery', 'SELECT u.name FROM users u WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);'),
+      task('sql-sq1-4', 'NOT EXISTS subquery', 'SELECT u.name FROM users u WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id);'),
+    ]
+  ),
+  lesson(
+    'sql-sub-2',
+    'Correlated Subqueries',
+    'Subqueries that reference the outer query',
+    'commands',
+    'intermediate',
+    [
+      task('sql-sq2-1', 'Correlated subquery', 'SELECT p.title, p.price FROM products p WHERE p.price > (SELECT AVG(price) FROM products WHERE category = p.category);'),
+      task('sql-sq2-2', 'Subquery in FROM', 'SELECT dept, avg_salary FROM (SELECT department AS dept, AVG(salary) AS avg_salary FROM employees GROUP BY department) sub;'),
+      task('sql-sq2-3', 'ALL operator', 'SELECT * FROM products WHERE price >= ALL (SELECT price FROM products WHERE category = \'premium\');'),
+      task('sql-sq2-4', 'ANY operator', 'SELECT * FROM users WHERE age > ANY (SELECT age FROM users WHERE city = \'NYC\');'),
+    ]
+  ),
+];
+
+// Stage 8: String & Date Functions
+const sqlStage8Lessons: Lesson[] = [
+  lesson(
+    'sql-func-1',
+    'String Functions',
+    'Manipulate text data in queries',
+    'commands',
+    'intermediate',
+    [
+      task('sql-fn1-1', 'Concatenate strings', "SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM users;"),
+      task('sql-fn1-2', 'Uppercase and lowercase', 'SELECT UPPER(name), LOWER(email) FROM users;'),
+      task('sql-fn1-3', 'Substring extraction', 'SELECT SUBSTRING(phone, 1, 3) AS area_code FROM contacts;'),
+      task('sql-fn1-4', 'Replace and trim', "SELECT TRIM(name), REPLACE(email, 'old.com', 'new.com') FROM users;"),
+    ]
+  ),
+  lesson(
+    'sql-func-2',
+    'Date & Time Functions',
+    'Work with dates and timestamps',
+    'commands',
+    'intermediate',
+    [
+      task('sql-fn2-1', 'Current date and time', 'SELECT NOW(), CURRENT_DATE, CURRENT_TIMESTAMP;'),
+      task('sql-fn2-2', 'Extract date parts', 'SELECT EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at) FROM orders;'),
+      task('sql-fn2-3', 'Date arithmetic', "SELECT * FROM subscriptions WHERE end_date > NOW() + INTERVAL '30 days';"),
+      task('sql-fn2-4', 'Format dates', "SELECT TO_CHAR(created_at, 'YYYY-MM-DD') AS date_str FROM events;"),
+    ]
+  ),
+];
+
+// Stage 9: CASE, COALESCE & Type Casting
+const sqlStage9Lessons: Lesson[] = [
+  lesson(
+    'sql-case-1',
+    'CASE Expressions',
+    'Add conditional logic to queries',
+    'commands',
+    'intermediate',
+    [
+      task('sql-cs1-1', 'Simple CASE', "SELECT name, CASE status WHEN 'active' THEN 'Active' WHEN 'inactive' THEN 'Inactive' END FROM users;"),
+      task('sql-cs1-2', 'Searched CASE', "SELECT name, CASE WHEN age < 18 THEN 'minor' WHEN age < 65 THEN 'adult' ELSE 'senior' END AS group_label FROM users;"),
+      task('sql-cs1-3', 'CASE in aggregate', "SELECT COUNT(CASE WHEN status = 'completed' THEN 1 END) AS completed FROM orders;"),
+      task('sql-cs1-4', 'CASE in ORDER BY', "SELECT * FROM tasks ORDER BY CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END;"),
+    ]
+  ),
+  lesson(
+    'sql-case-2',
+    'COALESCE & NULL Handling',
+    'Handle NULL values gracefully',
+    'commands',
+    'intermediate',
+    [
+      task('sql-cs2-1', 'COALESCE function', "SELECT COALESCE(nickname, first_name, 'Anonymous') AS display_name FROM users;"),
+      task('sql-cs2-2', 'NULLIF function', "SELECT NULLIF(status, 'unknown') FROM records;"),
+      task('sql-cs2-3', 'IS NULL check', 'SELECT * FROM users WHERE deleted_at IS NULL;'),
+      task('sql-cs2-4', 'Cast types', 'SELECT CAST(price AS INTEGER), CAST(created_at AS DATE) FROM products;'),
+    ]
+  ),
+];
+
+// Stage 10: Table DDL
+const sqlStage10Lessons: Lesson[] = [
+  lesson(
+    'sql-ddl-1',
+    'CREATE TABLE',
+    'Define new tables with constraints',
+    'commands',
+    'advanced',
+    [
+      task('sql-d1-1', 'Create a table', 'CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, email VARCHAR(255) UNIQUE);'),
+      task('sql-d1-2', 'Add foreign key', 'CREATE TABLE orders (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id), total DECIMAL(10,2));'),
+      task('sql-d1-3', 'Add check constraint', 'CREATE TABLE products (id SERIAL PRIMARY KEY, price DECIMAL(10,2) CHECK (price > 0), stock INTEGER DEFAULT 0);'),
+      task('sql-d1-4', 'Create with timestamp', 'CREATE TABLE posts (id SERIAL PRIMARY KEY, title TEXT NOT NULL, created_at TIMESTAMP DEFAULT NOW());'),
+    ]
+  ),
+  lesson(
+    'sql-ddl-2',
+    'ALTER & DROP TABLE',
+    'Modify and remove table structures',
+    'commands',
+    'advanced',
+    [
+      task('sql-d2-1', 'Add a column', 'ALTER TABLE users ADD COLUMN phone VARCHAR(20);'),
+      task('sql-d2-2', 'Drop a column', 'ALTER TABLE users DROP COLUMN phone;'),
+      task('sql-d2-3', 'Rename a column', 'ALTER TABLE users RENAME COLUMN name TO full_name;'),
+      task('sql-d2-4', 'Drop table safely', 'DROP TABLE IF EXISTS temp_data CASCADE;'),
+    ]
+  ),
+];
+
+// Stage 11: Indexes & Performance
+const sqlStage11Lessons: Lesson[] = [
+  lesson(
+    'sql-idx-1',
+    'Creating Indexes',
+    'Speed up queries with indexes',
+    'commands',
+    'advanced',
+    [
+      task('sql-i1-1', 'Create an index', 'CREATE INDEX idx_users_email ON users (email);'),
+      task('sql-i1-2', 'Create unique index', 'CREATE UNIQUE INDEX idx_users_username ON users (username);'),
+      task('sql-i1-3', 'Composite index', 'CREATE INDEX idx_orders_user_date ON orders (user_id, created_at);'),
+      task('sql-i1-4', 'Drop an index', 'DROP INDEX IF EXISTS idx_users_email;'),
+    ]
+  ),
+  lesson(
+    'sql-idx-2',
+    'EXPLAIN & Query Plans',
+    'Analyze and optimize query performance',
+    'commands',
+    'advanced',
+    [
+      task('sql-i2-1', 'Explain a query', 'EXPLAIN SELECT * FROM users WHERE email = \'test@example.com\';'),
+      task('sql-i2-2', 'Explain analyze', 'EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 42;'),
+      task('sql-i2-3', 'Partial index', 'CREATE INDEX idx_active_users ON users (email) WHERE active = true;'),
+      task('sql-i2-4', 'Expression index', 'CREATE INDEX idx_lower_email ON users (LOWER(email));'),
+    ]
+  ),
+];
+
+// Stage 12: Window Functions
+const sqlStage12Lessons: Lesson[] = [
+  lesson(
+    'sql-win-1',
+    'ROW_NUMBER & RANK',
+    'Assign row numbers and rankings',
+    'commands',
+    'advanced',
+    [
+      task('sql-wn1-1', 'ROW_NUMBER', 'SELECT name, salary, ROW_NUMBER() OVER (ORDER BY salary DESC) AS rank FROM employees;'),
+      task('sql-wn1-2', 'RANK with ties', 'SELECT name, score, RANK() OVER (ORDER BY score DESC) AS rank FROM students;'),
+      task('sql-wn1-3', 'DENSE_RANK', 'SELECT name, score, DENSE_RANK() OVER (ORDER BY score DESC) AS dense_rank FROM students;'),
+      task('sql-wn1-4', 'Partition by', 'SELECT dept, name, salary, ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC) AS dept_rank FROM employees;'),
+    ]
+  ),
+  lesson(
+    'sql-win-2',
+    'LAG, LEAD & Aggregates',
+    'Access adjacent rows and running totals',
+    'commands',
+    'advanced',
+    [
+      task('sql-wn2-1', 'LAG function', 'SELECT date, revenue, LAG(revenue) OVER (ORDER BY date) AS prev_revenue FROM daily_sales;'),
+      task('sql-wn2-2', 'LEAD function', 'SELECT date, price, LEAD(price) OVER (ORDER BY date) AS next_price FROM stocks;'),
+      task('sql-wn2-3', 'Running total', 'SELECT date, amount, SUM(amount) OVER (ORDER BY date) AS running_total FROM transactions;'),
+      task('sql-wn2-4', 'Moving average', 'SELECT date, value, AVG(value) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg FROM metrics;'),
+    ]
+  ),
+];
+
+// Stage 13: CTEs & Transactions
+const sqlStage13Lessons: Lesson[] = [
+  lesson(
+    'sql-cte-1',
+    'Common Table Expressions',
+    'Write readable queries with WITH clauses',
+    'commands',
+    'advanced',
+    [
+      task('sql-ct1-1', 'Basic CTE', 'WITH active_users AS (SELECT * FROM users WHERE active = true) SELECT * FROM active_users WHERE created_at > NOW() - INTERVAL \'30 days\';'),
+      task('sql-ct1-2', 'Multiple CTEs', 'WITH buyers AS (SELECT DISTINCT user_id FROM orders), active AS (SELECT id FROM users WHERE active = true) SELECT * FROM buyers JOIN active ON buyers.user_id = active.id;'),
+      task('sql-ct1-3', 'Recursive CTE', 'WITH RECURSIVE tree AS (SELECT id, name, parent_id, 0 AS depth FROM categories WHERE parent_id IS NULL UNION ALL SELECT c.id, c.name, c.parent_id, t.depth + 1 FROM categories c JOIN tree t ON c.parent_id = t.id) SELECT * FROM tree;'),
+      task('sql-ct1-4', 'CTE with aggregation', 'WITH monthly AS (SELECT DATE_TRUNC(\'month\', created_at) AS month, SUM(total) AS revenue FROM orders GROUP BY 1) SELECT month, revenue FROM monthly ORDER BY month;'),
+    ]
+  ),
+  lesson(
+    'sql-cte-2',
+    'Transactions & Locks',
+    'Ensure data integrity with transactions',
+    'commands',
+    'advanced',
+    [
+      task('sql-ct2-1', 'Begin a transaction', 'BEGIN; UPDATE accounts SET balance = balance - 100 WHERE id = 1; UPDATE accounts SET balance = balance + 100 WHERE id = 2; COMMIT;'),
+      task('sql-ct2-2', 'Rollback on error', 'BEGIN; DELETE FROM orders WHERE id = 99; ROLLBACK;'),
+      task('sql-ct2-3', 'Savepoints', 'BEGIN; SAVEPOINT sp1; UPDATE users SET name = \'test\'; ROLLBACK TO sp1; COMMIT;'),
+      task('sql-ct2-4', 'Select for update', 'SELECT * FROM inventory WHERE product_id = 1 FOR UPDATE;'),
+    ]
+  ),
+];
+
+// Stage 14: Views & Stored Procedures
+const sqlStage14Lessons: Lesson[] = [
+  lesson(
+    'sql-view-1',
+    'Views',
+    'Create reusable virtual tables',
+    'commands',
+    'advanced',
+    [
+      task('sql-v1-1', 'Create a view', 'CREATE VIEW active_users AS SELECT id, name, email FROM users WHERE active = true;'),
+      task('sql-v1-2', 'Query a view', 'SELECT * FROM active_users WHERE name LIKE \'A%\';'),
+      task('sql-v1-3', 'Materialized view', 'CREATE MATERIALIZED VIEW monthly_revenue AS SELECT DATE_TRUNC(\'month\', created_at) AS month, SUM(total) AS revenue FROM orders GROUP BY 1;'),
+      task('sql-v1-4', 'Refresh materialized view', 'REFRESH MATERIALIZED VIEW CONCURRENTLY monthly_revenue;'),
+    ]
+  ),
+  lesson(
+    'sql-view-2',
+    'Functions & Procedures',
+    'Encapsulate logic in the database',
+    'commands',
+    'expert',
+    [
+      task('sql-v2-1', 'Create a function', 'CREATE FUNCTION get_user_count() RETURNS INTEGER AS $$ SELECT COUNT(*) FROM users; $$ LANGUAGE SQL;'),
+      task('sql-v2-2', 'Function with parameter', 'CREATE FUNCTION get_order_total(uid INTEGER) RETURNS DECIMAL AS $$ SELECT SUM(total) FROM orders WHERE user_id = uid; $$ LANGUAGE SQL;'),
+      task('sql-v2-3', 'Create a trigger', 'CREATE TRIGGER update_timestamp BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION set_updated_at();'),
+      task('sql-v2-4', 'Drop function safely', 'DROP FUNCTION IF EXISTS get_user_count();'),
+    ]
+  ),
+];
+
+// Stage 15: SQL Mastery Test
+const sqlMasteryTest: Lesson[] = [
+  lesson(
+    'sql-test-basic',
+    'Fundamentals Test',
+    'Test your core SQL knowledge',
+    'commands',
+    'intermediate',
+    [
+      task('sql-tb1', 'Select with filter and sort', "SELECT name, email FROM users WHERE active = true ORDER BY created_at DESC LIMIT 20;"),
+      task('sql-tb2', 'Insert and update', "INSERT INTO users (name, email) VALUES ('Bob', 'bob@test.com'); UPDATE users SET active = true WHERE email = 'bob@test.com';"),
+      task('sql-tb3', 'Group and aggregate', "SELECT category, COUNT(*) AS cnt, AVG(price) AS avg_price FROM products GROUP BY category HAVING COUNT(*) > 3;"),
+      task('sql-tb4', 'Inner join with filter', "SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE o.total > 100 ORDER BY o.total DESC;"),
+      task('sql-tb5', 'Subquery in WHERE', "SELECT * FROM products WHERE price > (SELECT AVG(price) FROM products);"),
+    ]
+  ),
+  lesson(
+    'sql-test-intermediate',
+    'Intermediate Test',
+    'Test joins, subqueries, and functions',
+    'commands',
+    'advanced',
+    [
+      task('sql-ti1', 'Left join with NULL check', 'SELECT u.name FROM users u LEFT JOIN orders o ON u.id = o.user_id WHERE o.id IS NULL;'),
+      task('sql-ti2', 'CTE with aggregation', "WITH monthly AS (SELECT DATE_TRUNC('month', created_at) AS m, SUM(total) AS rev FROM orders GROUP BY 1) SELECT m, rev FROM monthly ORDER BY m;"),
+      task('sql-ti3', 'Window function ranking', 'SELECT name, salary, RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS dept_rank FROM employees;'),
+      task('sql-ti4', 'CASE with aggregation', "SELECT COUNT(CASE WHEN status = 'active' THEN 1 END) AS active, COUNT(CASE WHEN status = 'inactive' THEN 1 END) AS inactive FROM users;"),
+      task('sql-ti5', 'Correlated subquery', 'SELECT p.title FROM products p WHERE p.price > (SELECT AVG(price) FROM products WHERE category = p.category);'),
+    ]
+  ),
+  lesson(
+    'sql-test-advanced',
+    'Advanced Test',
+    'Test DDL, transactions, and optimization',
+    'commands',
+    'expert',
+    [
+      task('sql-ta1', 'Create table with constraints', 'CREATE TABLE reviews (id SERIAL PRIMARY KEY, user_id INTEGER REFERENCES users(id), rating INTEGER CHECK (rating BETWEEN 1 AND 5), body TEXT, created_at TIMESTAMP DEFAULT NOW());'),
+      task('sql-ta2', 'Transaction with savepoint', "BEGIN; UPDATE inventory SET stock = stock - 1 WHERE product_id = 1; SAVEPOINT check_stock; SELECT stock FROM inventory WHERE product_id = 1; COMMIT;"),
+      task('sql-ta3', 'Recursive CTE', 'WITH RECURSIVE chain AS (SELECT id, name, manager_id FROM employees WHERE manager_id IS NULL UNION ALL SELECT e.id, e.name, e.manager_id FROM employees e JOIN chain c ON e.manager_id = c.id) SELECT * FROM chain;'),
+      task('sql-ta4', 'Create index and explain', "CREATE INDEX idx_orders_date ON orders (created_at); EXPLAIN ANALYZE SELECT * FROM orders WHERE created_at > '2024-01-01';"),
+      task('sql-ta5', 'Complex window function', 'SELECT date, revenue, SUM(revenue) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS weekly_total, LAG(revenue, 7) OVER (ORDER BY date) AS last_week FROM daily_sales;'),
+    ]
+  ),
+  lesson(
+    'sql-test-master',
+    'SQL Mastery Final Test',
+    'Comprehensive SQL challenge',
+    'commands',
+    'expert',
+    [
+      task('sql-tm1', 'Multi-join aggregation', 'SELECT c.name, COUNT(o.id) AS order_count, SUM(o.total) AS total_spent FROM customers c JOIN orders o ON c.id = o.customer_id JOIN order_items oi ON o.id = oi.order_id GROUP BY c.name HAVING SUM(o.total) > 1000 ORDER BY total_spent DESC;'),
+      task('sql-tm2', 'Window + CTE combo', 'WITH ranked AS (SELECT name, department, salary, DENSE_RANK() OVER (PARTITION BY department ORDER BY salary DESC) AS rank FROM employees) SELECT * FROM ranked WHERE rank <= 3;'),
+      task('sql-tm3', 'Upsert pattern', "INSERT INTO user_stats (user_id, login_count) VALUES (1, 1) ON CONFLICT (user_id) DO UPDATE SET login_count = user_stats.login_count + 1;"),
+      task('sql-tm4', 'Materialized view with index', "CREATE MATERIALIZED VIEW top_products AS SELECT p.id, p.title, SUM(oi.quantity) AS total_sold FROM products p JOIN order_items oi ON p.id = oi.product_id GROUP BY p.id, p.title; CREATE INDEX idx_top_products_sold ON top_products (total_sold DESC);"),
+      task('sql-tm5', 'Full reporting query', "SELECT DATE_TRUNC('month', o.created_at) AS month, COUNT(DISTINCT o.user_id) AS unique_buyers, COUNT(o.id) AS total_orders, SUM(o.total) AS revenue, AVG(o.total) AS avg_order_value FROM orders o WHERE o.created_at >= NOW() - INTERVAL '12 months' GROUP BY 1 ORDER BY 1;"),
+    ]
+  ),
+];
+
+// All SQL course lessons
+export const sqlCourseLessons: Lesson[] = [
+  ...sqlStage1Lessons,
+  ...sqlStage2Lessons,
+  ...sqlStage3Lessons,
+  ...sqlStage4Lessons,
+  ...sqlStage5Lessons,
+  ...sqlStage6Lessons,
+  ...sqlStage7Lessons,
+  ...sqlStage8Lessons,
+  ...sqlStage9Lessons,
+  ...sqlStage10Lessons,
+  ...sqlStage11Lessons,
+  ...sqlStage12Lessons,
+  ...sqlStage13Lessons,
+  ...sqlStage14Lessons,
+  ...sqlMasteryTest,
+];
+
+// Create the SQL course
+export const sqlCourse: Course = {
+  id: 'sql-mastery',
+  name: 'SQL Mastery',
+  description: 'Master SQL from basic queries to advanced window functions, CTEs, and database design',
+  stages: [
+    {
+      id: 'sql-stage-1',
+      name: 'Your First Queries',
+      description: 'SELECT, WHERE, and filtering fundamentals',
+      lessons: sqlStage1Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: false },
+    },
+    {
+      id: 'sql-stage-2',
+      name: 'Sorting & Limiting',
+      description: 'ORDER BY, LIMIT, and combining conditions',
+      lessons: sqlStage2Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-3',
+      name: 'Data Manipulation',
+      description: 'INSERT, UPDATE, DELETE, and TRUNCATE',
+      lessons: sqlStage3Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-4',
+      name: 'Aggregate Functions',
+      description: 'COUNT, SUM, AVG, MIN, MAX, and GROUP BY',
+      lessons: sqlStage4Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-5',
+      name: 'INNER & LEFT JOINs',
+      description: 'Combine data from multiple tables',
+      lessons: sqlStage5Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-6',
+      name: 'Advanced JOINs',
+      description: 'FULL, CROSS, self-joins, and join patterns',
+      lessons: sqlStage6Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-7',
+      name: 'Subqueries',
+      description: 'Nested queries, EXISTS, and correlated subqueries',
+      lessons: sqlStage7Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-8',
+      name: 'String & Date Functions',
+      description: 'Text manipulation and date/time operations',
+      lessons: sqlStage8Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-9',
+      name: 'CASE & NULL Handling',
+      description: 'Conditional logic, COALESCE, and type casting',
+      lessons: sqlStage9Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-10',
+      name: 'Table Design (DDL)',
+      description: 'CREATE, ALTER, DROP tables with constraints',
+      lessons: sqlStage10Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true, minWpm: 20 },
+    },
+    {
+      id: 'sql-stage-11',
+      name: 'Indexes & Performance',
+      description: 'Create indexes and analyze query plans with EXPLAIN',
+      lessons: sqlStage11Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-12',
+      name: 'Window Functions',
+      description: 'ROW_NUMBER, RANK, LAG, LEAD, and running totals',
+      lessons: sqlStage12Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-13',
+      name: 'CTEs & Transactions',
+      description: 'Common Table Expressions, recursive CTEs, and transaction control',
+      lessons: sqlStage13Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'sql-stage-14',
+      name: 'Views & Procedures',
+      description: 'Views, materialized views, functions, and triggers',
+      lessons: sqlStage14Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true, minWpm: 25 },
+    },
+    {
+      id: 'sql-stage-test',
+      name: 'SQL Mastery Test',
+      description: 'Prove your SQL expertise',
+      lessons: sqlMasteryTest.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true, minWpm: 30, minAccuracy: 0.90 },
+    },
+  ],
+};
+
 // All available courses
-export const allCourses: Course[] = [tenFingerCourse, cliCourse, claudeCodeCourse];
+export const allCourses: Course[] = [tenFingerCourse, cliCourse, claudeCodeCourse, sqlCourse];

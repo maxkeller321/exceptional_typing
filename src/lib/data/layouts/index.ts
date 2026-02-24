@@ -1,4 +1,4 @@
-import type { KeyboardLayoutId } from '../../types';
+import type { ConcreteKeyboardLayoutId, KeyboardLayoutId } from '../../types';
 
 export interface KeyDefinition {
   key: string;
@@ -431,7 +431,7 @@ export const colemak: KeyboardLayout = {
 };
 
 // All layouts
-export const layouts: Record<KeyboardLayoutId, KeyboardLayout> = {
+export const layouts: Record<ConcreteKeyboardLayoutId, KeyboardLayout> = {
   'qwerty-us': qwertyUs,
   'qwerty-uk': qwertyUk,
   'qwerty-de': qwertyDe,
@@ -441,12 +441,12 @@ export const layouts: Record<KeyboardLayoutId, KeyboardLayout> = {
 };
 
 // Get layout by ID
-export function getLayout(id: KeyboardLayoutId): KeyboardLayout {
+export function getLayout(id: ConcreteKeyboardLayoutId): KeyboardLayout {
   return layouts[id] || qwertyUs;
 }
 
 // Get finger for a key in a specific layout
-export function getFingerForKey(key: string, layoutId: KeyboardLayoutId): number | null {
+export function getFingerForKey(key: string, layoutId: ConcreteKeyboardLayoutId): number | null {
   const layout = getLayout(layoutId);
   const lowerKey = key.toLowerCase();
 

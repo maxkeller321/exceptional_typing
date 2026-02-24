@@ -8,7 +8,7 @@
 
   let { fingers, hands }: Props = $props();
 
-  let sortBy = $state<'speed' | 'accuracy'>('speed');
+  let sortBy = $state<'counts' | 'accuracy'>('counts');
 
   // Get finger data organized by position
   const fingerOrder = ['leftPinky', 'leftRing', 'leftMiddle', 'leftIndex', 'rightIndex', 'rightMiddle', 'rightRing', 'rightPinky'] as const;
@@ -30,8 +30,8 @@
   function getFingerValue(fingerName: string): string {
     const data = getFingerData(fingerName);
     if (!data || data.count === 0) return '—';
-    if (sortBy === 'speed') {
-      return `${data.wpm}`;
+    if (sortBy === 'counts') {
+      return `${data.count}`;
     }
     return `${Math.round(data.accuracy * 100)}%`;
   }
@@ -48,10 +48,10 @@
     <div class="toggle-group">
       <button
         class="toggle-btn"
-        class:active={sortBy === 'speed'}
-        onclick={() => sortBy = 'speed'}
+        class:active={sortBy === 'counts'}
+        onclick={() => sortBy = 'counts'}
       >
-        Speed
+        Counts
       </button>
       <button
         class="toggle-btn"
@@ -121,62 +121,39 @@
 
 <style>
   .hands-panel {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--bg-tertiary);
-    border-radius: 12px;
-    padding: 1rem;
+    @apply bg-slate-900/50 rounded-xl p-4 border border-slate-700/50;
     overflow: hidden;
   }
 
   .panel-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    @apply flex flex-wrap items-center justify-between gap-2 mb-4;
   }
 
   .panel-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
+    @apply text-base font-semibold text-white;
     margin: 0;
   }
 
   .toggle-group {
-    display: flex;
-    background-color: var(--bg-tertiary);
-    border-radius: 8px;
-    padding: 2px;
+    @apply flex bg-slate-700/50 rounded-lg p-0.5;
   }
 
   .toggle-btn {
-    padding: 0.35rem 0.6rem;
-    font-size: 11px;
-    font-weight: 500;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    color: var(--text-secondary);
+    @apply px-2 py-1 text-[11px] font-medium rounded-md transition-colors;
+    @apply text-slate-400 hover:text-white;
     background: transparent;
     border: none;
     cursor: pointer;
   }
 
-  .toggle-btn:hover {
-    color: var(--text-primary);
-  }
-
   .toggle-btn.active {
-    background-color: var(--accent);
-    color: white;
+    @apply bg-blue-600 text-white;
   }
 
   .finger-stats-row {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.25rem 0.5rem;
-    margin-bottom: 1rem;
+    @apply gap-1 mb-4;
   }
 
   @media (min-width: 400px) {
@@ -186,107 +163,80 @@
   }
 
   .finger-stat {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    min-width: 0;
+    @apply flex flex-col items-center text-center min-w-0;
   }
 
   @media (min-width: 400px) {
     .finger-stat:nth-child(4) {
-      border-right: 1px solid var(--bg-tertiary);
-      padding-right: 0.25rem;
+      @apply border-r border-slate-700/50 pr-1;
     }
 
     .finger-stat:nth-child(5) {
-      padding-left: 0.25rem;
+      @apply pl-1;
     }
   }
 
   .finger-label {
-    font-size: 8px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+    @apply text-[8px] text-slate-500 uppercase tracking-tight;
   }
 
   .finger-value {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--accent);
+    @apply text-[11px] font-semibold text-blue-400;
   }
 
   .finger-value.inactive {
-    color: var(--text-muted);
+    @apply text-slate-500;
   }
 
   .hands-display {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
+    @apply flex justify-center gap-4;
   }
 
   .hand-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: 1;
+    @apply flex flex-col items-center flex-1;
     max-width: 160px;
   }
 
   .hand-svg {
-    width: 100%;
-    height: auto;
+    @apply w-full h-auto;
     max-width: 140px;
   }
 
   .hand-palm {
-    fill: var(--bg-tertiary);
-    stroke: var(--text-muted);
+    fill: rgb(51 65 85 / 0.5);
+    stroke: #64748b;
   }
 
   .finger {
-    fill: var(--bg-secondary);
-    stroke: var(--text-muted);
+    fill: rgb(15 23 42 / 0.5);
+    stroke: #64748b;
     stroke-width: 1.5;
-    transition: all 0.3s ease;
+    @apply transition-all duration-300;
   }
 
   .finger.active {
-    fill: var(--accent);
-    stroke: var(--accent);
+    fill: #3b82f6;
+    stroke: #3b82f6;
     opacity: 0.85;
   }
 
   .hand-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 0.75rem;
+    @apply flex flex-col items-center mt-3;
   }
 
   .hand-label {
-    font-size: 9px;
-    color: var(--text-muted);
-    letter-spacing: 0.15em;
-    margin-bottom: 0.25rem;
+    @apply text-[9px] text-slate-500 tracking-widest mb-1;
   }
 
   .hand-wpm {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--text-primary);
+    @apply text-xl font-bold text-white;
   }
 
   .hand-wpm small {
-    font-size: 0.875rem;
-    font-weight: 400;
-    color: var(--text-secondary);
+    @apply text-sm font-normal text-slate-400;
   }
 
   .hand-chars {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
+    @apply text-xs text-slate-400;
   }
 </style>

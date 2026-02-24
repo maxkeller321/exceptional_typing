@@ -1,8 +1,9 @@
 import { writable, derived, get } from 'svelte/store';
-import type { UserSettings, TypingMode, KeyboardLayoutId, Locale, AppTheme, LessonCategory, Difficulty } from '../types';
+import type { UserSettings, TypingMode, KeyboardLayoutId, ConcreteKeyboardLayoutId, Locale, AppTheme, LessonCategory, Difficulty } from '../types';
 import { currentUser } from './user';
 import { getStorage } from '../services';
 import { DEFAULT_SETTINGS } from '../defaults';
+import { detectKeyboardLayout } from '../utils/detectKeyboardLayout';
 
 // Re-export for backwards compatibility
 export { DEFAULT_SETTINGS };
@@ -139,6 +140,27 @@ export const codeTheme = derived(settingsInternal, ($s) => $s.codeTheme);
 export const autoFormatCode = derived(settingsInternal, ($s) => $s.autoFormatCode);
 export const soundEffectsEnabled = derived(settingsInternal, ($s) => $s.soundEffectsEnabled);
 export const keyboardLayout = derived(settingsInternal, ($s) => $s.keyboardLayout);
+
+// Auto-detected keyboard layout (resolved from 'auto' setting)
+const detectedLayoutInternal = writable<ConcreteKeyboardLayoutId>('qwerty-us');
+
+// Run detection once at module load
+if (typeof window !== 'undefined') {
+  detectKeyboardLayout().then((detected) => {
+    if (detected) detectedLayoutInternal.set(detected);
+  });
+}
+
+export const detectedLayout = derived(detectedLayoutInternal, ($d) => $d);
+
+export const resolvedKeyboardLayout = derived(
+  [settingsInternal, detectedLayoutInternal],
+  ([$s, $detected]): ConcreteKeyboardLayoutId => {
+    if ($s.keyboardLayout === 'auto') return $detected;
+    return $s.keyboardLayout as ConcreteKeyboardLayoutId;
+  },
+);
+
 export const locale = derived(settingsInternal, ($s) => $s.locale);
 export const appTheme = derived(settingsInternal, ($s) => $s.appTheme);
 export const hasCompletedOnboarding = derived(settingsInternal, ($s) => $s.hasCompletedOnboarding);

@@ -13,7 +13,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   codeTheme: 'vscode-dark',
   autoFormatCode: true,
   soundEffectsEnabled: false,
-  keyboardLayout: 'qwerty-us',
+  keyboardLayout: 'auto',
   locale: 'en',
   hasCompletedOnboarding: false,
   lessonPickerCategory: 'home_row',

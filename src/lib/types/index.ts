@@ -157,12 +157,15 @@ export interface UserProfile {
 export type TypingMode = 'coder' | 'normal';
 
 export type KeyboardLayoutId =
+  | 'auto'
   | 'qwerty-us'
   | 'qwerty-uk'
   | 'qwerty-de'
   | 'azerty-fr'
   | 'dvorak'
   | 'colemak';
+
+export type ConcreteKeyboardLayoutId = Exclude<KeyboardLayoutId, 'auto'>;
 
 export type Locale = 'en' | 'de';
 

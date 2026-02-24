@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod keyboard;
 mod lessons;
 mod metrics;
 mod models;
@@ -290,6 +291,13 @@ fn migrate_from_localstorage(
         .map_err(|e| e.to_string())
 }
 
+// ── Keyboard Layout command ──────────────────────────────────────────
+
+#[tauri::command]
+fn get_keyboard_input_source() -> Option<String> {
+    keyboard::get_current_input_source()
+}
+
 fn main() {
     // Initialize database
     let db = Database::new().expect("Failed to initialize database");
@@ -337,6 +345,8 @@ fn main() {
             // Migration
             is_migration_needed,
             migrate_from_localstorage,
+            // Keyboard
+            get_keyboard_input_source,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

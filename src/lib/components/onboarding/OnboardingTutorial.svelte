@@ -1,13 +1,45 @@
 <script lang="ts">
-  import { settingsStore } from '../../stores/settings';
+  import { onMount } from 'svelte';
+  import { settingsStore, detectedLayout, resolvedKeyboardLayout } from '../../stores/settings';
+  import { layouts } from '../../data/layouts';
   import { APP_NAME } from '../../constants';
   import SpotlightOverlay from './SpotlightOverlay.svelte';
+  import type { KeyboardLayoutId, ConcreteKeyboardLayoutId } from '../../types';
 
   interface Props {
     onComplete: () => void;
   }
 
   let { onComplete }: Props = $props();
+
+  // Keyboard layout state for the interactive step
+  let selectedLayout = $state<KeyboardLayoutId>('auto');
+  let detectedLayoutId = $state<ConcreteKeyboardLayoutId>('qwerty-us');
+
+  onMount(() => {
+    const unsub1 = detectedLayout.subscribe((v) => { detectedLayoutId = v; });
+    const unsub2 = resolvedKeyboardLayout.subscribe(() => {});
+    return () => { unsub1(); unsub2(); };
+  });
+
+  const concreteLayouts = Object.values(layouts);
+
+  function selectKeyboardLayout(id: KeyboardLayoutId) {
+    selectedLayout = id;
+    settingsStore.setKeyboardLayout(id);
+  }
+
+  // Resolve the selected layout to a concrete one for preview
+  let previewLayoutData = $derived(
+    selectedLayout === 'auto'
+      ? layouts[detectedLayoutId]
+      : layouts[selectedLayout as ConcreteKeyboardLayoutId]
+  );
+
+  function getKeyLabel(key: string): string {
+    if (key === ' ') return '';
+    return key.toUpperCase();
+  }
 
   // Onboarding steps with target selectors for highlighting
   const steps = [
@@ -23,6 +55,16 @@
       ],
       targetSelector: null, // No highlight for welcome
       tooltipPosition: 'center' as const,
+    },
+    {
+      id: 'keyboard-layout',
+      title: 'Keyboard Layout',
+      description: 'Select your keyboard layout so the virtual keyboard and finger guides match your physical keyboard.',
+      icon: '⌨️',
+      features: [],
+      targetSelector: null,
+      tooltipPosition: 'center' as const,
+      interactive: true,
     },
     {
       id: 'sidebar',
@@ -246,14 +288,74 @@
       <h2 class="step-title">{currentStepData.title}</h2>
       <p class="step-description">{currentStepData.description}</p>
 
-      <ul class="feature-list">
-        {#each currentStepData.features as feature}
-          <li class="feature-item">
-            <span class="feature-check">✓</span>
-            <span>{feature}</span>
-          </li>
-        {/each}
-      </ul>
+      {#if currentStepData.features.length > 0}
+        <ul class="feature-list">
+          {#each currentStepData.features as feature}
+            <li class="feature-item">
+              <span class="feature-check">✓</span>
+              <span>{feature}</span>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+
+      <!-- Keyboard layout selection (interactive step) -->
+      {#if currentStepData.id === 'keyboard-layout'}
+        <div class="layout-picker">
+          <button
+            class="layout-option"
+            class:selected={selectedLayout === 'auto'}
+            onclick={() => selectKeyboardLayout('auto')}
+            type="button"
+          >
+            <span class="layout-option-name">Auto-detect</span>
+            <span class="layout-option-detail">{layouts[detectedLayoutId].name}</span>
+          </button>
+
+          {#each concreteLayouts as layout}
+            <button
+              class="layout-option"
+              class:selected={selectedLayout === layout.id}
+              onclick={() => selectKeyboardLayout(layout.id)}
+              type="button"
+            >
+              <span class="layout-option-name">{layout.name}</span>
+              <span class="layout-option-detail">{layout.locale}</span>
+            </button>
+          {/each}
+        </div>
+
+        <!-- Keyboard preview -->
+        <div class="layout-preview">
+          <div class="layout-preview-header">
+            <span class="layout-preview-name">{previewLayoutData.name}</span>
+          </div>
+          <div class="keyboard-mini-preview">
+            {#each previewLayoutData.rows.slice(0, 4) as row, rowIndex}
+              <div class="mini-row" class:home-row={rowIndex === 2}>
+                {#each row as keyDef}
+                  <div
+                    class="mini-key"
+                    class:home-key={keyDef.home}
+                    class:wide-key={keyDef.width && keyDef.width > 1}
+                    style={keyDef.width ? `flex: ${keyDef.width}` : ''}
+                  >
+                    {getKeyLabel(keyDef.key)}
+                  </div>
+                {/each}
+              </div>
+            {/each}
+          </div>
+          <div class="mini-legend">
+            <div class="mini-legend-item">
+              <div class="mini-legend-swatch home"></div>
+              <span>Home keys</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="layout-hint">You can change this later in Settings.</p>
+      {/if}
     </div>
 
     <!-- Step indicators -->
@@ -446,5 +548,117 @@
     @apply inline-block px-1.5 py-0.5 rounded text-xs;
     background-color: var(--bg-tertiary);
     color: var(--text-secondary);
+  }
+
+  .layout-picker {
+    @apply flex flex-col gap-1.5 mb-4;
+    @apply max-w-sm mx-auto;
+  }
+
+  .layout-option {
+    @apply flex items-center justify-between;
+    @apply px-3 py-2.5 rounded-lg;
+    @apply text-sm text-left;
+    @apply transition-all duration-150;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 2px solid transparent;
+  }
+
+  .layout-option:hover {
+    color: var(--text-primary);
+    background-color: #404245;
+  }
+
+  .layout-option.selected {
+    border-color: var(--accent);
+    color: var(--text-primary);
+    background-color: rgba(226, 183, 20, 0.08);
+  }
+
+  .layout-option-name {
+    @apply font-medium;
+  }
+
+  .layout-option-detail {
+    @apply text-xs;
+    color: var(--text-muted);
+  }
+
+  .layout-hint {
+    @apply text-xs text-center mb-4;
+    color: var(--text-muted);
+  }
+
+  .layout-preview {
+    @apply max-w-sm mx-auto mb-4;
+  }
+
+  .layout-preview-header {
+    @apply flex items-center justify-center mb-1.5;
+  }
+
+  .layout-preview-name {
+    @apply text-xs font-medium;
+    color: var(--text-secondary);
+  }
+
+  .keyboard-mini-preview {
+    @apply flex flex-col gap-px;
+    @apply rounded-lg p-2;
+    background-color: var(--bg-primary);
+  }
+
+  .mini-row {
+    @apply flex gap-px justify-center;
+  }
+
+  .mini-row:nth-child(2) {
+    @apply ml-2;
+  }
+
+  .mini-row:nth-child(3) {
+    @apply ml-4;
+  }
+
+  .mini-row:nth-child(4) {
+    @apply ml-6;
+  }
+
+  .mini-key {
+    @apply flex items-center justify-center;
+    @apply h-5 text-[8px] font-mono;
+    @apply rounded-sm;
+    flex: 1;
+    max-width: 22px;
+    background-color: var(--bg-tertiary);
+    color: var(--text-muted);
+  }
+
+  .mini-key.home-key {
+    background-color: rgba(226, 183, 20, 0.2);
+    color: var(--accent);
+  }
+
+  .mini-key.wide-key {
+    max-width: none;
+  }
+
+  .mini-legend {
+    @apply flex items-center justify-center gap-3 mt-1.5 text-[10px];
+    color: var(--text-muted);
+  }
+
+  .mini-legend-item {
+    @apply flex items-center gap-1;
+  }
+
+  .mini-legend-swatch {
+    @apply w-2 h-2 rounded-sm;
+    background-color: var(--bg-tertiary);
+  }
+
+  .mini-legend-swatch.home {
+    background-color: rgba(226, 183, 20, 0.2);
   }
 </style>

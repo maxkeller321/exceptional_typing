@@ -18,16 +18,17 @@
   import OnboardingTutorial from './lib/components/onboarding/OnboardingTutorial.svelte';
   import { currentView, navigateTo, selectedLesson } from './lib/stores/app';
   import { isUserSelected, loadUsers, currentUser } from './lib/stores/user';
-  import { settingsStore, hasCompletedOnboarding } from './lib/stores/settings';
+  import { settingsStore, hasCompletedOnboarding, resolvedKeyboardLayout } from './lib/stores/settings';
   import { get } from 'svelte/store';
   import { completedToday } from './lib/stores/daily';
   import { APP_NAME } from './lib/constants';
   import { checkAndConsumeDemoFlag, initializeDemoMode } from './lib/utils/demo';
-  import type { AppView, UserSettings } from './lib/types';
+  import type { AppView, UserSettings, ConcreteKeyboardLayoutId } from './lib/types';
 
   let view = $state<AppView>('home');
   let hasUser = $state(false);
   let settings = $state<UserSettings | null>(null);
+  let resolvedLayoutId = $state<ConcreteKeyboardLayoutId>('qwerty-us');
   let dailyCompleted = $state(false);
   let showOnboarding = $state(false);
 
@@ -53,8 +54,9 @@
     }
 
     const unsubView = currentView.subscribe((v) => {
-      // Reset course sub-view when navigating to course from sidebar
-      if (v === 'course' && view !== 'course') {
+      // Reset course sub-view when navigating to course from sidebar,
+      // but NOT when returning from a lesson (so user lands back in the course detail)
+      if (v === 'course' && view !== 'course' && view !== 'lesson') {
         courseSubView = 'overview';
       }
       view = v;
@@ -80,6 +82,10 @@
 
     const unsubDaily = completedToday.subscribe((c) => {
       dailyCompleted = c;
+    });
+
+    const unsubResolvedLayout = resolvedKeyboardLayout.subscribe((l) => {
+      resolvedLayoutId = l;
     });
 
     // Increment lesson session key when a new lesson is selected
@@ -111,6 +117,7 @@
       unsubUser();
       unsubSettings();
       unsubDaily();
+      unsubResolvedLayout();
       unsubLesson();
       unsubCurrentUser();
     };
@@ -419,6 +426,7 @@
                   </div>
                   <KeyboardLayoutSelector
                     value={settings.keyboardLayout}
+                    {resolvedLayoutId}
                     onchange={(layoutId) => settingsStore.setKeyboardLayout(layoutId)}
                   />
                 </div>

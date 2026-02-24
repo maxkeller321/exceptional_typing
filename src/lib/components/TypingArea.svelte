@@ -2,9 +2,10 @@
   import { onMount } from 'svelte';
   import { typingStore } from '../stores/typing';
   import VirtualKeyboard from './VirtualKeyboard.svelte';
-  import type { Task, TypingState, TaskResult } from '../types';
+  import type { Task, TypingState, TaskResult, ConcreteKeyboardLayoutId } from '../types';
   import { highlightCode, getTokenColor, type HighlightToken, type CodeTheme } from '../utils/highlight';
   import { splitIntoWordUnits, type WordUnit } from '../utils/wordWrapper';
+  import { resolvedKeyboardLayout } from '../stores/settings';
 
   interface Props {
     task: Task;
@@ -55,6 +56,7 @@
   let progress = $state(0);
   let liveWpm = $state(0);
   let liveAccuracy = $state(100);
+  let layoutId = $state<ConcreteKeyboardLayoutId>('qwerty-us');
 
   // Get the next key to press
   function getNextKey(): string {
@@ -163,6 +165,10 @@
       liveAccuracy = a;
     });
 
+    const unsubLayout = resolvedKeyboardLayout.subscribe(l => {
+      layoutId = l;
+    });
+
     // Delay focus to avoid interfering with button clicks that trigger component mount
     // Using requestAnimationFrame ensures we don't steal focus during the current event cycle
     const focusFrame = requestAnimationFrame(() => {
@@ -176,6 +182,7 @@
       unsubProgress();
       unsubWpm();
       unsubAccuracy();
+      unsubLayout();
     };
   });
 
@@ -256,7 +263,7 @@
 
 <!-- Virtual Keyboard -->
 {#if showKeyboard && !typingState.isComplete}
-  <VirtualKeyboard nextKey={getNextKey()} showHands={true} />
+  <VirtualKeyboard nextKey={getNextKey()} showHands={true} {layoutId} />
 {/if}
 
 <style>

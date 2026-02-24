@@ -1,22 +1,38 @@
 <script lang="ts">
   import { layouts, type KeyboardLayout } from '../data/layouts';
-  import type { KeyboardLayoutId } from '../types';
+  import type { KeyboardLayoutId, ConcreteKeyboardLayoutId } from '../types';
 
   interface Props {
     value: KeyboardLayoutId;
+    resolvedLayoutId: ConcreteKeyboardLayoutId;
     onchange: (layoutId: KeyboardLayoutId) => void;
   }
 
-  let { value, onchange }: Props = $props();
+  let { value, resolvedLayoutId, onchange }: Props = $props();
 
   let isOpen = $state(false);
   let hoveredLayout = $state<KeyboardLayoutId | null>(null);
 
-  const layoutList = Object.values(layouts);
+  // "Auto-detect" appears first, then the concrete layouts
+  const concreteLayoutList = Object.values(layouts);
+
+  // Resolve a layout ID to a concrete one for preview purposes
+  function resolveForPreview(id: KeyboardLayoutId): ConcreteKeyboardLayoutId {
+    return id === 'auto' ? resolvedLayoutId : id;
+  }
 
   // Get the layout to preview (hovered or selected)
   const previewLayout = $derived(
-    hoveredLayout ? layouts[hoveredLayout] : layouts[value]
+    hoveredLayout
+      ? layouts[resolveForPreview(hoveredLayout)]
+      : layouts[resolveForPreview(value)]
+  );
+
+  // Display name for the selector button
+  const displayName = $derived(
+    value === 'auto'
+      ? `Auto-detect (${layouts[resolvedLayoutId].name})`
+      : layouts[value].name
   );
 
   function selectLayout(layoutId: KeyboardLayoutId): void {
@@ -47,7 +63,7 @@
     onclick={() => (isOpen = !isOpen)}
     aria-expanded={isOpen}
   >
-    <span class="selected-name">{layouts[value].name}</span>
+    <span class="selected-name">{displayName}</span>
     <svg class="chevron" class:open={isOpen} viewBox="0 0 24 24" fill="none" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
     </svg>
@@ -66,7 +82,26 @@
       <div class="panel-content">
         <!-- Layout options list -->
         <div class="layout-list">
-          {#each layoutList as layout}
+          <!-- Auto-detect option -->
+          <button
+            class="layout-option"
+            class:selected={value === 'auto'}
+            class:hovered={hoveredLayout === 'auto'}
+            onclick={() => selectLayout('auto')}
+            onmouseenter={() => (hoveredLayout = 'auto')}
+            onmouseleave={() => (hoveredLayout = null)}
+          >
+            <span class="layout-name">Auto-detect</span>
+            {#if value === 'auto'}
+              <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+            {/if}
+          </button>
+
+          <div class="layout-divider"></div>
+
+          {#each concreteLayoutList as layout}
             <button
               class="layout-option"
               class:selected={value === layout.id}
@@ -197,6 +232,11 @@
   .layout-option.hovered {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
+  }
+
+  .layout-divider {
+    @apply my-1;
+    border-top: 1px solid var(--bg-tertiary);
   }
 
   .layout-name {

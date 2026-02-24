@@ -127,6 +127,7 @@ describe('Onboarding System', () => {
       // Define expected steps for the onboarding tutorial
       const expectedSteps = [
         { id: 'welcome', targetSelector: null },
+        { id: 'keyboard-layout', targetSelector: null },
         { id: 'sidebar', targetSelector: '.sidebar' },
         { id: 'lessons', targetSelector: '.nav-item:nth-child(1)' },
         { id: 'practice', targetSelector: '.nav-item:nth-child(2)' },
@@ -138,11 +139,12 @@ describe('Onboarding System', () => {
         { id: 'ready', targetSelector: null },
       ];
 
-      // First and last steps have no target (centered modal)
+      // First, keyboard-layout, and last steps have no target (centered modal)
       expect(expectedSteps[0].targetSelector).toBeNull();
+      expect(expectedSteps[1].targetSelector).toBeNull();
       expect(expectedSteps[expectedSteps.length - 1].targetSelector).toBeNull();
 
-      // Middle steps have targets
+      // Steps with spotlight targets
       const stepsWithTargets = expectedSteps.filter(s => s.targetSelector !== null);
       expect(stepsWithTargets.length).toBe(8);
 
@@ -153,9 +155,10 @@ describe('Onboarding System', () => {
       });
     });
 
-    it('has at least 10 steps covering all main features', () => {
+    it('has 11 steps covering all main features including keyboard layout', () => {
       const requiredFeatures = [
         'welcome',
+        'keyboard-layout',
         'sidebar',
         'lessons',
         'practice',
@@ -167,7 +170,7 @@ describe('Onboarding System', () => {
         'ready',
       ];
 
-      expect(requiredFeatures.length).toBe(10);
+      expect(requiredFeatures.length).toBe(11);
     });
   });
 

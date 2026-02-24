@@ -40,7 +40,7 @@ describe('Settings Store', () => {
       expect(settings.showProgressPercentage).toBe(true);
       expect(settings.fontSize).toBe(24);
       expect(settings.typingMode).toBe('normal');
-      expect(settings.keyboardLayout).toBe('qwerty-us');
+      expect(settings.keyboardLayout).toBe('auto');
       expect(settings.locale).toBe('en');
     });
   });

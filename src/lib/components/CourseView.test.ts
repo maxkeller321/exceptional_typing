@@ -43,68 +43,149 @@ describe('App course navigation flow', () => {
    * State machine for the course sub-view in App.svelte:
    *   'overview' → select course → 'detail'
    *   'detail' → back button / Backspace → 'overview'
+   *   'detail' → start lesson → 'lesson' → finish lesson → 'detail' (NOT overview!)
+   *
+   * The key invariant: returning from a lesson should land back in the course
+   * detail view, not reset to the overview. Only sidebar navigation resets.
    */
+  type AppView = 'home' | 'course' | 'lesson' | 'practice' | 'daily' | 'stats' | 'settings';
   type CourseSubView = 'overview' | 'detail';
 
-  function selectCourseFromOverview(subView: CourseSubView): CourseSubView {
-    // Only allowed when in overview
-    if (subView === 'overview') return 'detail';
-    return subView;
+  // Models the App.svelte state
+  let view: AppView;
+  let courseSubView: CourseSubView;
+
+  function reset() {
+    view = 'home';
+    courseSubView = 'overview';
   }
 
-  function goBackFromDetail(subView: CourseSubView): CourseSubView {
-    if (subView === 'detail') return 'overview';
-    return subView;
+  // Models the currentView subscriber in App.svelte
+  function navigateTo(newView: AppView) {
+    // Reset course sub-view when navigating to course from sidebar,
+    // but NOT when returning from a lesson
+    if (newView === 'course' && view !== 'course' && view !== 'lesson') {
+      courseSubView = 'overview';
+    }
+    view = newView;
   }
 
-  function navigateToCourseFromSidebar(): CourseSubView {
-    // Navigating to course from another view always starts at overview
-    return 'overview';
+  function selectCourseFromOverview() {
+    if (courseSubView === 'overview') courseSubView = 'detail';
   }
+
+  function goBackFromDetail() {
+    if (courseSubView === 'detail') courseSubView = 'overview';
+  }
+
+  function startLessonFromCourse() {
+    // CourseView calls selectLesson() which navigates to 'lesson'
+    navigateTo('lesson');
+  }
+
+  function finishLessonBackToCourse() {
+    // LessonView calls navigateTo(getLessonSourceView()) which is 'course'
+    navigateTo('course');
+  }
+
+  beforeEach(() => reset());
 
   it('starts on overview when navigating to courses', () => {
-    const subView = navigateToCourseFromSidebar();
-    expect(subView).toBe('overview');
+    navigateTo('course');
+    expect(courseSubView).toBe('overview');
   });
 
   it('transitions to detail only from overview (selecting a course)', () => {
-    let subView: CourseSubView = 'overview';
-    subView = selectCourseFromOverview(subView);
-    expect(subView).toBe('detail');
+    navigateTo('course');
+    selectCourseFromOverview();
+    expect(courseSubView).toBe('detail');
   });
 
   it('cannot switch courses from within the detail view', () => {
-    let subView: CourseSubView = 'detail';
-    // Attempting to select a course while already in detail should not work
-    // (there is no UI for it — the only action is "back to overview")
-    subView = selectCourseFromOverview(subView);
-    expect(subView).toBe('detail'); // unchanged
+    navigateTo('course');
+    selectCourseFromOverview();
+    expect(courseSubView).toBe('detail');
+    // No UI to select another course from detail
+    selectCourseFromOverview();
+    expect(courseSubView).toBe('detail');
   });
 
   it('back button returns to overview from detail', () => {
-    let subView: CourseSubView = 'detail';
-    subView = goBackFromDetail(subView);
-    expect(subView).toBe('overview');
+    navigateTo('course');
+    selectCourseFromOverview();
+    goBackFromDetail();
+    expect(courseSubView).toBe('overview');
   });
 
   it('full round-trip: overview → detail → overview → detail', () => {
-    let subView: CourseSubView = navigateToCourseFromSidebar();
-    expect(subView).toBe('overview');
+    navigateTo('course');
+    expect(courseSubView).toBe('overview');
 
-    subView = selectCourseFromOverview(subView);
-    expect(subView).toBe('detail');
+    selectCourseFromOverview();
+    expect(courseSubView).toBe('detail');
 
-    subView = goBackFromDetail(subView);
-    expect(subView).toBe('overview');
+    goBackFromDetail();
+    expect(courseSubView).toBe('overview');
 
-    subView = selectCourseFromOverview(subView);
-    expect(subView).toBe('detail');
+    selectCourseFromOverview();
+    expect(courseSubView).toBe('detail');
   });
 
   it('re-entering courses from sidebar always resets to overview', () => {
-    // Even if previously on detail, navigating away and back resets to overview
-    let subView: CourseSubView = 'detail';
-    subView = navigateToCourseFromSidebar();
-    expect(subView).toBe('overview');
+    navigateTo('course');
+    selectCourseFromOverview();
+    expect(courseSubView).toBe('detail');
+
+    // Navigate away to home, then back to course
+    navigateTo('home');
+    navigateTo('course');
+    expect(courseSubView).toBe('overview');
+  });
+
+  it('returning from a lesson stays in course detail, not overview', () => {
+    // User navigates to courses, selects a course, enters detail view
+    navigateTo('course');
+    selectCourseFromOverview();
+    expect(courseSubView).toBe('detail');
+
+    // User starts a lesson from the course detail
+    startLessonFromCourse();
+    expect(view).toBe('lesson');
+
+    // User finishes the lesson and navigates back to course
+    finishLessonBackToCourse();
+    expect(view).toBe('course');
+    // CRITICAL: should stay in detail, not reset to overview
+    expect(courseSubView).toBe('detail');
+  });
+
+  it('returning from a lesson preserves detail across multiple lessons', () => {
+    navigateTo('course');
+    selectCourseFromOverview();
+
+    // Complete multiple lessons in a row
+    for (let i = 0; i < 3; i++) {
+      startLessonFromCourse();
+      expect(view).toBe('lesson');
+
+      finishLessonBackToCourse();
+      expect(view).toBe('course');
+      expect(courseSubView).toBe('detail');
+    }
+  });
+
+  it('sidebar navigation after lesson still resets to overview', () => {
+    navigateTo('course');
+    selectCourseFromOverview();
+
+    // Start and finish a lesson
+    startLessonFromCourse();
+    finishLessonBackToCourse();
+    expect(courseSubView).toBe('detail');
+
+    // Now navigate away via sidebar and back — should reset
+    navigateTo('settings');
+    navigateTo('course');
+    expect(courseSubView).toBe('overview');
   });
 });

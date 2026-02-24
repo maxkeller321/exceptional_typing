@@ -8,7 +8,7 @@
 
   let { characterTypes, totalChars }: Props = $props();
 
-  let sortBy = $state<'speed' | 'accuracy'>('speed');
+  let sortBy = $state<'slowest' | 'most-used'>('slowest');
 
   // Colors for each type (distinct, easily distinguishable palette)
   const typeColors: Record<string, string> = {
@@ -21,7 +21,7 @@
 
   let sortedTypes = $derived.by(() => {
     const types = [...characterTypes];
-    if (sortBy === 'speed') {
+    if (sortBy === 'slowest') {
       return types.sort((a, b) => b.avgDelay - a.avgDelay);
     }
     return types.sort((a, b) => b.count - a.count);
@@ -95,17 +95,17 @@
     <div class="toggle-group">
       <button
         class="toggle-btn"
-        class:active={sortBy === 'speed'}
-        onclick={() => sortBy = 'speed'}
+        class:active={sortBy === 'slowest'}
+        onclick={() => sortBy = 'slowest'}
       >
-        Speed
+        Slowest
       </button>
       <button
         class="toggle-btn"
-        class:active={sortBy === 'accuracy'}
-        onclick={() => sortBy = 'accuracy'}
+        class:active={sortBy === 'most-used'}
+        onclick={() => sortBy = 'most-used'}
       >
-        Accuracy
+        Most Used
       </button>
     </div>
   </div>

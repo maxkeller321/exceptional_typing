@@ -1,17 +1,53 @@
 use crate::models::*;
 use rusqlite::{params, Connection, Result as SqliteResult};
+use serde::{Serialize, Deserialize};
 use serde_json;
 use std::path::PathBuf;
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Serialize, Deserialize, Clone)]
+#[serde(tag = "code", content = "message")]
 pub enum StorageError {
     #[error("Database error: {0}")]
-    Database(#[from] rusqlite::Error),
+    Database(String),
     #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
+    Io(String),
     #[error("JSON error: {0}")]
-    Json(#[from] serde_json::Error),
+    Json(String),
+    #[error("Not found: {0}")]
+    NotFound(String),
+    #[error("Conflict: {0}")]
+    Conflict(String),
+}
+
+impl From<rusqlite::Error> for StorageError {
+    fn from(e: rusqlite::Error) -> Self {
+        match &e {
+            rusqlite::Error::QueryReturnedNoRows => StorageError::NotFound(e.to_string()),
+            rusqlite::Error::SqliteFailure(err, _) => {
+                if err.extended_code == rusqlite::ffi::SQLITE_CONSTRAINT_UNIQUE
+                    || err.extended_code == rusqlite::ffi::SQLITE_CONSTRAINT_PRIMARYKEY
+                {
+                    StorageError::Conflict(e.to_string())
+                } else {
+                    StorageError::Database(e.to_string())
+                }
+            }
+            _ => StorageError::Database(e.to_string()),
+        }
+    }
+}
+
+impl From<std::io::Error> for StorageError {
+    fn from(e: std::io::Error) -> Self {
+        StorageError::Io(e.to_string())
+    }
+}
+
+impl From<serde_json::Error> for StorageError {
+    fn from(e: serde_json::Error) -> Self {
+        StorageError::Json(e.to_string())
+    }
 }
 
 pub struct Database {
@@ -34,10 +70,16 @@ impl Database {
     #[cfg(test)]
     pub fn in_memory() -> Result<Self, StorageError> {
         let conn = Connection::open_in_memory()?;
-        conn.execute_batch("PRAGMA foreign_keys=ON;")?;
+        conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")?;
         let db = Database { conn };
         db.migrate()?;
         Ok(db)
+    }
+
+    /// Checkpoint WAL and close cleanly. Call on app shutdown.
+    pub fn checkpoint(&self) -> SqliteResult<()> {
+        self.conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")?;
+        Ok(())
     }
 
     fn get_db_path() -> Result<PathBuf, StorageError> {
@@ -72,6 +114,9 @@ impl Database {
 
         if version < 1 {
             self.migrate_to_v1()?;
+        }
+        if version < 2 {
+            self.migrate_to_v2()?;
         }
 
         Ok(())
@@ -181,6 +226,17 @@ impl Database {
         )
     }
 
+    fn migrate_to_v2(&self) -> SqliteResult<()> {
+        self.conn.execute_batch(
+            "
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_snippets_user_name
+                ON custom_snippets(user_id, LOWER(name));
+
+            INSERT INTO schema_version (version) VALUES (2);
+            "
+        )
+    }
+
     // ── Users ─────────────────────────────────────────────────────
 
     pub fn get_all_users(&self) -> SqliteResult<Vec<UserProfile>> {
@@ -208,15 +264,17 @@ impl Database {
     }
 
     pub fn update_user(&self, user_id: i64, name: Option<&str>, avatar: Option<&str>, last_active_at: Option<&str>) -> SqliteResult<()> {
+        let tx = self.conn.unchecked_transaction()?;
         if let Some(n) = name {
-            self.conn.execute("UPDATE users SET name = ?1 WHERE id = ?2", params![n, user_id])?;
+            tx.execute("UPDATE users SET name = ?1 WHERE id = ?2", params![n, user_id])?;
         }
         if let Some(a) = avatar {
-            self.conn.execute("UPDATE users SET avatar = ?1 WHERE id = ?2", params![a, user_id])?;
+            tx.execute("UPDATE users SET avatar = ?1 WHERE id = ?2", params![a, user_id])?;
         }
         if let Some(t) = last_active_at {
-            self.conn.execute("UPDATE users SET last_active_at = ?1 WHERE id = ?2", params![t, user_id])?;
+            tx.execute("UPDATE users SET last_active_at = ?1 WHERE id = ?2", params![t, user_id])?;
         }
+        tx.commit()?;
         Ok(())
     }
 
@@ -286,7 +344,9 @@ impl Database {
     }
 
     pub fn save_user_stats(&self, user_id: i64, stats: &UserStatsRow) -> SqliteResult<()> {
-        self.conn.execute(
+        let tx = self.conn.unchecked_transaction()?;
+
+        tx.execute(
             "INSERT INTO user_stats (user_id, total_practice_time, total_words_typed, average_wpm,
                 average_accuracy, average_true_accuracy, total_keystrokes, total_backspaces,
                 total_correct_keystrokes, lessons_completed, current_streak, longest_streak, last_practice_date)
@@ -321,9 +381,18 @@ impl Database {
             ],
         )?;
 
-        // Save problem keys
-        self.save_problem_keys(user_id, &stats.problem_keys)?;
+        // Save problem keys (within same transaction)
+        tx.execute("DELETE FROM problem_keys WHERE user_id = ?1", params![user_id])?;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT INTO problem_keys (user_id, key_char, error_count) VALUES (?1, ?2, ?3)"
+            )?;
+            for (key, count) in &stats.problem_keys {
+                stmt.execute(params![user_id, key, count])?;
+            }
+        }
 
+        tx.commit()?;
         Ok(())
     }
 
@@ -335,17 +404,6 @@ impl Database {
             Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?))
         })?;
         rows.collect()
-    }
-
-    fn save_problem_keys(&self, user_id: i64, keys: &[(String, i64)]) -> SqliteResult<()> {
-        self.conn.execute("DELETE FROM problem_keys WHERE user_id = ?1", params![user_id])?;
-        let mut stmt = self.conn.prepare(
-            "INSERT INTO problem_keys (user_id, key_char, error_count) VALUES (?1, ?2, ?3)"
-        )?;
-        for (key, count) in keys {
-            stmt.execute(params![user_id, key, count])?;
-        }
-        Ok(())
     }
 
     // ── Lesson Progress ───────────────────────────────────────────
@@ -371,25 +429,30 @@ impl Database {
     }
 
     pub fn save_lesson_progress(&self, user_id: i64, progress: &[LessonProgressRow]) -> SqliteResult<()> {
-        // Replace all progress for this user
-        self.conn.execute("DELETE FROM lesson_progress WHERE user_id = ?1", params![user_id])?;
-        let mut stmt = self.conn.prepare(
-            "INSERT INTO lesson_progress (user_id, lesson_id, completed_tasks, total_tasks,
-                best_wpm, average_accuracy, last_task_index, task_results_json)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)"
-        )?;
-        for p in progress {
-            stmt.execute(params![
-                user_id,
-                p.lesson_id,
-                p.completed_tasks,
-                p.total_tasks,
-                p.best_wpm,
-                p.average_accuracy,
-                p.last_task_index,
-                p.task_results_json,
-            ])?;
+        let tx = self.conn.unchecked_transaction()?;
+
+        tx.execute("DELETE FROM lesson_progress WHERE user_id = ?1", params![user_id])?;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT INTO lesson_progress (user_id, lesson_id, completed_tasks, total_tasks,
+                    best_wpm, average_accuracy, last_task_index, task_results_json)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)"
+            )?;
+            for p in progress {
+                stmt.execute(params![
+                    user_id,
+                    p.lesson_id,
+                    p.completed_tasks,
+                    p.total_tasks,
+                    p.best_wpm,
+                    p.average_accuracy,
+                    p.last_task_index,
+                    p.task_results_json,
+                ])?;
+            }
         }
+
+        tx.commit()?;
         Ok(())
     }
 
@@ -415,23 +478,29 @@ impl Database {
     }
 
     pub fn save_course_progress(&self, user_id: i64, progress: &[CourseProgressRow]) -> SqliteResult<()> {
-        self.conn.execute("DELETE FROM course_progress WHERE user_id = ?1", params![user_id])?;
-        let mut stmt = self.conn.prepare(
-            "INSERT INTO course_progress (user_id, course_id, current_stage_id, completed_stages_json,
-                skipped_stages_json, enrolled_at, completed_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"
-        )?;
-        for p in progress {
-            stmt.execute(params![
-                user_id,
-                p.course_id,
-                p.current_stage_id,
-                p.completed_stages_json,
-                p.skipped_stages_json,
-                p.enrolled_at,
-                p.completed_at,
-            ])?;
+        let tx = self.conn.unchecked_transaction()?;
+
+        tx.execute("DELETE FROM course_progress WHERE user_id = ?1", params![user_id])?;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT INTO course_progress (user_id, course_id, current_stage_id, completed_stages_json,
+                    skipped_stages_json, enrolled_at, completed_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"
+            )?;
+            for p in progress {
+                stmt.execute(params![
+                    user_id,
+                    p.course_id,
+                    p.current_stage_id,
+                    p.completed_stages_json,
+                    p.skipped_stages_json,
+                    p.enrolled_at,
+                    p.completed_at,
+                ])?;
+            }
         }
+
+        tx.commit()?;
         Ok(())
     }
 
@@ -474,18 +543,24 @@ impl Database {
     }
 
     pub fn save_snippets(&self, user_id: i64, snippets: &[CustomSnippetRow]) -> SqliteResult<()> {
-        self.conn.execute("DELETE FROM custom_snippets WHERE user_id = ?1", params![user_id])?;
-        let mut stmt = self.conn.prepare(
-            "INSERT INTO custom_snippets (id, user_id, name, content, language, mode,
-                created_at, practice_count, best_wpm, best_accuracy)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)"
-        )?;
-        for s in snippets {
-            stmt.execute(params![
-                s.id, s.user_id, s.name, s.content, s.language, s.mode,
-                s.created_at, s.practice_count, s.best_wpm, s.best_accuracy,
-            ])?;
+        let tx = self.conn.unchecked_transaction()?;
+
+        tx.execute("DELETE FROM custom_snippets WHERE user_id = ?1", params![user_id])?;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT INTO custom_snippets (id, user_id, name, content, language, mode,
+                    created_at, practice_count, best_wpm, best_accuracy)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)"
+            )?;
+            for s in snippets {
+                stmt.execute(params![
+                    s.id, s.user_id, s.name, s.content, s.language, s.mode,
+                    s.created_at, s.practice_count, s.best_wpm, s.best_accuracy,
+                ])?;
+            }
         }
+
+        tx.commit()?;
         Ok(())
     }
 
@@ -511,16 +586,22 @@ impl Database {
     }
 
     pub fn save_daily_results(&self, results: &[DailyTestResultRow]) -> SqliteResult<()> {
-        self.conn.execute("DELETE FROM daily_test_results", [])?;
-        let mut stmt = self.conn.prepare(
-            "INSERT INTO daily_test_results (user_id, date, wpm, accuracy, true_accuracy, duration, completed_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"
-        )?;
-        for r in results {
-            stmt.execute(params![
-                r.user_id, r.date, r.wpm, r.accuracy, r.true_accuracy, r.duration, r.completed_at,
-            ])?;
+        let tx = self.conn.unchecked_transaction()?;
+
+        tx.execute("DELETE FROM daily_test_results", [])?;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT INTO daily_test_results (user_id, date, wpm, accuracy, true_accuracy, duration, completed_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"
+            )?;
+            for r in results {
+                stmt.execute(params![
+                    r.user_id, r.date, r.wpm, r.accuracy, r.true_accuracy, r.duration, r.completed_at,
+                ])?;
+            }
         }
+
+        tx.commit()?;
         Ok(())
     }
 
@@ -543,14 +624,20 @@ impl Database {
     }
 
     pub fn save_activity(&self, user_id: i64, activity: &[DailyActivityRow]) -> SqliteResult<()> {
-        self.conn.execute("DELETE FROM daily_activity WHERE user_id = ?1", params![user_id])?;
-        let mut stmt = self.conn.prepare(
-            "INSERT INTO daily_activity (user_id, date, practice_time, characters, sessions)
-             VALUES (?1, ?2, ?3, ?4, ?5)"
-        )?;
-        for a in activity {
-            stmt.execute(params![user_id, a.date, a.practice_time, a.characters, a.sessions])?;
+        let tx = self.conn.unchecked_transaction()?;
+
+        tx.execute("DELETE FROM daily_activity WHERE user_id = ?1", params![user_id])?;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT INTO daily_activity (user_id, date, practice_time, characters, sessions)
+                 VALUES (?1, ?2, ?3, ?4, ?5)"
+            )?;
+            for a in activity {
+                stmt.execute(params![user_id, a.date, a.practice_time, a.characters, a.sessions])?;
+            }
         }
+
+        tx.commit()?;
         Ok(())
     }
 
@@ -755,7 +842,7 @@ mod tests {
     #[test]
     fn test_schema_creation() {
         let db = Database::in_memory().unwrap();
-        assert_eq!(db.get_schema_version(), 1);
+        assert_eq!(db.get_schema_version(), 2);
     }
 
     #[test]

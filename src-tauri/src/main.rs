@@ -10,13 +10,27 @@ mod storage;
 use lessons::Lesson;
 use metrics::{MetricsCalculator, TaskResult};
 use models::*;
-use storage::Database;
+use storage::{Database, StorageError};
 use std::sync::Mutex;
-use tauri::State;
+use tauri::{Manager, State};
 
 // Application state
 struct AppState {
     db: Mutex<Database>,
+}
+
+/// Convert any error to a JSON string for the frontend
+fn map_err(e: impl std::fmt::Display) -> String {
+    e.to_string()
+}
+
+fn map_storage_err(e: impl Into<StorageError>) -> String {
+    let err: StorageError = e.into();
+    serde_json::to_string(&err).unwrap_or_else(|_| err.to_string())
+}
+
+fn lock_db<'a>(state: &'a State<AppState>) -> Result<std::sync::MutexGuard<'a, Database>, String> {
+    state.db.lock().map_err(|e| map_err(e))
 }
 
 // ── Lesson commands (unchanged) ──────────────────────────────────────
@@ -59,8 +73,8 @@ fn calculate_result(
 
 #[tauri::command]
 fn get_all_users(state: State<AppState>) -> Result<Vec<UserProfile>, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.get_all_users().map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.get_all_users().map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -71,9 +85,9 @@ fn create_user(
     avatar: String,
     created_at: String,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.create_user(id, &name, &avatar, &created_at)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -84,28 +98,28 @@ fn update_user(
     avatar: Option<String>,
     last_active_at: Option<String>,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.update_user(
         user_id,
         name.as_deref(),
         avatar.as_deref(),
         last_active_at.as_deref(),
     )
-    .map_err(|e| e.to_string())
+    .map_err(map_storage_err)
 }
 
 #[tauri::command]
 fn delete_user(state: State<AppState>, user_id: i64) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.delete_user(user_id).map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.delete_user(user_id).map_err(map_storage_err)
 }
 
 // ── Settings commands ────────────────────────────────────────────────
 
 #[tauri::command]
 fn get_settings(state: State<AppState>, user_id: i64) -> Result<Option<String>, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.get_settings(user_id).map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.get_settings(user_id).map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -114,9 +128,9 @@ fn save_settings(
     user_id: i64,
     settings_json: String,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.save_settings(user_id, &settings_json)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 // ── User Stats commands ──────────────────────────────────────────────
@@ -126,8 +140,8 @@ fn get_user_stats(
     state: State<AppState>,
     user_id: i64,
 ) -> Result<Option<UserStatsRow>, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.get_user_stats(user_id).map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.get_user_stats(user_id).map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -136,9 +150,9 @@ fn save_user_stats(
     user_id: i64,
     stats: UserStatsRow,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.save_user_stats(user_id, &stats)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 // ── Lesson Progress commands ─────────────────────────────────────────
@@ -148,9 +162,9 @@ fn get_all_lesson_progress(
     state: State<AppState>,
     user_id: i64,
 ) -> Result<Vec<LessonProgressRow>, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.get_all_lesson_progress(user_id)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -159,9 +173,9 @@ fn save_lesson_progress(
     user_id: i64,
     progress: Vec<LessonProgressRow>,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.save_lesson_progress(user_id, &progress)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 // ── Course Progress commands ─────────────────────────────────────────
@@ -171,9 +185,9 @@ fn get_all_course_progress(
     state: State<AppState>,
     user_id: i64,
 ) -> Result<Vec<CourseProgressRow>, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.get_all_course_progress(user_id)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -182,9 +196,9 @@ fn save_course_progress(
     user_id: i64,
     progress: Vec<CourseProgressRow>,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.save_course_progress(user_id, &progress)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -193,16 +207,16 @@ fn delete_course_progress(
     user_id: i64,
     course_id: String,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.delete_course_progress(user_id, &course_id)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 #[tauri::command]
 fn delete_all_course_progress(state: State<AppState>, user_id: i64) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.delete_all_course_progress(user_id)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 // ── Custom Snippets commands ─────────────────────────────────────────
@@ -212,8 +226,8 @@ fn get_snippets(
     state: State<AppState>,
     user_id: i64,
 ) -> Result<Vec<CustomSnippetRow>, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.get_snippets(user_id).map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.get_snippets(user_id).map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -222,17 +236,17 @@ fn save_snippets(
     user_id: i64,
     snippets: Vec<CustomSnippetRow>,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.save_snippets(user_id, &snippets)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 // ── Daily Test Results commands ──────────────────────────────────────
 
 #[tauri::command]
 fn get_daily_results(state: State<AppState>) -> Result<Vec<DailyTestResultRow>, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.get_daily_results().map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.get_daily_results().map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -240,9 +254,9 @@ fn save_daily_results(
     state: State<AppState>,
     results: Vec<DailyTestResultRow>,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.save_daily_results(&results)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 // ── Daily Activity commands ──────────────────────────────────────────
@@ -252,8 +266,8 @@ fn get_activity(
     state: State<AppState>,
     user_id: i64,
 ) -> Result<Vec<DailyActivityRow>, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.get_activity(user_id).map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.get_activity(user_id).map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -262,23 +276,23 @@ fn save_activity(
     user_id: i64,
     activity: Vec<DailyActivityRow>,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.save_activity(user_id, &activity)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 #[tauri::command]
 fn delete_activity(state: State<AppState>, user_id: i64) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.delete_activity(user_id).map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.delete_activity(user_id).map_err(map_storage_err)
 }
 
 // ── Migration commands ───────────────────────────────────────────────
 
 #[tauri::command]
 fn is_migration_needed(state: State<AppState>) -> Result<bool, String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
-    db.is_migration_needed().map_err(|e| e.to_string())
+    let db = lock_db(&state)?;
+    db.is_migration_needed().map_err(map_storage_err)
 }
 
 #[tauri::command]
@@ -286,9 +300,9 @@ fn migrate_from_localstorage(
     state: State<AppState>,
     payload: MigrationPayload,
 ) -> Result<(), String> {
-    let db = state.db.lock().map_err(|e| e.to_string())?;
+    let db = lock_db(&state)?;
     db.migrate_from_localstorage(&payload)
-        .map_err(|e| e.to_string())
+        .map_err(map_storage_err)
 }
 
 // ── Keyboard Layout command ──────────────────────────────────────────
@@ -348,6 +362,15 @@ fn main() {
             // Keyboard
             get_keyboard_input_source,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                if let Some(state) = app.try_state::<AppState>() {
+                    if let Ok(db) = state.db.lock() {
+                        let _: Result<(), _> = db.checkpoint();
+                    }
+                }
+            }
+        });
 }

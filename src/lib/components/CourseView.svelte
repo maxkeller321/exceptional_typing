@@ -279,7 +279,7 @@
     <!-- Enrollment Screen -->
     <div class="enroll-panel">
       <div class="enroll-content">
-        <div class="enroll-icon">{selectedCourse.id === 'ten-finger' ? '⌨️' : selectedCourse.id === 'claude-code' ? '🤖' : selectedCourse.id === 'sql-mastery' ? '🗄️' : '💻'}</div>
+        <div class="enroll-icon">{selectedCourse.id === 'ten-finger' ? '⌨️' : selectedCourse.id === 'claude-code' ? '🤖' : selectedCourse.id === 'sql-mastery' ? '🗄️' : selectedCourse.id === 'pyspark-mastery' ? '🐍' : '💻'}</div>
         <h2>{selectedCourse.name}</h2>
         <p class="enroll-description">
           {selectedCourse.description}

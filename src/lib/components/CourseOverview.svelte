@@ -58,6 +58,7 @@
       case 'cli-mastery': return '🖥️';
       case 'claude-code': return '🤖';
       case 'sql-mastery': return '🗄️';
+      case 'pyspark-mastery': return '🐍';
       default: return '📚';
     }
   }

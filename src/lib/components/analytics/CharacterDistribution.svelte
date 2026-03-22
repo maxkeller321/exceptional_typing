@@ -244,12 +244,12 @@
   }
 
   .donut-chart {
-    @apply w-32 h-32;
+    @apply w-28 h-28;
   }
 
   @media (min-width: 500px) {
     .donut-chart {
-      @apply w-36 h-36;
+      @apply w-28 h-28;
     }
   }
 
@@ -293,18 +293,21 @@
   }
 
   .stats-section {
-    @apply flex-1 min-w-0 w-full overflow-x-auto;
+    @apply flex-1 min-w-0 w-full;
+    overflow: hidden;
   }
 
   .stats-table {
-    @apply w-full text-sm;
+    @apply w-full text-xs;
     border-collapse: collapse;
+    table-layout: fixed;
   }
 
   .stats-header th {
-    @apply py-2 text-xs font-medium text-slate-500 text-left;
+    @apply py-1.5 text-[10px] font-medium text-slate-500 text-left;
     @apply border-b border-slate-700/50;
     white-space: nowrap;
+    overflow: hidden;
   }
 
   .stats-row {
@@ -317,38 +320,41 @@
   }
 
   .stats-row td {
-    @apply py-2;
+    @apply py-1.5;
+    overflow: hidden;
   }
 
   .col-type {
-    @apply pr-2;
+    width: 45%;
   }
 
   td.col-type {
-    @apply flex items-center gap-2 text-slate-300;
+    @apply flex items-center gap-1.5 text-slate-300;
   }
 
   .type-dot {
-    @apply w-2.5 h-2.5 rounded-full flex-shrink-0;
+    @apply w-2 h-2 rounded-full flex-shrink-0;
   }
 
   .type-name {
     @apply truncate;
-    max-width: 100px;
   }
 
   .col-count {
-    @apply text-center text-slate-400 px-2;
+    @apply text-center text-slate-400;
+    width: 15%;
     white-space: nowrap;
   }
 
   .col-delay {
-    @apply text-slate-300 font-mono px-2;
+    @apply text-slate-300 font-mono;
+    width: 22%;
     white-space: nowrap;
   }
 
   .col-wpm {
-    @apply text-right text-slate-300 font-mono pl-2;
+    @apply text-right text-slate-300 font-mono;
+    width: 18%;
     white-space: nowrap;
   }
 

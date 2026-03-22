@@ -9,6 +9,7 @@
     lessonPickerDifficulty,
     settingsStore,
   } from '../stores/settings';
+  import { i18n, type TranslationKey } from '../i18n';
   import type { Lesson, LessonCategory, Difficulty, LessonProgress } from '../types';
 
   interface Props {
@@ -21,6 +22,7 @@
   let selectedDifficulty = $state<Difficulty | 'all'>('all');
   let progressMap = $state<Map<string, LessonProgress>>(new Map());
   let currentMode = $state<'normal' | 'coder'>('normal');
+  let tr = $state<(key: TranslationKey, params?: Record<string, string>) => string>((key) => key);
 
   onMount(() => {
     const unsubProgress = lessonProgress.subscribe(p => {
@@ -36,11 +38,15 @@
     const unsubDifficulty = lessonPickerDifficulty.subscribe(d => {
       selectedDifficulty = d;
     });
+    const unsubI18n = i18n.subscribe((fn) => {
+      tr = fn;
+    });
     return () => {
       unsubProgress();
       unsubMode();
       unsubCategory();
       unsubDifficulty();
+      unsubI18n();
     };
   });
 
@@ -61,34 +67,49 @@
   const coderCategories: LessonCategory[] = ['code', 'commands', 'shortcuts'];
   const normalHiddenCategories: LessonCategory[] = ['code', 'commands', 'shortcuts'];
 
-  const allCategories: { value: LessonCategory | 'all'; label: string }[] = [
-    { value: 'all', label: 'All' },
-    { value: 'home_row', label: 'Home Row' },
-    { value: 'top_row', label: 'Top Row' },
-    { value: 'bottom_row', label: 'Bottom Row' },
-    { value: 'numbers', label: 'Numbers' },
-    { value: 'symbols', label: 'Symbols' },
-    { value: 'words', label: 'Words' },
-    { value: 'sentences', label: 'Sentences' },
-    { value: 'code', label: 'Code' },
-    { value: 'commands', label: 'Commands' },
-    { value: 'shortcuts', label: 'IDE Shortcuts' },
+  const categoryI18nKeys: Record<LessonCategory | 'all', TranslationKey> = {
+    'all': 'lessons.all',
+    'home_row': 'lessons.homeRow',
+    'top_row': 'lessons.topRow',
+    'bottom_row': 'lessons.bottomRow',
+    'numbers': 'lessons.numbers',
+    'symbols': 'lessons.symbols',
+    'words': 'lessons.words',
+    'sentences': 'lessons.sentences',
+    'code': 'lessons.code',
+    'commands': 'lessons.commands',
+    'shortcuts': 'lessons.shortcuts',
+    'custom': 'lessons.all',
+  };
+
+  const allCategoryValues: (LessonCategory | 'all')[] = [
+    'all', 'home_row', 'top_row', 'bottom_row', 'numbers', 'symbols', 'words', 'sentences', 'code', 'commands', 'shortcuts',
   ];
 
   // Filter categories based on typing mode
   const categories = $derived(
     currentMode === 'coder'
-      ? allCategories
-      : allCategories.filter(cat => cat.value === 'all' || !normalHiddenCategories.includes(cat.value as LessonCategory))
+      ? allCategoryValues
+      : allCategoryValues.filter(cat => cat === 'all' || !normalHiddenCategories.includes(cat as LessonCategory))
   );
 
-  const difficulties: { value: Difficulty | 'all'; label: string; color: string }[] = [
-    { value: 'all', label: 'All', color: 'bg-slate-600' },
-    { value: 'beginner', label: 'Beginner', color: 'bg-green-600' },
-    { value: 'intermediate', label: 'Intermediate', color: 'bg-yellow-600' },
-    { value: 'advanced', label: 'Advanced', color: 'bg-orange-600' },
-    { value: 'expert', label: 'Expert', color: 'bg-red-600' },
-  ];
+  const difficultyI18nKeys: Record<Difficulty | 'all', TranslationKey> = {
+    'all': 'lessons.all',
+    'beginner': 'lessons.beginner',
+    'intermediate': 'lessons.intermediate',
+    'advanced': 'lessons.advanced',
+    'expert': 'lessons.expert',
+  };
+
+  const difficultyColors: Record<Difficulty | 'all', string> = {
+    'all': 'bg-slate-600',
+    'beginner': 'bg-green-600',
+    'intermediate': 'bg-yellow-600',
+    'advanced': 'bg-orange-600',
+    'expert': 'bg-red-600',
+  };
+
+  const difficultyValues: (Difficulty | 'all')[] = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];
 
   const filteredLessons = $derived(
     allLessons.filter((lesson) => {
@@ -145,31 +166,31 @@
   <!-- Filters -->
   <div class="filters">
     <div class="filter-group">
-      <span class="filter-label">Category</span>
+      <span class="filter-label">{tr('lessons.all')}</span>
       <div class="filter-buttons">
         {#each categories as cat}
           <button
             class="filter-btn"
-            class:active={selectedCategory === cat.value}
-            onclick={() => setCategory(cat.value)}
+            class:active={selectedCategory === cat}
+            onclick={() => setCategory(cat)}
           >
-            {cat.label}
+            {tr(categoryI18nKeys[cat])}
           </button>
         {/each}
       </div>
     </div>
 
     <div class="filter-group">
-      <span class="filter-label">Difficulty</span>
+      <span class="filter-label">{tr('lessons.all')}</span>
       <div class="filter-buttons">
-        {#each difficulties as diff}
+        {#each difficultyValues as diff}
           <button
             class="filter-btn"
-            class:active={selectedDifficulty === diff.value}
-            onclick={() => setDifficulty(diff.value)}
+            class:active={selectedDifficulty === diff}
+            onclick={() => setDifficulty(diff)}
           >
-            <span class="difficulty-dot {diff.color}"></span>
-            {diff.label}
+            <span class="difficulty-dot {difficultyColors[diff]}"></span>
+            {tr(difficultyI18nKeys[diff])}
           </button>
         {/each}
       </div>
@@ -184,7 +205,7 @@
         <div class="card-header">
           <span class="category-icon">{getCategoryIcon(lesson.category)}</span>
           <span class="difficulty-badge {getDifficultyColor(lesson.difficulty)}">
-            {lesson.difficulty}
+            {tr(difficultyI18nKeys[lesson.difficulty])}
           </span>
         </div>
 

@@ -89,9 +89,9 @@ describe('Course Store', () => {
     });
 
     it('subsequent stages are locked by default', () => {
-      // Stage 2 is unlocked because its previous stage (stage 1) is currentStageId
-      expect(courseStore.isStageUnlocked(tenFingerCourse.stages[1].id)).toBe(true);
-      // Stage 3 is locked because stage 2 is neither completed, skipped, nor currentStageId
+      // Stage 1 is locked because its previous stage (stage 0) is not completed or skipped
+      expect(courseStore.isStageUnlocked(tenFingerCourse.stages[1].id)).toBe(false);
+      // Stage 2 is also locked
       expect(courseStore.isStageUnlocked(tenFingerCourse.stages[2].id)).toBe(false);
     });
 
@@ -100,17 +100,17 @@ describe('Course Store', () => {
       const stage2 = tenFingerCourse.stages[1];
       const stage3 = tenFingerCourse.stages[2];
 
-      // Stage 2 is already unlocked (prev is currentStageId)
-      expect(courseStore.isStageUnlocked(stage2.id)).toBe(true);
-      // Stage 3 is locked
+      // Stage 1 is locked (prev stage 0 not completed/skipped)
+      expect(courseStore.isStageUnlocked(stage2.id)).toBe(false);
+      // Stage 2 is also locked
       expect(courseStore.isStageUnlocked(stage3.id)).toBe(false);
 
       courseStore.completeStage(stage1.id);
 
-      // After completing stage 1, currentStageId moves to stage 2
-      // Stage 3 is now unlocked (prev stage 2 is currentStageId)
+      // After completing stage 0, stage 1 is now unlocked (prev completed)
       expect(courseStore.isStageUnlocked(stage2.id)).toBe(true);
-      expect(courseStore.isStageUnlocked(stage3.id)).toBe(true);
+      // Stage 2 is still locked (prev stage 1 not completed/skipped)
+      expect(courseStore.isStageUnlocked(stage3.id)).toBe(false);
     });
   });
 
@@ -470,11 +470,12 @@ describe('Course Store', () => {
     });
 
     it('allCourses contains all available courses', () => {
-      expect(allCourses.length).toBe(4);
+      expect(allCourses.length).toBe(5);
       expect(allCourses.find(c => c.id === 'ten-finger')).toBeDefined();
       expect(allCourses.find(c => c.id === 'cli-mastery')).toBeDefined();
       expect(allCourses.find(c => c.id === 'claude-code')).toBeDefined();
       expect(allCourses.find(c => c.id === 'sql-mastery')).toBeDefined();
+      expect(allCourses.find(c => c.id === 'pyspark-mastery')).toBeDefined();
     });
 
     it('cliCourse has correct structure', () => {
@@ -783,23 +784,20 @@ describe('Course Store', () => {
       courseStore.enroll();
     });
 
-    it('returns third stage as first locked when only enrolled', () => {
-      // Stage 1 is unlocked (current), stage 2 is unlocked (prev is currentStageId)
-      // Stage 3 is the first locked
+    it('returns second stage as first locked when only enrolled', () => {
+      // Stage 0 is unlocked (no prerequisite), stage 1 is locked (prev not completed/skipped)
       const firstLocked = courseStore.getFirstLockedStageId();
-      expect(firstLocked).toBe(tenFingerCourse.stages[2].id);
+      expect(firstLocked).toBe(tenFingerCourse.stages[1].id);
     });
 
-    it('returns fourth stage as first locked after completing first stage', () => {
-      // Complete stage 1
+    it('returns third stage as first locked after completing first stage', () => {
+      // Complete stage 0
       courseStore.completeStage(tenFingerCourse.stages[0].id);
 
-      // Now current is stage 2, so:
-      // Stage 2 is unlocked (completed prev)
-      // Stage 3 is unlocked (prev is currentStageId)
-      // Stage 4 is first locked
+      // Stage 1 is unlocked (prev completed)
+      // Stage 2 is locked (prev not completed/skipped)
       const firstLocked = courseStore.getFirstLockedStageId();
-      expect(firstLocked).toBe(tenFingerCourse.stages[3].id);
+      expect(firstLocked).toBe(tenFingerCourse.stages[2].id);
     });
 
     it('returns null when all stages are unlocked', () => {
@@ -824,25 +822,15 @@ describe('Course Store', () => {
     });
 
     it('moves first locked stage when current first locked is skipped', () => {
-      // Initially stage 3 is first locked (stage 1 current, stage 2 unlocked via currentStageId)
-      expect(courseStore.getFirstLockedStageId()).toBe(tenFingerCourse.stages[2].id);
+      // Initially stage 1 is first locked (stage 0 is current but not completed/skipped)
+      expect(courseStore.getFirstLockedStageId()).toBe(tenFingerCourse.stages[1].id);
 
-      // Skip to stage 2 (stages 0, 1, 2 become skipped, currentStageId becomes stage 2)
-      // Wait - skipToStage adds the TARGET to skippedStages and sets it as currentStageId
-      // So after skipToStage(stage 2):
-      // - skippedStages = [stage 0, stage 1, stage 2]
-      // - currentStageId = stage 2
-      // Stage 3: prev is stage 2, which is in skippedStages AND is currentStageId -> unlocked
-      // Stage 4: prev is stage 3, which is NOT in skippedStages, NOT completed, NOT currentStageId -> LOCKED
-      courseStore.skipToStage(tenFingerCourse.stages[1].id);
-
-      // Now stage 4 should be first locked
-      // (stages 0,1 skipped, stage 2 unlocked AND is currentStageId, stage 3 unlocked via prev=currentStageId)
-      // Wait, I made an error. Let me re-check skipToStage behavior:
       // skipToStage(stage 1) adds stages 0 and 1 to skippedStages and sets currentStageId to stage 1
       // So: skippedStages = [0, 1], currentStageId = 1
-      // Stage 2: prev is stage 1, stage 1 IS in skippedStages AND IS currentStageId -> unlocked
-      // Stage 3: prev is stage 2, stage 2 is NOT in skippedStages, NOT completed, NOT currentStageId -> locked
+      // Stage 2: prev is stage 1, stage 1 IS in skippedStages -> unlocked
+      // Stage 3: prev is stage 2, stage 2 is NOT completed/skipped -> locked
+      courseStore.skipToStage(tenFingerCourse.stages[1].id);
+
       expect(courseStore.getFirstLockedStageId()).toBe(tenFingerCourse.stages[3].id);
     });
 
@@ -1030,51 +1018,51 @@ describe('Course Store', () => {
     });
 
     it('unlocks the next stage after skipping', () => {
+      const stage1 = tenFingerCourse.stages[0];
       const stage2 = tenFingerCourse.stages[1];
       const stage3 = tenFingerCourse.stages[2];
 
-      // Stage 2 is already unlocked (because stage 1 is currentStageId)
-      expect(courseStore.isStageUnlocked(stage2.id)).toBe(true);
-      // Stage 3 is locked initially
-      expect(courseStore.isStageUnlocked(stage3.id)).toBe(false);
+      // Stage 2 is locked initially (stage 0 is only currentStageId, not completed/skipped)
+      expect(courseStore.isStageUnlocked(stage2.id)).toBe(false);
 
-      // Skip stage 1
+      // Skip stage 0 → stage 0 goes to skippedStages, currentStageId becomes stage 1
       courseStore.skipCurrentStage();
 
-      // Stage 2 should still be unlocked (now it's the current stage)
+      // Stage 1 should be unlocked (prev stage 0 is skipped)
       expect(courseStore.isStageUnlocked(stage2.id)).toBe(true);
-      // Stage 3 should now be unlocked (because stage 2 is currentStageId)
-      expect(courseStore.isStageUnlocked(stage3.id)).toBe(true);
+      // Stage 2 should still be locked (prev stage 1 is only currentStageId, not completed/skipped)
+      expect(courseStore.isStageUnlocked(stage3.id)).toBe(false);
     });
 
-    it('unlocks the stage AFTER the new current stage (for UI display)', () => {
-      // This is the critical fix test:
-      // When we skip stage 1, stage 2 becomes currentStageId (but NOT in skippedStages)
-      // Stage 3 should be unlocked because its previous stage (stage 2) is currentStageId
+    it('only unlocks one stage beyond completed/skipped stages', () => {
+      // After skipping stage 0, only stage 1 unlocks (not stage 2)
       const stage1 = tenFingerCourse.stages[0];
       const stage2 = tenFingerCourse.stages[1];
       const stage3 = tenFingerCourse.stages[2];
       const stage4 = tenFingerCourse.stages[3];
 
-      // Initially: stage 1 is current, stage 2 unlocked (prev is current), stage 3 locked
+      // Initially: stage 0 is current, stage 1+ locked
+      expect(courseStore.isStageUnlocked(stage2.id)).toBe(false);
       expect(courseStore.isStageUnlocked(stage3.id)).toBe(false);
       expect(courseStore.isStageUnlocked(stage4.id)).toBe(false);
 
-      // Skip stage 1
+      // Skip stage 0
       courseStore.skipCurrentStage();
 
-      // Verify stage 1 is skipped
+      // Verify stage 0 is skipped
       expect(courseStore.isStageSkipped(stage1.id)).toBe(true);
 
-      // Verify stage 2 is the current stage and NOT skipped
+      // Stage 1 is the current stage and NOT skipped
       expect(courseStore.getProgress()?.currentStageId).toBe(stage2.id);
       expect(courseStore.isStageSkipped(stage2.id)).toBe(false);
 
-      // Stage 3 should now be unlocked (because its previous stage is currentStageId)
-      // This was the bug - stage 3 remained locked because stage 2 wasn't in skippedStages
-      expect(courseStore.isStageUnlocked(stage3.id)).toBe(true);
+      // Stage 1 is unlocked (prev stage 0 is skipped)
+      expect(courseStore.isStageUnlocked(stage2.id)).toBe(true);
 
-      // Stage 4 should still be locked
+      // Stage 2 is locked (prev stage 1 is not completed/skipped, only current)
+      expect(courseStore.isStageUnlocked(stage3.id)).toBe(false);
+
+      // Stage 3 is still locked
       expect(courseStore.isStageUnlocked(stage4.id)).toBe(false);
     });
 
@@ -1219,11 +1207,8 @@ describe('Course Store', () => {
       // 2. Current stage should move to stage 7
       expect(courseStore.getProgress()?.currentStageId).toBe(tenFingerCourse.stages[7].id);
 
-      // 3. Stage 8 should be unlocked (because its prev stage 7 is currentStageId)
-      expect(courseStore.isStageUnlocked(tenFingerCourse.stages[8].id)).toBe(true);
-      // Stage 8 should NOT be completed or skipped
-      expect(courseStore.isStageCompleted(tenFingerCourse.stages[8].id)).toBe(false);
-      expect(courseStore.isStageSkipped(tenFingerCourse.stages[8].id)).toBe(false);
+      // 3. Stage 8 should be locked (prev stage 7 is only currentStageId, not completed/skipped)
+      expect(courseStore.isStageUnlocked(tenFingerCourse.stages[8].id)).toBe(false);
 
       // 4. Skip button should now be on stage 7 (first unlocked, non-completed, non-skipped)
       expect(courseStore.getCurrentSkippableStageId()).toBe(tenFingerCourse.stages[7].id);

@@ -115,8 +115,7 @@
     const prevStage = selectedCourse.stages[stageIndex - 1];
     return (
       progress.completedStages.includes(prevStage.id) ||
-      progress.skippedStages?.includes(prevStage.id) ||
-      progress.currentStageId === prevStage.id
+      (progress.skippedStages?.includes(prevStage.id) ?? false)
     );
   }
 

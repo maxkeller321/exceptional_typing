@@ -725,6 +725,7 @@ dependencies = [
  "tauri-plugin-global-shortcut",
  "tauri-plugin-shell",
  "thiserror 1.0.69",
+ "winapi",
 ]
 
 [[package]]

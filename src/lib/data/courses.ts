@@ -596,7 +596,10 @@ export function getCourseLesson(lessonId: string): Lesson | undefined {
   const ccLesson = ccCourseLessons.find(l => l.id === lessonId);
   if (ccLesson) return ccLesson;
   // Then check SQL course
-  return sqlCourseLessons.find(l => l.id === lessonId);
+  const sqlLesson = sqlCourseLessons.find(l => l.id === lessonId);
+  if (sqlLesson) return sqlLesson;
+  // Then check PySpark course
+  return pysparkCourseLessons.find(l => l.id === lessonId);
 }
 
 // Get stage by ID (searches all courses)
@@ -611,7 +614,10 @@ export function getCourseStage(stageId: string): CourseStage | undefined {
   const ccStage = claudeCodeCourse.stages.find(s => s.id === stageId);
   if (ccStage) return ccStage;
   // Then check SQL course
-  return sqlCourse.stages.find(s => s.id === stageId);
+  const sqlStage = sqlCourse.stages.find(s => s.id === stageId);
+  if (sqlStage) return sqlStage;
+  // Then check PySpark course
+  return pysparkCourse.stages.find(s => s.id === stageId);
 }
 
 // ============================================
@@ -2397,5 +2403,592 @@ export const sqlCourse: Course = {
   ],
 };
 
+// ============================================
+// PySpark Course - Master PySpark from basics to advanced
+// ============================================
+
+// Stage 1: Getting Started with PySpark
+const pysparkStage1Lessons: Lesson[] = [
+  lesson(
+    'pyspark-start-1',
+    'SparkSession Basics',
+    'Create and configure a SparkSession',
+    'code',
+    'beginner',
+    [
+      task('ps-s1-1', 'Import SparkSession', 'from pyspark.sql import SparkSession'),
+      task('ps-s1-2', 'Create a SparkSession', 'spark = SparkSession.builder.appName("MyApp").getOrCreate()'),
+      task('ps-s1-3', 'Create with config', 'spark = SparkSession.builder.appName("MyApp").config("spark.sql.shuffle.partitions", "200").getOrCreate()'),
+      task('ps-s1-4', 'Stop a session', 'spark.stop() # always stop when done'),
+    ]
+  ),
+  lesson(
+    'pyspark-start-2',
+    'Creating DataFrames',
+    'Create DataFrames from various sources',
+    'code',
+    'beginner',
+    [
+      task('ps-s2-1', 'Create from list', 'df = spark.createDataFrame([(1, "Alice"), (2, "Bob")], ["id", "name"])'),
+      task('ps-s2-2', 'Read CSV file', 'df = spark.read.csv("data.csv", header=True, inferSchema=True)'),
+      task('ps-s2-3', 'Read JSON file', 'df = spark.read.json("data.json")'),
+      task('ps-s2-4', 'Read Parquet file', 'df = spark.read.parquet("data.parquet")'),
+    ]
+  ),
+];
+
+// Stage 2: DataFrame Basics
+const pysparkStage2Lessons: Lesson[] = [
+  lesson(
+    'pyspark-df-1',
+    'Exploring DataFrames',
+    'Inspect and understand your data',
+    'code',
+    'beginner',
+    [
+      task('ps-d1-1', 'Show data', 'df.show() # display first 20 rows'),
+      task('ps-d1-2', 'Print schema', 'df.printSchema() # show column names and types'),
+      task('ps-d1-3', 'Count rows', 'df.count() # return the number of rows'),
+      task('ps-d1-4', 'Get columns', 'df.columns # list of column names'),
+    ]
+  ),
+  lesson(
+    'pyspark-df-2',
+    'Selecting Columns',
+    'Choose and rename columns',
+    'code',
+    'beginner',
+    [
+      task('ps-d2-1', 'Select columns', 'df.select("name", "age").show()'),
+      task('ps-d2-2', 'Select with col', 'from pyspark.sql.functions import col\ndf.select(col("name"), col("age")).show()'),
+      task('ps-d2-3', 'Rename a column', 'df.withColumnRenamed("name", "full_name").show()'),
+      task('ps-d2-4', 'Select with alias', 'df.select(col("name").alias("user_name")).show()'),
+    ]
+  ),
+];
+
+// Stage 3: Filtering & Sorting
+const pysparkStage3Lessons: Lesson[] = [
+  lesson(
+    'pyspark-filter-1',
+    'Filtering Rows',
+    'Filter data using conditions',
+    'code',
+    'beginner',
+    [
+      task('ps-f1-1', 'Filter by condition', 'df.filter(col("age") > 25).show()'),
+      task('ps-f1-2', 'Filter with where', 'df.where(col("status") == "active").show()'),
+      task('ps-f1-3', 'Multiple conditions', 'df.filter((col("age") > 25) & (col("city") == "NYC")).show()'),
+      task('ps-f1-4', 'Filter with isin', 'df.filter(col("city").isin("NYC", "LA", "SF")).show()'),
+    ]
+  ),
+  lesson(
+    'pyspark-filter-2',
+    'Sorting Data',
+    'Order your DataFrame rows',
+    'code',
+    'beginner',
+    [
+      task('ps-f2-1', 'Sort ascending', 'df.orderBy("age").show()'),
+      task('ps-f2-2', 'Sort descending', 'df.orderBy(col("age").desc()).show()'),
+      task('ps-f2-3', 'Sort by multiple columns', 'df.orderBy(col("city").asc(), col("age").desc()).show()'),
+      task('ps-f2-4', 'Limit results', 'df.orderBy(col("salary").desc()).limit(10).show()'),
+    ]
+  ),
+];
+
+// Stage 4: Adding & Transforming Columns
+const pysparkStage4Lessons: Lesson[] = [
+  lesson(
+    'pyspark-col-1',
+    'Adding Columns',
+    'Create new columns from existing data',
+    'code',
+    'beginner',
+    [
+      task('ps-c1-1', 'Add a constant column', 'from pyspark.sql.functions import lit\ndf.withColumn("country", lit("US")).show()'),
+      task('ps-c1-2', 'Add computed column', 'df.withColumn("salary_monthly", col("salary") / 12).show()'),
+      task('ps-c1-3', 'Add conditional column', 'from pyspark.sql.functions import when\ndf.withColumn("level", when(col("age") > 30, "senior").otherwise("junior")).show()'),
+      task('ps-c1-4', 'Drop a column', 'df.drop("temp_column").show()'),
+    ]
+  ),
+  lesson(
+    'pyspark-col-2',
+    'String Functions',
+    'Manipulate text columns',
+    'code',
+    'intermediate',
+    [
+      task('ps-c2-1', 'Upper case', 'from pyspark.sql.functions import upper\ndf.withColumn("name_upper", upper(col("name"))).show()'),
+      task('ps-c2-2', 'Concatenate strings', 'from pyspark.sql.functions import concat, lit\ndf.withColumn("full", concat(col("first"), lit(" "), col("last"))).show()'),
+      task('ps-c2-3', 'Substring', 'from pyspark.sql.functions import substring\ndf.withColumn("code", substring(col("id"), 1, 3)).show()'),
+      task('ps-c2-4', 'Trim whitespace', 'from pyspark.sql.functions import trim\ndf.withColumn("name_clean", trim(col("name"))).show()'),
+    ]
+  ),
+];
+
+// Stage 5: Aggregations
+const pysparkStage5Lessons: Lesson[] = [
+  lesson(
+    'pyspark-agg-1',
+    'Basic Aggregations',
+    'Summarize data with aggregate functions',
+    'code',
+    'intermediate',
+    [
+      task('ps-a1-1', 'Count rows', 'df.groupBy("department").count().show()'),
+      task('ps-a1-2', 'Sum values', 'from pyspark.sql.functions import sum\ndf.groupBy("department").agg(sum("salary")).show()'),
+      task('ps-a1-3', 'Average values', 'from pyspark.sql.functions import avg\ndf.groupBy("department").agg(avg("salary").alias("avg_salary")).show()'),
+      task('ps-a1-4', 'Min and max', 'from pyspark.sql.functions import min, max\ndf.groupBy("department").agg(min("salary"), max("salary")).show()'),
+    ]
+  ),
+  lesson(
+    'pyspark-agg-2',
+    'Multiple Aggregations',
+    'Combine multiple aggregate functions',
+    'code',
+    'intermediate',
+    [
+      task('ps-a2-1', 'Multiple agg functions', 'df.groupBy("dept").agg(count("*").alias("total"), avg("salary").alias("avg_pay")).show()'),
+      task('ps-a2-2', 'Aggregate without group', 'from pyspark.sql.functions import count, sum\ndf.agg(count("*").alias("total"), sum("revenue").alias("total_rev")).show()'),
+      task('ps-a2-3', 'Count distinct', 'from pyspark.sql.functions import countDistinct\ndf.agg(countDistinct("city").alias("unique_cities")).show()'),
+      task('ps-a2-4', 'Collect list', 'from pyspark.sql.functions import collect_list\ndf.groupBy("dept").agg(collect_list("name").alias("members")).show()'),
+    ]
+  ),
+];
+
+// Stage 6: Joins
+const pysparkStage6Lessons: Lesson[] = [
+  lesson(
+    'pyspark-join-1',
+    'Inner & Left Joins',
+    'Combine DataFrames on matching keys',
+    'code',
+    'intermediate',
+    [
+      task('ps-j1-1', 'Inner join', 'result = df1.join(df2, df1.id == df2.user_id, "inner")'),
+      task('ps-j1-2', 'Inner join on same column', 'result = df1.join(df2, "id", "inner")'),
+      task('ps-j1-3', 'Left outer join', 'result = df1.join(df2, "id", "left")'),
+      task('ps-j1-4', 'Left join with select', 'result = df1.join(df2, "id", "left").select(df1.name, df2.score)'),
+    ]
+  ),
+  lesson(
+    'pyspark-join-2',
+    'Advanced Joins',
+    'Full outer, cross, and anti joins',
+    'code',
+    'intermediate',
+    [
+      task('ps-j2-1', 'Full outer join', 'result = df1.join(df2, "id", "full")'),
+      task('ps-j2-2', 'Cross join', 'result = df1.crossJoin(df2) # cartesian product'),
+      task('ps-j2-3', 'Left anti join', 'result = df1.join(df2, "id", "left_anti") # rows in df1 not in df2'),
+      task('ps-j2-4', 'Left semi join', 'result = df1.join(df2, "id", "left_semi") # rows in df1 that exist in df2'),
+    ]
+  ),
+];
+
+// Stage 7: Null Handling & Type Casting
+const pysparkStage7Lessons: Lesson[] = [
+  lesson(
+    'pyspark-null-1',
+    'Handling Nulls',
+    'Deal with missing values',
+    'code',
+    'intermediate',
+    [
+      task('ps-n1-1', 'Drop rows with nulls', 'df.na.drop().show() # remove rows with any null'),
+      task('ps-n1-2', 'Drop if column null', 'df.na.drop(subset=["email"]).show() # drop if email is null'),
+      task('ps-n1-3', 'Fill nulls with value', 'df.na.fill(0, subset=["salary"]).show() # replace nulls with 0'),
+      task('ps-n1-4', 'Fill with dict', 'df.na.fill({"salary": 0, "name": "Unknown"}).show()'),
+    ]
+  ),
+  lesson(
+    'pyspark-null-2',
+    'Type Casting & Nulls',
+    'Cast types and use coalesce',
+    'code',
+    'intermediate',
+    [
+      task('ps-n2-1', 'Cast column type', 'df.withColumn("age", col("age").cast("integer")).show()'),
+      task('ps-n2-2', 'Cast to date', 'from pyspark.sql.functions import to_date\ndf.withColumn("date", to_date(col("date_str"), "yyyy-MM-dd")).show()'),
+      task('ps-n2-3', 'Coalesce nulls', 'from pyspark.sql.functions import coalesce\ndf.withColumn("val", coalesce(col("primary"), col("fallback"))).show()'),
+      task('ps-n2-4', 'Check for null', 'df.filter(col("email").isNull()).show() # find null rows'),
+    ]
+  ),
+];
+
+// Stage 8: Window Functions
+const pysparkStage8Lessons: Lesson[] = [
+  lesson(
+    'pyspark-win-1',
+    'Window Basics',
+    'Rank and number rows within partitions',
+    'code',
+    'advanced',
+    [
+      task('ps-w1-1', 'Define a window', 'from pyspark.sql.window import Window\nw = Window.partitionBy("dept").orderBy("salary")'),
+      task('ps-w1-2', 'Row number', 'from pyspark.sql.functions import row_number\ndf.withColumn("rn", row_number().over(w)).show()'),
+      task('ps-w1-3', 'Rank function', 'from pyspark.sql.functions import rank\ndf.withColumn("rank", rank().over(w)).show()'),
+      task('ps-w1-4', 'Dense rank', 'from pyspark.sql.functions import dense_rank\ndf.withColumn("drank", dense_rank().over(w)).show()'),
+    ]
+  ),
+  lesson(
+    'pyspark-win-2',
+    'Window Aggregations',
+    'Running totals and lag/lead',
+    'code',
+    'advanced',
+    [
+      task('ps-w2-1', 'Running sum', 'from pyspark.sql.functions import sum\nw = Window.partitionBy("dept").orderBy("date").rowsBetween(Window.unboundedPreceding, 0)\ndf.withColumn("running_total", sum("amount").over(w)).show()'),
+      task('ps-w2-2', 'Lag function', 'from pyspark.sql.functions import lag\ndf.withColumn("prev_salary", lag("salary", 1).over(w)).show()'),
+      task('ps-w2-3', 'Lead function', 'from pyspark.sql.functions import lead\ndf.withColumn("next_salary", lead("salary", 1).over(w)).show()'),
+      task('ps-w2-4', 'Moving average', 'w = Window.partitionBy("dept").orderBy("date").rowsBetween(-2, 0)\ndf.withColumn("moving_avg", avg("value").over(w)).show()'),
+    ]
+  ),
+];
+
+// Stage 9: Date & Timestamp Functions
+const pysparkStage9Lessons: Lesson[] = [
+  lesson(
+    'pyspark-date-1',
+    'Date Functions',
+    'Work with dates in PySpark',
+    'code',
+    'intermediate',
+    [
+      task('ps-dt1-1', 'Current date', 'from pyspark.sql.functions import current_date\ndf.withColumn("today", current_date()).show()'),
+      task('ps-dt1-2', 'Date difference', 'from pyspark.sql.functions import datediff\ndf.withColumn("days", datediff(col("end"), col("start"))).show()'),
+      task('ps-dt1-3', 'Add months', 'from pyspark.sql.functions import add_months\ndf.withColumn("next_q", add_months(col("date"), 3)).show()'),
+      task('ps-dt1-4', 'Extract year and month', 'from pyspark.sql.functions import year, month\ndf.withColumn("yr", year(col("date"))).withColumn("mo", month(col("date"))).show()'),
+    ]
+  ),
+  lesson(
+    'pyspark-date-2',
+    'Timestamp Operations',
+    'Format and manipulate timestamps',
+    'code',
+    'intermediate',
+    [
+      task('ps-dt2-1', 'Current timestamp', 'from pyspark.sql.functions import current_timestamp\ndf.withColumn("now", current_timestamp()).show()'),
+      task('ps-dt2-2', 'Format timestamp', 'from pyspark.sql.functions import date_format\ndf.withColumn("formatted", date_format(col("ts"), "yyyy-MM-dd HH:mm")).show()'),
+      task('ps-dt2-3', 'Unix timestamp', 'from pyspark.sql.functions import unix_timestamp\ndf.withColumn("epoch", unix_timestamp(col("ts"))).show()'),
+      task('ps-dt2-4', 'Truncate to month', 'from pyspark.sql.functions import date_trunc\ndf.withColumn("month_start", date_trunc("month", col("date"))).show()'),
+    ]
+  ),
+];
+
+// Stage 10: UDFs & Complex Types
+const pysparkStage10Lessons: Lesson[] = [
+  lesson(
+    'pyspark-udf-1',
+    'User Defined Functions',
+    'Create and apply custom functions',
+    'code',
+    'advanced',
+    [
+      task('ps-u1-1', 'Define a UDF', 'from pyspark.sql.functions import udf\nfrom pyspark.sql.types import StringType\n@udf(returnType=StringType())\ndef greet(name):\n    return f"Hello, {name}"'),
+      task('ps-u1-2', 'Apply a UDF', 'df.withColumn("greeting", greet(col("name"))).show()'),
+      task('ps-u1-3', 'Lambda UDF', 'square = udf(lambda x: x * x, IntegerType())\ndf.withColumn("squared", square(col("value"))).show()'),
+      task('ps-u1-4', 'Pandas UDF', 'from pyspark.sql.functions import pandas_udf\n@pandas_udf("double")\ndef multiply(s: pd.Series) -> pd.Series:\n    return s * 2'),
+    ]
+  ),
+  lesson(
+    'pyspark-udf-2',
+    'Arrays & Maps',
+    'Work with complex column types',
+    'code',
+    'advanced',
+    [
+      task('ps-u2-1', 'Create array column', 'from pyspark.sql.functions import array\ndf.withColumn("tags", array(col("tag1"), col("tag2"))).show()'),
+      task('ps-u2-2', 'Explode array', 'from pyspark.sql.functions import explode\ndf.select("id", explode("tags").alias("tag")).show()'),
+      task('ps-u2-3', 'Array contains', 'from pyspark.sql.functions import array_contains\ndf.filter(array_contains(col("tags"), "python")).show()'),
+      task('ps-u2-4', 'Create map column', 'from pyspark.sql.functions import create_map\ndf.withColumn("info", create_map(lit("name"), col("name"))).show()'),
+    ]
+  ),
+];
+
+// Stage 11: Reading & Writing Data
+const pysparkStage11Lessons: Lesson[] = [
+  lesson(
+    'pyspark-io-1',
+    'Reading Data',
+    'Load data from various formats',
+    'code',
+    'intermediate',
+    [
+      task('ps-io1-1', 'Read CSV with options', 'df = spark.read.option("header", True).option("delimiter", ";").csv("data.csv")'),
+      task('ps-io1-2', 'Read with schema', 'from pyspark.sql.types import StructType, StructField, StringType, IntegerType\nschema = StructType([StructField("name", StringType()), StructField("age", IntegerType())])'),
+      task('ps-io1-3', 'Read from JDBC', 'df = spark.read.format("jdbc").option("url", "jdbc:postgresql://localhost/db").option("dbtable", "users").load()'),
+      task('ps-io1-4', 'Read Delta table', 'df = spark.read.format("delta").load("/data/events")'),
+    ]
+  ),
+  lesson(
+    'pyspark-io-2',
+    'Writing Data',
+    'Save DataFrames to storage',
+    'code',
+    'intermediate',
+    [
+      task('ps-io2-1', 'Write Parquet', 'df.write.parquet("output/data.parquet")'),
+      task('ps-io2-2', 'Write with partition', 'df.write.partitionBy("year", "month").parquet("output/partitioned")'),
+      task('ps-io2-3', 'Write mode overwrite', 'df.write.mode("overwrite").csv("output/data.csv", header=True)'),
+      task('ps-io2-4', 'Write to table', 'df.write.mode("append").saveAsTable("analytics.events")'),
+    ]
+  ),
+];
+
+// Stage 12: Spark SQL
+const pysparkStage12Lessons: Lesson[] = [
+  lesson(
+    'pyspark-sql-1',
+    'SQL Queries in PySpark',
+    'Use SQL syntax with DataFrames',
+    'code',
+    'intermediate',
+    [
+      task('ps-sq1-1', 'Register temp view', 'df.createOrReplaceTempView("users")'),
+      task('ps-sq1-2', 'Run SQL query', 'result = spark.sql("SELECT name, age FROM users WHERE age > 25")'),
+      task('ps-sq1-3', 'SQL with aggregation', 'result = spark.sql("SELECT dept, AVG(salary) as avg_sal FROM employees GROUP BY dept")'),
+      task('ps-sq1-4', 'SQL join', 'result = spark.sql("SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id")'),
+    ]
+  ),
+  lesson(
+    'pyspark-sql-2',
+    'Advanced SQL Features',
+    'CTEs, subqueries, and SQL functions',
+    'code',
+    'advanced',
+    [
+      task('ps-sq2-1', 'Common Table Expression', 'result = spark.sql("WITH top_users AS (SELECT * FROM users WHERE score > 90) SELECT * FROM top_users")'),
+      task('ps-sq2-2', 'Subquery', 'result = spark.sql("SELECT * FROM orders WHERE user_id IN (SELECT id FROM users WHERE active = true)")'),
+      task('ps-sq2-3', 'Window in SQL', 'result = spark.sql("SELECT name, salary, RANK() OVER (PARTITION BY dept ORDER BY salary DESC) as rnk FROM employees")'),
+      task('ps-sq2-4', 'Create SQL table', 'spark.sql("CREATE TABLE IF NOT EXISTS events (id INT, name STRING, ts TIMESTAMP) USING parquet")'),
+    ]
+  ),
+];
+
+// Stage 13: Performance & Caching
+const pysparkStage13Lessons: Lesson[] = [
+  lesson(
+    'pyspark-perf-1',
+    'Caching & Persistence',
+    'Cache DataFrames for repeated use',
+    'code',
+    'advanced',
+    [
+      task('ps-p1-1', 'Cache a DataFrame', 'df.cache() # store in memory for reuse'),
+      task('ps-p1-2', 'Persist with level', 'from pyspark import StorageLevel\ndf.persist(StorageLevel.MEMORY_AND_DISK)'),
+      task('ps-p1-3', 'Unpersist', 'df.unpersist() # free cached data from memory'),
+      task('ps-p1-4', 'Check if cached', 'df.is_cached # returns True if DataFrame is cached'),
+    ]
+  ),
+  lesson(
+    'pyspark-perf-2',
+    'Partitioning & Optimization',
+    'Optimize shuffle and partitions',
+    'code',
+    'advanced',
+    [
+      task('ps-p2-1', 'Repartition', 'df.repartition(10) # redistribute data across 10 partitions'),
+      task('ps-p2-2', 'Coalesce', 'df.coalesce(4) # reduce partitions without full shuffle'),
+      task('ps-p2-3', 'Broadcast join', 'from pyspark.sql.functions import broadcast\nresult = large_df.join(broadcast(small_df), "id")'),
+      task('ps-p2-4', 'Explain plan', 'df.explain(True) # show physical and logical execution plan'),
+    ]
+  ),
+];
+
+// Stage 14: Streaming & Advanced Patterns
+const pysparkStage14Lessons: Lesson[] = [
+  lesson(
+    'pyspark-adv-1',
+    'Structured Streaming',
+    'Process real-time data streams',
+    'code',
+    'expert',
+    [
+      task('ps-ad1-1', 'Read stream', 'stream_df = spark.readStream.format("kafka").option("subscribe", "topic").load()'),
+      task('ps-ad1-2', 'Write stream', 'query = stream_df.writeStream.format("console").outputMode("append").start()'),
+      task('ps-ad1-3', 'Windowed aggregation', 'from pyspark.sql.functions import window\nresult = stream_df.groupBy(window(col("timestamp"), "5 minutes")).count()'),
+      task('ps-ad1-4', 'Watermark', 'result = stream_df.withWatermark("timestamp", "10 minutes").groupBy(window(col("timestamp"), "5 minutes")).count()'),
+    ]
+  ),
+  lesson(
+    'pyspark-adv-2',
+    'Advanced Patterns',
+    'Pivoting, unpivoting, and schema evolution',
+    'code',
+    'expert',
+    [
+      task('ps-ad2-1', 'Pivot table', 'df.groupBy("dept").pivot("year").sum("revenue").show()'),
+      task('ps-ad2-2', 'Stack (unpivot)', 'from pyspark.sql.functions import expr\ndf.select("id", expr("stack(2, \'q1\', q1, \'q2\', q2) as (quarter, value)")).show()'),
+      task('ps-ad2-3', 'Schema merging', 'df = spark.read.option("mergeSchema", True).parquet("data/")'),
+      task('ps-ad2-4', 'Repartition by range', 'df.repartitionByRange(10, col("date")) # range-based partitioning'),
+    ]
+  ),
+];
+
+// Stage 15: PySpark Mastery Test
+const pysparkMasteryTest: Lesson[] = [
+  lesson(
+    'pyspark-test-1',
+    'PySpark Fundamentals Test',
+    'Test your core PySpark knowledge',
+    'code',
+    'expert',
+    [
+      task('ps-t1-1', 'Create session and read data', 'spark = SparkSession.builder.appName("Test").getOrCreate()\ndf = spark.read.csv("sales.csv", header=True, inferSchema=True)'),
+      task('ps-t1-2', 'Filter and transform', 'result = df.filter(col("amount") > 100).withColumn("tax", col("amount") * 0.1)'),
+      task('ps-t1-3', 'Aggregate by group', 'summary = df.groupBy("region").agg(sum("amount").alias("total"), avg("amount").alias("avg_sale"))'),
+      task('ps-t1-4', 'Join and select', 'output = sales.join(customers, "customer_id", "left").select("name", "amount", "region")'),
+    ]
+  ),
+  lesson(
+    'pyspark-test-2',
+    'PySpark Mastery Final Test',
+    'Comprehensive PySpark challenge',
+    'code',
+    'expert',
+    [
+      task('ps-t2-1', 'Window ranking', 'w = Window.partitionBy("dept").orderBy(col("salary").desc())\ndf.withColumn("rank", dense_rank().over(w)).filter(col("rank") <= 3).show()'),
+      task('ps-t2-2', 'Complex aggregation', 'result = df.groupBy("category").agg(\n    count("*").alias("total"),\n    sum("revenue").alias("total_rev"),\n    avg("rating").alias("avg_rating")\n).orderBy(col("total_rev").desc())'),
+      task('ps-t2-3', 'Pivot and join', 'pivot_df = sales.groupBy("region").pivot("quarter").sum("amount")\nfinal = pivot_df.join(broadcast(targets), "region", "left")'),
+      task('ps-t2-4', 'Write partitioned output', 'result.write.mode("overwrite").partitionBy("year", "month").parquet("output/analytics")'),
+    ]
+  ),
+];
+
+// All PySpark course lessons
+export const pysparkCourseLessons: Lesson[] = [
+  ...pysparkStage1Lessons,
+  ...pysparkStage2Lessons,
+  ...pysparkStage3Lessons,
+  ...pysparkStage4Lessons,
+  ...pysparkStage5Lessons,
+  ...pysparkStage6Lessons,
+  ...pysparkStage7Lessons,
+  ...pysparkStage8Lessons,
+  ...pysparkStage9Lessons,
+  ...pysparkStage10Lessons,
+  ...pysparkStage11Lessons,
+  ...pysparkStage12Lessons,
+  ...pysparkStage13Lessons,
+  ...pysparkStage14Lessons,
+  ...pysparkMasteryTest,
+];
+
+// Create the PySpark course
+export const pysparkCourse: Course = {
+  id: 'pyspark-mastery',
+  name: 'PySpark Mastery',
+  description: 'Master PySpark from DataFrames and transformations to window functions, streaming, and performance tuning',
+  stages: [
+    {
+      id: 'pyspark-stage-1',
+      name: 'Getting Started',
+      description: 'SparkSession setup and creating DataFrames',
+      lessons: pysparkStage1Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: false },
+    },
+    {
+      id: 'pyspark-stage-2',
+      name: 'DataFrame Basics',
+      description: 'Explore, select, and rename columns',
+      lessons: pysparkStage2Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-3',
+      name: 'Filtering & Sorting',
+      description: 'Filter rows and sort results',
+      lessons: pysparkStage3Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-4',
+      name: 'Column Transformations',
+      description: 'Add, compute, and manipulate columns',
+      lessons: pysparkStage4Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-5',
+      name: 'Aggregations',
+      description: 'Group by, count, sum, avg, and collect',
+      lessons: pysparkStage5Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-6',
+      name: 'Joins',
+      description: 'Inner, left, full, cross, and anti joins',
+      lessons: pysparkStage6Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-7',
+      name: 'Null Handling & Types',
+      description: 'Handle missing values and cast types',
+      lessons: pysparkStage7Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-8',
+      name: 'Window Functions',
+      description: 'Rank, row_number, lag, lead, and running totals',
+      lessons: pysparkStage8Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-9',
+      name: 'Date & Timestamp',
+      description: 'Date arithmetic, formatting, and extraction',
+      lessons: pysparkStage9Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-10',
+      name: 'UDFs & Complex Types',
+      description: 'Custom functions, arrays, and maps',
+      lessons: pysparkStage10Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true, minWpm: 20 },
+    },
+    {
+      id: 'pyspark-stage-11',
+      name: 'Reading & Writing Data',
+      description: 'CSV, Parquet, JDBC, Delta, and partitioned output',
+      lessons: pysparkStage11Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-12',
+      name: 'Spark SQL',
+      description: 'SQL queries, CTEs, and temp views',
+      lessons: pysparkStage12Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-13',
+      name: 'Performance & Caching',
+      description: 'Cache, persist, broadcast, and explain plans',
+      lessons: pysparkStage13Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true },
+    },
+    {
+      id: 'pyspark-stage-14',
+      name: 'Streaming & Advanced',
+      description: 'Structured streaming, pivoting, and schema evolution',
+      lessons: pysparkStage14Lessons.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true, minWpm: 25 },
+    },
+    {
+      id: 'pyspark-stage-test',
+      name: 'PySpark Mastery Test',
+      description: 'Prove your PySpark expertise',
+      lessons: pysparkMasteryTest.map(l => l.id),
+      unlockCriteria: { previousStageComplete: true, minWpm: 30, minAccuracy: 0.90 },
+    },
+  ],
+};
+
 // All available courses
-export const allCourses: Course[] = [tenFingerCourse, cliCourse, claudeCodeCourse, sqlCourse];
+export const allCourses: Course[] = [tenFingerCourse, cliCourse, claudeCodeCourse, sqlCourse, pysparkCourse];

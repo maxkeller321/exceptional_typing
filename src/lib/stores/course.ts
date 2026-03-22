@@ -7,6 +7,7 @@ import {
   cliCourse,
   claudeCodeCourse,
   sqlCourse,
+  pysparkCourse,
   allCourses,
   getCourseStage,
   getCliCourseStage,
@@ -167,7 +168,7 @@ function createCourseStore() {
       // Check if this stage was skipped to (explicitly unlocked)
       if (progress.skippedStages?.includes(stageId)) return true;
 
-      // Check if previous stage is complete, skipped, or is the current stage
+      // Check if previous stage is complete or skipped
       const stageIndex = course.stages.findIndex((s) => s.id === stageId);
       if (stageIndex === 0) return true;
 
@@ -175,11 +176,11 @@ function createCourseStore() {
       // A stage is unlocked if the previous stage is:
       // 1. Completed (in completedStages)
       // 2. Skipped (in skippedStages)
-      // 3. The current working stage (currentStageId) - this unlocks the next stage
+      // Note: being the "currentStageId" alone is NOT enough to unlock the next stage.
+      // The user must complete or skip a stage before the next one unlocks.
       if (
         !progress.completedStages.includes(prevStage.id) &&
-        !progress.skippedStages?.includes(prevStage.id) &&
-        progress.currentStageId !== prevStage.id
+        !progress.skippedStages?.includes(prevStage.id)
       ) {
         return false;
       }
@@ -510,8 +511,7 @@ export const currentSkippableStageId = derived(
             const prevStage = $course.stages[stageIndex - 1];
             if (
               progress.completedStages.includes(prevStage.id) ||
-              progress.skippedStages?.includes(prevStage.id) ||
-              progress.currentStageId === prevStage.id
+              progress.skippedStages?.includes(prevStage.id)
             ) {
               isUnlocked = true;
             }
@@ -540,4 +540,4 @@ export const allCourseProgress = derived(
 );
 
 // Export all courses for easy access
-export { allCourses, tenFingerCourse, cliCourse, claudeCodeCourse, sqlCourse };
+export { allCourses, tenFingerCourse, cliCourse, claudeCodeCourse, sqlCourse, pysparkCourse };

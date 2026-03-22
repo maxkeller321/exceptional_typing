@@ -41,6 +41,9 @@ export const de: Record<TranslationKey, string> = {
   'lessons.words': 'Wörter',
   'lessons.sentences': 'Sätze',
   'lessons.code': 'Code',
+  'lessons.commands': 'Befehle',
+  'lessons.shortcuts': 'IDE-Tastenkürzel',
+  'lessons.all': 'Alle',
 
   // Practice
   'practice.title': 'Schnelle Übung',
@@ -71,6 +74,7 @@ export const de: Record<TranslationKey, string> = {
   'daily.streak': 'Serie',
   'daily.days': 'Tage',
   'daily.bestResult': 'Persönliche Bestleistung',
+  'daily.done': 'Fertig',
 
   // Course
   'course.title': '10 Finger (Zehnfingersystem)',
@@ -82,6 +86,9 @@ export const de: Record<TranslationKey, string> = {
   'course.startStage': 'Stufe beginnen',
   'course.continueStage': 'Fortsetzen',
   'course.lessonsCompleted': 'Lektionen abgeschlossen',
+  'course.allCourses': 'Alle Kurse',
+  'course.choosePathSubtitle': 'Wähle einen strukturierten Lernpfad',
+  'course.coursesTitle': 'Kurse',
 
   // Typing
   'typing.wpm': 'WPM',
@@ -122,11 +129,13 @@ export const de: Record<TranslationKey, string> = {
   'settings.title': 'Einstellungen',
   'settings.subtitle': 'Passe dein Erlebnis an',
   'settings.display': 'Anzeige',
+  'settings.theme': 'Design',
   'settings.typography': 'Typografie',
   'settings.audio': 'Audio',
   'settings.code': 'Code',
   'settings.keyboard': 'Tastatur',
   'settings.language': 'Sprache',
+  'settings.tutorial': 'Tutorial',
   'settings.reset': 'Zurücksetzen',
   'settings.resetAll': 'Alle Einstellungen auf Standard zurücksetzen',
   'settings.virtualKeyboard': 'Virtuelle Tastatur',
@@ -145,10 +154,15 @@ export const de: Record<TranslationKey, string> = {
   'settings.autoFormatDesc': 'Eingefügten Code automatisch formatieren',
   'settings.codeTheme': 'Code-Theme',
   'settings.codeThemeDesc': 'Farbschema für Syntax-Hervorhebung',
+  'settings.appTheme': 'App-Design',
+  'settings.appThemeDesc': 'Wähle das Farbschema',
   'settings.keyboardLayout': 'Tastaturlayout',
-  'settings.keyboardLayoutDesc': 'Dein physisches Tastaturlayout',
+  'settings.keyboardLayoutDesc': 'Dein physisches Tastaturlayout - zum Vorschauen hovern',
   'settings.interfaceLanguage': 'Oberflächensprache',
   'settings.interfaceLanguageDesc': 'Sprache der App-Oberfläche',
+  'settings.appTour': 'App-Tour',
+  'settings.appTourDesc': 'Interaktives Tutorial abspielen, um App-Funktionen kennenzulernen',
+  'settings.rerunTutorial': 'Tutorial erneut starten',
 
   // Mode
   'mode.normal': 'Normal',

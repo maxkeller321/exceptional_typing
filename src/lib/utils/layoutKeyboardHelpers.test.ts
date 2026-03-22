@@ -179,7 +179,9 @@ describe('getCachedShiftChars', () => {
 
 describe('buildKeyboardRows', () => {
   const allLayouts: ConcreteKeyboardLayoutId[] = [
-    'qwerty-us', 'qwerty-uk', 'qwerty-de', 'azerty-fr', 'dvorak', 'colemak',
+    'qwerty-us', 'qwerty-uk', 'qwerty-de', 'qwerty-es', 'qwerty-it', 'qwerty-pt',
+    'qwerty-se', 'qwerty-no', 'qwerty-dk', 'qwerty-ch-fr', 'qwerty-tr',
+    'azerty-fr', 'azerty-be', 'dvorak', 'colemak',
   ];
 
   it('returns 5 rows for every layout', () => {

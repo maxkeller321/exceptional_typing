@@ -161,7 +161,16 @@ export type KeyboardLayoutId =
   | 'qwerty-us'
   | 'qwerty-uk'
   | 'qwerty-de'
+  | 'qwerty-es'
+  | 'qwerty-it'
+  | 'qwerty-pt'
+  | 'qwerty-se'
+  | 'qwerty-no'
+  | 'qwerty-dk'
+  | 'qwerty-ch-fr'
+  | 'qwerty-tr'
   | 'azerty-fr'
+  | 'azerty-be'
   | 'dvorak'
   | 'colemak';
 

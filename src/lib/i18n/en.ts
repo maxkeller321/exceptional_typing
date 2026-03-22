@@ -39,6 +39,9 @@ export const en = {
   'lessons.words': 'Words',
   'lessons.sentences': 'Sentences',
   'lessons.code': 'Code',
+  'lessons.commands': 'Commands',
+  'lessons.shortcuts': 'IDE Shortcuts',
+  'lessons.all': 'All',
 
   // Practice
   'practice.title': 'Quick Practice',
@@ -69,6 +72,7 @@ export const en = {
   'daily.streak': 'Streak',
   'daily.days': 'days',
   'daily.bestResult': 'Personal Best',
+  'daily.done': 'Done',
 
   // Course
   'course.title': '10 Fingers (touch typing)',
@@ -80,6 +84,9 @@ export const en = {
   'course.startStage': 'Start Stage',
   'course.continueStage': 'Continue',
   'course.lessonsCompleted': 'lessons completed',
+  'course.allCourses': 'All Courses',
+  'course.choosePathSubtitle': 'Choose a structured learning path',
+  'course.coursesTitle': 'Courses',
 
   // Typing
   'typing.wpm': 'WPM',
@@ -120,11 +127,13 @@ export const en = {
   'settings.title': 'Settings',
   'settings.subtitle': 'Customize your experience',
   'settings.display': 'Display',
+  'settings.theme': 'Theme',
   'settings.typography': 'Typography',
   'settings.audio': 'Audio',
   'settings.code': 'Code',
   'settings.keyboard': 'Keyboard',
   'settings.language': 'Language',
+  'settings.tutorial': 'Tutorial',
   'settings.reset': 'Reset',
   'settings.resetAll': 'Reset All Settings to Defaults',
   'settings.virtualKeyboard': 'Virtual Keyboard',
@@ -143,10 +152,15 @@ export const en = {
   'settings.autoFormatDesc': 'Automatically format pasted code',
   'settings.codeTheme': 'Code Theme',
   'settings.codeThemeDesc': 'Syntax highlighting color scheme',
+  'settings.appTheme': 'App Theme',
+  'settings.appThemeDesc': 'Choose the overall color scheme',
   'settings.keyboardLayout': 'Keyboard Layout',
-  'settings.keyboardLayoutDesc': 'Your physical keyboard layout',
+  'settings.keyboardLayoutDesc': 'Your physical keyboard layout - hover to preview',
   'settings.interfaceLanguage': 'Interface Language',
   'settings.interfaceLanguageDesc': 'Language for the app interface',
+  'settings.appTour': 'App Tour',
+  'settings.appTourDesc': 'Replay the interactive tutorial to learn about app features',
+  'settings.rerunTutorial': 'Rerun Tutorial',
 
   // Mode
   'mode.normal': 'Normal',

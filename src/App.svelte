@@ -23,9 +23,11 @@
   import { completedToday } from './lib/stores/daily';
   import { APP_NAME } from './lib/constants';
   import { checkAndConsumeDemoFlag, initializeDemoMode } from './lib/utils/demo';
+  import { i18n, type TranslationKey } from './lib/i18n';
   import type { AppView, UserSettings, ConcreteKeyboardLayoutId } from './lib/types';
 
   let view = $state<AppView>('home');
+  let tr = $state<(key: TranslationKey, params?: Record<string, string>) => string>((key) => key);
   let hasUser = $state(false);
   let settings = $state<UserSettings | null>(null);
   let resolvedLayoutId = $state<ConcreteKeyboardLayoutId>('qwerty-us');
@@ -88,6 +90,10 @@
       resolvedLayoutId = l;
     });
 
+    const unsubI18n = i18n.subscribe((fn) => {
+      tr = fn;
+    });
+
     // Increment lesson session key when a new lesson is selected
     // This forces LessonView to re-mount with fresh state
     const unsubLesson = selectedLesson.subscribe((lesson) => {
@@ -118,6 +124,7 @@
       unsubSettings();
       unsubDaily();
       unsubResolvedLayout();
+      unsubI18n();
       unsubLesson();
       unsubCurrentUser();
     };
@@ -192,7 +199,7 @@
           onclick={() => navigateTo('home')}
         >
           <span class="nav-icon">🏠</span>
-          <span class="nav-label">Lessons</span>
+          <span class="nav-label">{tr('nav.lessons')}</span>
         </button>
 
         <button
@@ -201,7 +208,7 @@
           onclick={() => navigateTo('practice')}
         >
           <span class="nav-icon">⚡</span>
-          <span class="nav-label">Quick Practice</span>
+          <span class="nav-label">{tr('nav.practice')}</span>
         </button>
 
         <button
@@ -210,9 +217,9 @@
           onclick={() => navigateTo('daily')}
         >
           <span class="nav-icon">{dailyCompleted ? '✅' : '📅'}</span>
-          <span class="nav-label">Daily Test</span>
+          <span class="nav-label">{tr('nav.daily')}</span>
           {#if dailyCompleted}
-            <span class="nav-badge">Done</span>
+            <span class="nav-badge">{tr('daily.done')}</span>
           {/if}
         </button>
 
@@ -222,7 +229,7 @@
           onclick={() => navigateTo('course')}
         >
           <span class="nav-icon">🎓</span>
-          <span class="nav-label">Course</span>
+          <span class="nav-label">{tr('nav.course')}</span>
         </button>
 
         <button
@@ -231,7 +238,7 @@
           onclick={() => navigateTo('stats')}
         >
           <span class="nav-icon">📊</span>
-          <span class="nav-label">Statistics</span>
+          <span class="nav-label">{tr('nav.stats')}</span>
         </button>
 
         <button
@@ -240,7 +247,7 @@
           onclick={() => navigateTo('settings')}
         >
           <span class="nav-icon">⚙️</span>
-          <span class="nav-label">Settings</span>
+          <span class="nav-label">{tr('nav.settings')}</span>
         </button>
       </div>
 
@@ -255,8 +262,8 @@
       {#if view === 'home'}
         <div class="page home-page">
           <header class="page-header">
-            <h1>Choose a Lesson</h1>
-            <p class="subtitle">Select a lesson to improve your typing skills</p>
+            <h1>{tr('lessons.title')}</h1>
+            <p class="subtitle">{tr('lessons.subtitle')}</p>
           </header>
           <LessonPicker />
         </div>
@@ -269,16 +276,16 @@
       {:else if view === 'practice'}
         <div class="page practice-page">
           <header class="page-header">
-            <h1>Quick Practice</h1>
-            <p class="subtitle">Paste your own text or code to practice</p>
+            <h1>{tr('practice.title')}</h1>
+            <p class="subtitle">{tr('practice.subtitle')}</p>
           </header>
           <PracticeView />
         </div>
       {:else if view === 'daily'}
         <div class="page daily-page">
           <header class="page-header">
-            <h1>Daily Test</h1>
-            <p class="subtitle">Take today's standardized typing test</p>
+            <h1>{tr('daily.title')}</h1>
+            <p class="subtitle">{tr('daily.subtitle')}</p>
           </header>
           <DailyTestView />
         </div>
@@ -286,15 +293,15 @@
         <div class="page course-page">
           {#if courseSubView === 'overview'}
             <header class="page-header">
-              <h1>Courses</h1>
-              <p class="subtitle">Choose a structured learning path</p>
+              <h1>{tr('course.coursesTitle')}</h1>
+              <p class="subtitle">{tr('course.choosePathSubtitle')}</p>
             </header>
             <CourseOverview onSelectCourse={() => { courseSubView = 'detail'; }} />
           {:else}
             <header class="page-header course-detail-header">
               <button class="back-btn" onclick={() => { courseSubView = 'overview'; }}>
                 <span class="back-arrow">←</span>
-                <span>All Courses</span>
+                <span>{tr('course.allCourses')}</span>
               </button>
             </header>
             <CourseView />
@@ -307,37 +314,37 @@
       {:else if view === 'settings' && settings}
         <div class="page settings-page">
           <header class="page-header">
-            <h1>Settings</h1>
-            <p class="subtitle">Customize your experience</p>
+            <h1>{tr('settings.title')}</h1>
+            <p class="subtitle">{tr('settings.subtitle')}</p>
           </header>
 
           <div class="settings-sections">
             <!-- Display Settings -->
             <section class="settings-section">
-              <h2 class="section-title">Display</h2>
+              <h2 class="section-title">{tr('settings.display')}</h2>
               <div class="settings-list">
                 <Toggle
                   checked={settings.showVirtualKeyboard}
-                  label="Virtual Keyboard"
-                  description="Show keyboard with finger highlights"
+                  label={tr('settings.virtualKeyboard')}
+                  description={tr('settings.virtualKeyboardDesc')}
                   onChange={(v) => settingsStore.setShowKeyboard(v)}
                 />
                 <Toggle
                   checked={settings.showHandGuides}
-                  label="Hand Guides"
-                  description="Show which finger to use for each key"
+                  label={tr('settings.handGuides')}
+                  description={tr('settings.handGuidesDesc')}
                   onChange={(v) => settingsStore.setShowHandGuides(v)}
                 />
                 <Toggle
                   checked={settings.showProgressPercentage}
-                  label="Progress Percentage"
-                  description="Show completion percentage while typing"
+                  label={tr('settings.progressPercentage')}
+                  description={tr('settings.progressPercentageDesc')}
                   onChange={(v) => settingsStore.setShowProgress(v)}
                 />
                 <Toggle
                   checked={settings.showSyntaxHighlighting}
-                  label="Syntax Highlighting"
-                  description="Colorize code snippets"
+                  label={tr('settings.syntaxHighlighting')}
+                  description={tr('settings.syntaxHighlightingDesc')}
                   onChange={(v) => settingsStore.setShowSyntaxHighlighting(v)}
                 />
               </div>
@@ -345,12 +352,12 @@
 
             <!-- Theme Settings -->
             <section class="settings-section">
-              <h2 class="section-title">Theme</h2>
+              <h2 class="section-title">{tr('settings.theme')}</h2>
               <div class="settings-list">
                 <div class="setting-item">
                   <div class="setting-info">
-                    <span class="setting-label">App Theme</span>
-                    <span class="setting-description">Choose the overall color scheme</span>
+                    <span class="setting-label">{tr('settings.appTheme')}</span>
+                    <span class="setting-description">{tr('settings.appThemeDesc')}</span>
                   </div>
                   <Dropdown
                     options={appThemeOptions}
@@ -363,15 +370,15 @@
 
             <!-- Typography Settings -->
             <section class="settings-section">
-              <h2 class="section-title">Typography</h2>
+              <h2 class="section-title">{tr('settings.typography')}</h2>
               <div class="settings-list">
                 <Slider
                   value={settings.fontSize}
                   min={16}
                   max={40}
                   step={2}
-                  label="Font Size"
-                  description="Size of the typing text"
+                  label={tr('settings.fontSize')}
+                  description={tr('settings.fontSizeDesc')}
                   unit="px"
                   onChange={(v) => settingsStore.setFontSize(v)}
                 />
@@ -380,12 +387,12 @@
 
             <!-- Audio Settings -->
             <section class="settings-section">
-              <h2 class="section-title">Audio</h2>
+              <h2 class="section-title">{tr('settings.audio')}</h2>
               <div class="settings-list">
                 <Toggle
                   checked={settings.soundEffectsEnabled}
-                  label="Sound Effects"
-                  description="Play sounds for keystrokes and feedback"
+                  label={tr('settings.soundEffects')}
+                  description={tr('settings.soundEffectsDesc')}
                   onChange={(v) => settingsStore.setSoundEffects(v)}
                 />
               </div>
@@ -393,18 +400,18 @@
 
             <!-- Code Settings -->
             <section class="settings-section">
-              <h2 class="section-title">Code</h2>
+              <h2 class="section-title">{tr('settings.code')}</h2>
               <div class="settings-list">
                 <Toggle
                   checked={settings.autoFormatCode}
-                  label="Auto-Format Code"
-                  description="Automatically format pasted code"
+                  label={tr('settings.autoFormat')}
+                  description={tr('settings.autoFormatDesc')}
                   onChange={(v) => settingsStore.setAutoFormat(v)}
                 />
                 <div class="setting-item">
                   <div class="setting-info">
-                    <span class="setting-label">Code Theme</span>
-                    <span class="setting-description">Syntax highlighting color scheme</span>
+                    <span class="setting-label">{tr('settings.codeTheme')}</span>
+                    <span class="setting-description">{tr('settings.codeThemeDesc')}</span>
                   </div>
                   <Dropdown
                     options={codeThemeOptions}
@@ -417,12 +424,12 @@
 
             <!-- Keyboard Layout -->
             <section class="settings-section">
-              <h2 class="section-title">Keyboard</h2>
+              <h2 class="section-title">{tr('settings.keyboard')}</h2>
               <div class="settings-list">
                 <div class="setting-item">
                   <div class="setting-info">
-                    <span class="setting-label">Keyboard Layout</span>
-                    <span class="setting-description">Your physical keyboard layout - hover to preview</span>
+                    <span class="setting-label">{tr('settings.keyboardLayout')}</span>
+                    <span class="setting-description">{tr('settings.keyboardLayoutDesc')}</span>
                   </div>
                   <KeyboardLayoutSelector
                     value={settings.keyboardLayout}
@@ -433,14 +440,14 @@
               </div>
             </section>
 
-            <!-- Language (placeholder for now) -->
+            <!-- Language -->
             <section class="settings-section">
-              <h2 class="section-title">Language</h2>
+              <h2 class="section-title">{tr('settings.language')}</h2>
               <div class="settings-list">
                 <div class="setting-item">
                   <div class="setting-info">
-                    <span class="setting-label">Interface Language</span>
-                    <span class="setting-description">Language for the app interface</span>
+                    <span class="setting-label">{tr('settings.interfaceLanguage')}</span>
+                    <span class="setting-description">{tr('settings.interfaceLanguageDesc')}</span>
                   </div>
                   <Dropdown
                     options={localeOptions}
@@ -453,15 +460,15 @@
 
             <!-- Tutorial -->
             <section class="settings-section">
-              <h2 class="section-title">Tutorial</h2>
+              <h2 class="section-title">{tr('settings.tutorial')}</h2>
               <div class="settings-list">
                 <div class="setting-item">
                   <div class="setting-info">
-                    <span class="setting-label">App Tour</span>
-                    <span class="setting-description">Replay the interactive tutorial to learn about app features</span>
+                    <span class="setting-label">{tr('settings.appTour')}</span>
+                    <span class="setting-description">{tr('settings.appTourDesc')}</span>
                   </div>
                   <button class="tutorial-btn" onclick={() => { settingsStore.resetOnboarding(); showOnboarding = true; }}>
-                    Rerun Tutorial
+                    {tr('settings.rerunTutorial')}
                   </button>
                 </div>
               </div>
@@ -469,10 +476,10 @@
 
             <!-- Reset -->
             <section class="settings-section">
-              <h2 class="section-title">Reset</h2>
+              <h2 class="section-title">{tr('settings.reset')}</h2>
               <div class="settings-list">
                 <button class="reset-btn" onclick={() => settingsStore.reset()}>
-                  Reset All Settings to Defaults
+                  {tr('settings.resetAll')}
                 </button>
               </div>
             </section>

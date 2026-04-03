@@ -134,6 +134,88 @@
     return { completed: progress.completedTasks, total: progress.totalTasks };
   }
 
+  // Keyboard navigation state
+  let focusedCardIndex = $state(-1);
+  let usingKeyboard = $state(false);
+  // 'category' or 'difficulty' — which filter row Left/Right controls
+  let filterFocus = $state<'category' | 'difficulty'>('category');
+
+  // Grid columns for arrow navigation (matches CSS: 1 on sm, 2 on md, 3 on lg)
+  // We approximate with 3 since the grid is the primary layout
+  const GRID_COLS = 3;
+
+  function handleKeyDown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return;
+    }
+
+    // Left/Right to navigate filter tabs
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+
+      if (filterFocus === 'category') {
+        const currentIndex = categories.indexOf(selectedCategory);
+        const nextIndex = (currentIndex + direction + categories.length) % categories.length;
+        setCategory(categories[nextIndex]);
+        // Reset card focus since filtered lessons change
+        focusedCardIndex = -1;
+      } else {
+        const currentIndex = difficultyValues.indexOf(selectedDifficulty);
+        const nextIndex = (currentIndex + direction + difficultyValues.length) % difficultyValues.length;
+        setDifficulty(difficultyValues[nextIndex]);
+        focusedCardIndex = -1;
+      }
+      usingKeyboard = true;
+      return;
+    }
+
+    // Tab key switches between category and difficulty filter rows
+    if (event.key === 'Tab') {
+      event.preventDefault();
+      filterFocus = filterFocus === 'category' ? 'difficulty' : 'category';
+      usingKeyboard = true;
+      return;
+    }
+
+    // Down arrow moves focus into the lesson card grid
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      usingKeyboard = true;
+      if (filteredLessons.length === 0) return;
+      if (focusedCardIndex < 0) {
+        focusedCardIndex = 0;
+      } else {
+        const nextIndex = focusedCardIndex + GRID_COLS;
+        if (nextIndex < filteredLessons.length) {
+          focusedCardIndex = nextIndex;
+        }
+      }
+      return;
+    }
+
+    // Up arrow moves focus up in the card grid (or back to filters if at top)
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      usingKeyboard = true;
+      if (focusedCardIndex >= GRID_COLS) {
+        focusedCardIndex -= GRID_COLS;
+      } else {
+        // At top row of grid — clear card focus (back to filter area)
+        focusedCardIndex = -1;
+      }
+      return;
+    }
+
+    // Enter to select the focused lesson card
+    if (event.key === 'Enter' && focusedCardIndex >= 0 && focusedCardIndex < filteredLessons.length) {
+      event.preventDefault();
+      handleSelect(filteredLessons[focusedCardIndex]);
+      return;
+    }
+  }
+
   function getDifficultyColor(difficulty: Difficulty): string {
     const colors: Record<Difficulty, string> = {
       beginner: 'bg-green-600',
@@ -162,17 +244,19 @@
   }
 </script>
 
+<svelte:window onkeydown={handleKeyDown} />
+
 <div class="lesson-picker">
   <!-- Filters -->
   <div class="filters">
-    <div class="filter-group">
+    <div class="filter-group" class:filter-focused={usingKeyboard && focusedCardIndex < 0 && filterFocus === 'category'}>
       <span class="filter-label">{tr('lessons.all')}</span>
       <div class="filter-buttons">
         {#each categories as cat}
           <button
             class="filter-btn"
             class:active={selectedCategory === cat}
-            onclick={() => setCategory(cat)}
+            onclick={() => { setCategory(cat); usingKeyboard = false; focusedCardIndex = -1; }}
           >
             {tr(categoryI18nKeys[cat])}
           </button>
@@ -180,14 +264,14 @@
       </div>
     </div>
 
-    <div class="filter-group">
+    <div class="filter-group" class:filter-focused={usingKeyboard && focusedCardIndex < 0 && filterFocus === 'difficulty'}>
       <span class="filter-label">{tr('lessons.all')}</span>
       <div class="filter-buttons">
         {#each difficultyValues as diff}
           <button
             class="filter-btn"
             class:active={selectedDifficulty === diff}
-            onclick={() => setDifficulty(diff)}
+            onclick={() => { setDifficulty(diff); usingKeyboard = false; focusedCardIndex = -1; }}
           >
             <span class="difficulty-dot {difficultyColors[diff]}"></span>
             {tr(difficultyI18nKeys[diff])}
@@ -198,10 +282,15 @@
   </div>
 
   <!-- Lesson grid -->
-  <div class="lesson-grid">
-    {#each filteredLessons as lesson}
+  <div class="lesson-grid" class:no-hover={usingKeyboard}>
+    {#each filteredLessons as lesson, i}
       {@const progress = getLessonProgress(lesson.id)}
-      <button class="lesson-card" onclick={() => handleSelect(lesson)}>
+      <button
+        class="lesson-card"
+        class:focused={usingKeyboard && focusedCardIndex === i}
+        onclick={() => { handleSelect(lesson); usingKeyboard = false; }}
+        onmouseenter={() => { usingKeyboard = false; focusedCardIndex = -1; }}
+      >
         <div class="card-header">
           <span class="category-icon">{getCategoryIcon(lesson.category)}</span>
           <span class="difficulty-badge {getDifficultyColor(lesson.difficulty)}">
@@ -257,6 +346,13 @@
 
   .filter-group {
     @apply flex flex-col gap-1.5;
+    @apply pl-2 rounded;
+    border-left: 2px solid transparent;
+    transition: border-left-color 0.15s ease;
+  }
+
+  .filter-group.filter-focused {
+    border-left-color: var(--accent);
   }
 
   .filter-label {
@@ -300,8 +396,17 @@
     background-color: var(--bg-secondary);
   }
 
-  .lesson-card:hover {
+  .lesson-card:hover:not(.no-hover *) {
     background-color: var(--bg-tertiary);
+  }
+
+  .lesson-card.focused {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  .no-hover .lesson-card:hover:not(.focused) {
+    background-color: var(--bg-secondary);
   }
 
   .card-header {

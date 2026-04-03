@@ -34,6 +34,10 @@
   let dailyCompleted = $state(false);
   let showOnboarding = $state(false);
 
+  // Sidebar keyboard navigation
+  let focusedNavIndex = $state(-1);
+  let usingNavKeyboard = $state(false);
+
   // Course sub-view: 'overview' shows all courses, 'detail' shows stages/lessons
   let courseSubView = $state<'overview' | 'detail'>('overview');
 
@@ -139,14 +143,49 @@
     { value: 'one-dark', label: 'One Dark' },
   ];
 
+  // Sidebar navigation order for arrow key navigation
+  const sidebarViews: AppView[] = ['home', 'practice', 'daily', 'course', 'stats', 'settings'];
+
   function handleGlobalKeyDown(event: KeyboardEvent): void {
-    // Backspace to navigate back (only when not in an input/textarea and not in lesson view)
-    if (event.key === 'Backspace' && view !== 'lesson' && view !== 'home') {
-      // Don't capture if user is in an input element
-      const target = event.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
-        return;
+    // Don't capture if user is in an input element
+    const target = event.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return;
+    }
+
+    // Don't capture keys when in lesson, daily test, or practice (typing views)
+    if (view === 'lesson' || view === 'daily' || view === 'practice') {
+      return;
+    }
+
+    // ArrowUp / ArrowDown to move focus outline between sidebar sections
+    // Skip when course view is active (CourseView/CourseOverview have their own arrow key handlers)
+    if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && view !== 'course') {
+      event.preventDefault();
+      usingNavKeyboard = true;
+
+      const currentIndex = focusedNavIndex >= 0 ? focusedNavIndex : sidebarViews.indexOf(view);
+      if (currentIndex === -1) return;
+
+      if (event.key === 'ArrowUp') {
+        focusedNavIndex = currentIndex > 0 ? currentIndex - 1 : sidebarViews.length - 1;
+      } else {
+        focusedNavIndex = currentIndex < sidebarViews.length - 1 ? currentIndex + 1 : 0;
       }
+      return;
+    }
+
+    // Enter to navigate to the focused sidebar section
+    if (event.key === 'Enter' && usingNavKeyboard && focusedNavIndex >= 0) {
+      event.preventDefault();
+      navigateTo(sidebarViews[focusedNavIndex]);
+      focusedNavIndex = -1;
+      usingNavKeyboard = false;
+      return;
+    }
+
+    // Backspace to navigate back (only when not in home)
+    if (event.key === 'Backspace' && view !== 'home') {
       event.preventDefault();
       if (view === 'course' && courseSubView === 'detail') {
         courseSubView = 'overview';
@@ -192,63 +231,34 @@
         <ModeToggle />
       </div>
 
-      <div class="nav-items">
-        <button
-          class="nav-item"
-          class:active={view === 'home'}
-          onclick={() => navigateTo('home')}
-        >
-          <span class="nav-icon">🏠</span>
-          <span class="nav-label">{tr('nav.lessons')}</span>
-        </button>
-
-        <button
-          class="nav-item"
-          class:active={view === 'practice'}
-          onclick={() => navigateTo('practice')}
-        >
-          <span class="nav-icon">⚡</span>
-          <span class="nav-label">{tr('nav.practice')}</span>
-        </button>
-
-        <button
-          class="nav-item"
-          class:active={view === 'daily'}
-          onclick={() => navigateTo('daily')}
-        >
-          <span class="nav-icon">{dailyCompleted ? '✅' : '📅'}</span>
-          <span class="nav-label">{tr('nav.daily')}</span>
-          {#if dailyCompleted}
-            <span class="nav-badge">{tr('daily.done')}</span>
-          {/if}
-        </button>
-
-        <button
-          class="nav-item"
-          class:active={view === 'course'}
-          onclick={() => navigateTo('course')}
-        >
-          <span class="nav-icon">🎓</span>
-          <span class="nav-label">{tr('nav.course')}</span>
-        </button>
-
-        <button
-          class="nav-item"
-          class:active={view === 'stats'}
-          onclick={() => navigateTo('stats')}
-        >
-          <span class="nav-icon">📊</span>
-          <span class="nav-label">{tr('nav.stats')}</span>
-        </button>
-
-        <button
-          class="nav-item"
-          class:active={view === 'settings'}
-          onclick={() => navigateTo('settings')}
-        >
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-label">{tr('nav.settings')}</span>
-        </button>
+      <div class="nav-items" class:no-hover={usingNavKeyboard}>
+        {#each sidebarViews as navView, i}
+          <button
+            class="nav-item"
+            class:active={view === navView}
+            class:focused={usingNavKeyboard && focusedNavIndex === i}
+            onclick={() => { navigateTo(navView); usingNavKeyboard = false; focusedNavIndex = -1; }}
+            onmouseenter={() => { usingNavKeyboard = false; focusedNavIndex = -1; }}
+          >
+            <span class="nav-icon">{
+              navView === 'home' ? '🏠' :
+              navView === 'practice' ? '⚡' :
+              navView === 'daily' ? (dailyCompleted ? '✅' : '📅') :
+              navView === 'course' ? '🎓' :
+              navView === 'stats' ? '📊' : '⚙️'
+            }</span>
+            <span class="nav-label">{
+              navView === 'home' ? tr('nav.lessons') :
+              navView === 'practice' ? tr('nav.practice') :
+              navView === 'daily' ? tr('nav.daily') :
+              navView === 'course' ? tr('nav.course') :
+              navView === 'stats' ? tr('nav.stats') : tr('nav.settings')
+            }</span>
+            {#if navView === 'daily' && dailyCompleted}
+              <span class="nav-badge">{tr('daily.done')}</span>
+            {/if}
+          </button>
+        {/each}
       </div>
 
       <div class="sidebar-footer">
@@ -531,6 +541,17 @@
 
   .nav-item.active {
     color: var(--accent);
+    background-color: transparent;
+  }
+
+  .nav-item.focused {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    border-radius: 4px;
+  }
+
+  .nav-items.no-hover .nav-item:hover:not(.focused) {
+    color: var(--text-secondary);
     background-color: transparent;
   }
 

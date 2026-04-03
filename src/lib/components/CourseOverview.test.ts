@@ -22,7 +22,7 @@ interface FocusState {
   usingKeyboard: boolean;
 }
 
-const TOTAL_COURSES = 4; // number of courses in the app
+const TOTAL_COURSES = 5; // number of courses in the app
 
 function createFocusState(): FocusState {
   return { focusedIndex: -1, usingKeyboard: false };
